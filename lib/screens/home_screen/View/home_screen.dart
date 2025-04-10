@@ -4,26 +4,31 @@ import 'package:app_pickleball/screens/Widgets/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/Widgets/custom_bottom_navigation_bar.dart';
 import 'package:app_pickleball/screens/Widgets/custom_floating_action_button.dart';
 import 'package:app_pickleball/screens/Widgets/custom_list_view.dart';
-import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart'; // Import CustomDropdown
+import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    String selectedChannel = 'Default channel'; // Giá trị mặc định
-    final List<String> channels = [
-      'Default channel',
-      'Pikachu Pickleball Xuân Hoà',
-      'Demo-channel',
-      'Stamina 106 Hoàng Quốc Việt',
-      'TADA Sport CN1 - Thanh Đa',
-      'TADA Sport CN2 - Bình Lợi',
-      'TADA Sport CN3 - D2(Ung Văn Khiêm)',
-    ];
+  _HomeScreenState createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  String selectedChannel = 'Default channel'; // Giá trị mặc định
+  final List<String> channels = [
+    'Default channel',
+    'Pikachu Pickleball Xuân Hoà',
+    'Demo-channel',
+    'Stamina 106 Hoàng Quốc Việt',
+    'TADA Sport CN1 - Thanh Đa',
+    'TADA Sport CN2 - Bình Lợi',
+    'TADA Sport CN3 - D2(Ung Văn Khiêm)',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
           HomeScreenBloc(bookingRepository: BookingRepository())
@@ -53,8 +58,8 @@ class HomeScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: CustomSearchTextField(
                           hintText: 'Tìm kiếm',
-                          prefixIcon: const Icon(Icons.search), // Thêm tham số prefixIcon
-                          height: 45, // Thêm chiều cao
+                          prefixIcon: const Icon(Icons.search),
+                          height: 40, // Thêm chiều cao
                           width: double.infinity, // Thêm chiều rộng
                           margin: const EdgeInsets.fromLTRB(5, 5, 5, 0), // Thêm margin
                           onChanged: (query) {
@@ -67,7 +72,7 @@ class HomeScreen extends StatelessWidget {
                     IconButton(
                       icon: const Icon(
                         Icons.notifications,
-                        color: Colors.black
+                        color: Colors.black,
                       ),
                       iconSize: 30,
                       onPressed: () {
@@ -87,7 +92,9 @@ class HomeScreen extends StatelessWidget {
                   selectedValue: selectedChannel,
                   onChanged: (String? newValue) {
                     if (newValue != null) {
-                      selectedChannel = newValue;
+                      setState(() {
+                        selectedChannel = newValue; // Cập nhật giá trị đã chọn
+                      });
                     }
                   },
                 ),
