@@ -4,6 +4,7 @@ import 'package:app_pickleball/screens/Widgets/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/Widgets/custom_bottom_navigation_bar.dart';
 import 'package:app_pickleball/screens/Widgets/custom_floating_action_button.dart';
 import 'package:app_pickleball/screens/Widgets/custom_list_view.dart';
+import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart'; // Import CustomDropdown
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 
@@ -12,16 +13,26 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String selectedChannel = 'Default channel'; // Giá trị mặc định
+    final List<String> channels = [
+      'Default channel',
+      'Pikachu Pickleball Xuân Hoà',
+      'Demo-channel',
+      'Stamina 106 Hoàng Quốc Việt',
+      'TADA Sport CN1 - Thanh Đa',
+      'TADA Sport CN2 - Bình Lợi',
+      'TADA Sport CN3 - D2(Ung Văn Khiêm)',
+    ];
+
     return BlocProvider(
-      create:
-          (context) =>
-              HomeScreenBloc(bookingRepository: BookingRepository())
-                ..add(FetchOrdersEvent()),
+      create: (context) =>
+          HomeScreenBloc(bookingRepository: BookingRepository())
+            ..add(FetchOrdersEvent()),
       child: Scaffold(
         body: SafeArea(
           child: Column(
             children: [
-              // Logo và Icon Bell
+              // Logo, Icon Bell và Thanh tìm kiếm
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16.0,
@@ -30,14 +41,33 @@ class HomeScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Logo
                     Image.asset(
                       'assets/images/logo_app_tach_nen.png',
-                      height: 70,
+                      height: 60,
+                      width: 60,
                     ),
+                    // Thanh tìm kiếm
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: CustomSearchTextField(
+                          hintText: 'Tìm kiếm',
+                          prefixIcon: const Icon(Icons.search), // Thêm tham số prefixIcon
+                          height: 45, // Thêm chiều cao
+                          width: double.infinity, // Thêm chiều rộng
+                          margin: const EdgeInsets.fromLTRB(5, 5, 5, 0), // Thêm margin
+                          onChanged: (query) {
+                            // Xử lý tìm kiếm
+                          },
+                        ),
+                      ),
+                    ),
+                    // Icon Bell
                     IconButton(
                       icon: const Icon(
                         Icons.notifications,
-                        color: Colors.black,
+                        color: Colors.black
                       ),
                       iconSize: 30,
                       onPressed: () {
@@ -48,15 +78,18 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              // Thanh tìm kiếm
+              // CustomDropdown
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: CustomSearchTextField(
-                  hintText: 'Tìm kiếm',
-                  prefixIcon: const Icon(Icons.search),
-                  height: 40,
-                  width: double.infinity,
-                  margin: const EdgeInsets.fromLTRB(5, 5, 5, 0),
+                child: CustomDropdown(
+                  title: 'Chọn kênh :',
+                  options: channels,
+                  selectedValue: selectedChannel,
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      selectedChannel = newValue;
+                    }
+                  },
                 ),
               ),
               const SizedBox(height: 20),
@@ -143,10 +176,9 @@ class HomeScreen extends StatelessWidget {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is HomeScreenLoaded) {
                       return CustomListView(
-                        items:
-                            state.items
-                                .map((item) => Map<String, String>.from(item))
-                                .toList(),
+                        items: state.items
+                            .map((item) => Map<String, String>.from(item))
+                            .toList(),
                       );
                     } else if (state is HomeScreenError) {
                       return Center(child: Text(state.message));
