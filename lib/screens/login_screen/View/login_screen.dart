@@ -20,22 +20,9 @@ class LoginScreen extends StatelessWidget {
       child: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state.status == CallApiStatus.success) {
-            // Tạo HomeScreenBloc và chuyển đến HomeScreen
-            final homeBloc = HomeScreenBloc(
-              bookingRepository: BookingRepository(),
-            );
-            // Thêm sự kiện lấy dữ liệu với token mặc định
-            homeBloc.add(FetchOrdersEvent(channelToken: 'demo-channel'));
-
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder:
-                    (context) => BlocProvider.value(
-                      value: homeBloc,
-                      child: const HomeScreen(),
-                    ),
-              ),
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
           } else if (state.status == CallApiStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(
