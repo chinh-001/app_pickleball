@@ -45,14 +45,42 @@ class ApiClient {
   Future<Map<String, dynamic>?> query(
     String query, {
     Map<String, dynamic>? variables,
+    String? channelToken,
   }) async {
     try {
       print('Sending GraphQL query: $query');
       print('Variables: $variables');
+      print('Channel Token: $channelToken');
+
+      // Kiểm tra nếu là query lấy booking stats thì gọi API thật
+      if (query.contains('getBookingExpectedRevenue') ||
+          query.contains('GetTotalBooking')) {
+        final response = await _client.post(
+          Uri.parse(ApiEndpoints.graphql),
+          headers: await _getHeaders(channelToken: channelToken),
+          body: json.encode({'query': query, 'variables': variables}),
+        );
+
+        print('Response status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        await _saveCookies(response);
+        return _handleResponse(response);
+      }
+
+      // Giữ lại mock data cho các trường hợp khác
+      if (channelToken == 'demo-channel') {
+        print('Using mock data for demo-channel');
+        return {
+          'data': {
+            // Các mock data khác ở đây
+          },
+        };
+      }
 
       final response = await _client.post(
         Uri.parse(ApiEndpoints.graphql),
-        headers: await _getHeaders(),
+        headers: await _getHeaders(channelToken: channelToken),
         body: json.encode({'query': query, 'variables': variables}),
       );
 
@@ -67,11 +95,21 @@ class ApiClient {
     }
   }
 
-  Future<Map<String, String>> _getHeaders() async {
-    final headers = {
-      'Content-Type': 'application/json',
-      'vendure-token': 'demo-channel',
-    };
+  Future<Map<String, String>> _getHeaders({String? channelToken}) async {
+    final headers = {'Content-Type': 'application/json'};
+
+    // Xử lý channel token
+    if (channelToken != null) {
+      // Nếu là Pikachu Pickleball Xuân Hoà, sử dụng token 'pikachu'
+      if (channelToken == 'Pikachu Pickleball Xuân Hoà') {
+        headers['vendure-token'] = 'pikachu';
+      } else {
+        headers['vendure-token'] = channelToken;
+      }
+    } else {
+      // Mặc định sử dụng 'vendure-token': 'demo-channel' nếu không có token cụ thể
+      headers['vendure-token'] = 'demo-channel';
+    }
 
     if (_authToken != null) {
       headers['Authorization'] = 'Bearer $_authToken';

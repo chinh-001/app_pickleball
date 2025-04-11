@@ -8,7 +8,7 @@ class BookingRepository implements IBookingService {
     : _apiClient = apiClient ?? ApiClient.instance;
 
   @override
-  Future<Map<String, dynamic>> getBookingStats() async {
+  Future<Map<String, dynamic>> getBookingStats({String? channelToken}) async {
     try {
       // Lấy ngày hiện tại
       final now = DateTime.now();
@@ -17,15 +17,18 @@ class BookingRepository implements IBookingService {
           .add(const Duration(days: 1))
           .subtract(const Duration(milliseconds: 1));
 
-      // Format datetime theo định dạng ISO 8601 với 'Z' để chỉ định UTC
-      final startDateStr = startOfDay.toUtc().toIso8601String();
-      final endDateStr = endOfDay.toUtc().toIso8601String();
+      // Chuyển đổi ngày thành định dạng YYYY-MM-DD (chuẩn cho Date)
+      final startDateStr =
+          '${startOfDay.year}-${startOfDay.month.toString().padLeft(2, '0')}-${startOfDay.day.toString().padLeft(2, '0')}';
+      final endDateStr =
+          '${endOfDay.year}-${endOfDay.month.toString().padLeft(2, '0')}-${endOfDay.day.toString().padLeft(2, '0')}';
 
       print('Start date: $startDateStr');
       print('End date: $endDateStr');
+      print('Channel token in repository: $channelToken');
 
       const query = '''
-        query GetBookingStats(\$startDate: DateTime!, \$endDate: DateTime!) {
+        query GetBookingStats(\$startDate: Date!, \$endDate: Date!) {
           getBookingExpectedRevenue(
             options: {
               filter: {
@@ -61,6 +64,7 @@ class BookingRepository implements IBookingService {
       final response = await _apiClient.query(
         query,
         variables: {'startDate': startDateStr, 'endDate': endDateStr},
+        channelToken: channelToken ?? 'demo-channel',
       );
 
       if (response == null) {
@@ -78,7 +82,7 @@ class BookingRepository implements IBookingService {
       final revenueData = data['getBookingExpectedRevenue'];
       final revenue =
           revenueData != null && revenueData is List && revenueData.isNotEmpty
-              ? revenueData[0]['revenue'] ?? 0.0
+              ? _parseDouble(revenueData[0]['revenue'])
               : 0.0;
 
       // Lấy tổng số đơn từ GetTotalBooking
@@ -94,5 +98,21 @@ class BookingRepository implements IBookingService {
       print('Error fetching booking stats: $e');
       return {'totalBookings': 0, 'totalRevenue': 0.0};
     }
+  }
+
+  // Hàm hỗ trợ chuyển đổi giá trị sang double
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      try {
+        return double.parse(value);
+      } catch (e) {
+        print('Error parsing string to double: $value');
+        return 0.0;
+      }
+    }
+    return 0.0;
   }
 }

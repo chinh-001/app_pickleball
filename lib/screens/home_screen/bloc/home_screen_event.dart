@@ -4,9 +4,14 @@ abstract class HomeScreenEvent extends Equatable {
   const HomeScreenEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class FetchOrdersEvent extends HomeScreenEvent {
-  const FetchOrdersEvent();
+  final String? channelToken;
+
+  const FetchOrdersEvent({this.channelToken});
+
+  @override
+  List<Object?> get props => [channelToken];
 }

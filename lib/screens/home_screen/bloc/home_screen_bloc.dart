@@ -20,36 +20,42 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     try {
       emit(HomeScreenLoading());
 
-      final stats = await bookingRepository.getBookingStats();
+      print('Fetching orders with channel token: ${event.channelToken}');
+
+      final stats = await bookingRepository.getBookingStats(
+        channelToken: event.channelToken,
+      );
       final totalOrders = stats['totalBookings'] ?? 0;
       final totalSales = stats['totalRevenue'] ?? 0.0;
 
       print('Total Orders: $totalOrders');
       print('Total Sales: $totalSales');
+      print('Channel token used: ${event.channelToken}');
 
-      final courtItems = [
-        {
-          'id': '1',
-          'name': 'Sân 1',
-          'status': 'có sẵn',
-          'price': '200.000đ/giờ',
-          'star': '3', // Thêm số sao
-        },
-        {
-          'id': '2',
-          'name': 'Sân 2',
-          'status': 'available',
-          'price': '200.000đ/giờ',
-          'star': '5', // Thêm số sao
-        },
-        {
-          'id': '3',
-          'name': 'Sân 3',
-          'status': 'available',
-          'price': '200.000đ/giờ',
-          'star': '4', // Thêm số sao
-        },
-      ].map((item) => Map<String, String>.from(item)).toList();
+      final courtItems =
+          [
+            {
+              'id': '1',
+              'name': 'Sân 1',
+              'status': 'có sẵn',
+              'price': '200.000đ/giờ',
+              'star': '3', // Thêm số sao
+            },
+            {
+              'id': '2',
+              'name': 'Sân 2',
+              'status': 'available',
+              'price': '200.000đ/giờ',
+              'star': '5', // Thêm số sao
+            },
+            {
+              'id': '3',
+              'name': 'Sân 3',
+              'status': 'available',
+              'price': '200.000đ/giờ',
+              'star': '4', // Thêm số sao
+            },
+          ].map((item) => Map<String, String>.from(item)).toList();
 
       emit(
         HomeScreenLoaded(

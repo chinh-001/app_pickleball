@@ -6,6 +6,8 @@ import 'package:app_pickleball/screens/Widgets/custom_Text_tap.dart';
 import 'package:app_pickleball/screens/Widgets/custom_button.dart';
 import 'package:app_pickleball/enum/CallApiStatus.dart';
 import 'package:app_pickleball/services/repositories/auth_repository.dart';
+import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
+import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import '../bloc/login_bloc.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -18,9 +20,22 @@ class LoginScreen extends StatelessWidget {
       child: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state.status == CallApiStatus.success) {
+            // Tạo HomeScreenBloc và chuyển đến HomeScreen
+            final homeBloc = HomeScreenBloc(
+              bookingRepository: BookingRepository(),
+            );
+            // Thêm sự kiện lấy dữ liệu với token mặc định
+            homeBloc.add(FetchOrdersEvent(channelToken: 'demo-channel'));
+
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              MaterialPageRoute(
+                builder:
+                    (context) => BlocProvider.value(
+                      value: homeBloc,
+                      child: const HomeScreen(),
+                    ),
+              ),
             );
           } else if (state.status == CallApiStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(

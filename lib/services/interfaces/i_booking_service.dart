@@ -1,3 +1,3 @@
 abstract class IBookingService {
-  Future<Map<String, dynamic>> getBookingStats();
+  Future<Map<String, dynamic>> getBookingStats({String? channelToken});
 }
