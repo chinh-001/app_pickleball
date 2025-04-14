@@ -1,5 +1,6 @@
 import '../interfaces/i_booking_service.dart';
 import '../api/api_client.dart';
+import 'dart:developer' as log;
 
 class BookingRepository implements IBookingService {
   final ApiClient _apiClient;
@@ -10,6 +11,9 @@ class BookingRepository implements IBookingService {
   @override
   Future<Map<String, dynamic>> getBookingStats({String? channelToken}) async {
     try {
+      log.log('\n===== BOOKING REPOSITORY: getBookingStats =====');
+      log.log('Starting request with channel token: $channelToken');
+
       // Lấy ngày hiện tại
       final now = DateTime.now();
       final startOfDay = DateTime(now.year, now.month, now.day);
@@ -23,9 +27,7 @@ class BookingRepository implements IBookingService {
       final endDateStr =
           '${endOfDay.year}-${endOfDay.month.toString().padLeft(2, '0')}-${endOfDay.day.toString().padLeft(2, '0')}';
 
-      print('Start date: $startDateStr');
-      print('End date: $endDateStr');
-      print('Channel token in repository: $channelToken');
+      log.log('Date range: $startDateStr to $endDateStr');
 
       const query = '''
         query GetBookingStats(\$startDate: Date!, \$endDate: Date!) {
@@ -68,13 +70,13 @@ class BookingRepository implements IBookingService {
       );
 
       if (response == null) {
-        print('Response is null');
+        log.log('Response is null');
         return {'totalBookings': 0, 'totalRevenue': 0.0};
       }
 
       final data = response['data'];
       if (data == null) {
-        print('Data is null');
+        log.log('Data is null');
         return {'totalBookings': 0, 'totalRevenue': 0.0};
       }
 
@@ -90,12 +92,13 @@ class BookingRepository implements IBookingService {
       final totalBookings =
           totalBookingData != null ? totalBookingData['totalItems'] ?? 0 : 0;
 
-      print('Revenue: $revenue');
-      print('Total bookings: $totalBookings');
+      log.log('Result: Revenue = $revenue, Total bookings = $totalBookings');
+      log.log('===== END BOOKING REPOSITORY =====\n');
 
       return {'totalBookings': totalBookings, 'totalRevenue': revenue};
     } catch (e) {
-      print('Error fetching booking stats: $e');
+      log.log('Error fetching booking stats: $e');
+      log.log('===== END BOOKING REPOSITORY WITH ERROR =====\n');
       return {'totalBookings': 0, 'totalRevenue': 0.0};
     }
   }
@@ -109,7 +112,7 @@ class BookingRepository implements IBookingService {
       try {
         return double.parse(value);
       } catch (e) {
-        print('Error parsing string to double: $value');
+        log.log('Error parsing string to double: $value');
         return 0.0;
       }
     }

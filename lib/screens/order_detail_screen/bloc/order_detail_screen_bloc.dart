@@ -3,6 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:developer' as log;
 part 'order_detail_screen_event.dart';
 part 'order_detail_screen_state.dart';
 
@@ -51,7 +52,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     Emitter<OrderDetailState> emit,
   ) {
     // TODO: Implement submit logic
-    print(
+    log.log(
       'Submitting order details: ${event.customerName}, ${event.courtName}, ${event.time}, ${event.status}, ${event.paymentStatus}, ${event.note}',
     );
   }
@@ -70,7 +71,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         emit(ImagePickedState(File(pickedFile.path)));
       }
     } catch (e) {
-      print('Lỗi khi chọn ảnh: $e');
+      log.log('Lỗi khi chọn ảnh: $e');
     }
   }
 }

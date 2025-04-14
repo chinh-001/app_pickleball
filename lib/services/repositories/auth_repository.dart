@@ -1,5 +1,6 @@
 import '../interfaces/i_auth_service.dart';
 import '../api/api_client.dart';
+import 'dart:developer' as log;
 
 class AuthRepository implements IAuthService {
   final ApiClient _apiClient;
@@ -16,25 +17,25 @@ class AuthRepository implements IAuthService {
       );
 
       if (response == null) {
-        print('Login response is null');
+        log.log('Login response is null');
         return false;
       }
 
       final data = response['data'];
       if (data == null) {
-        print('Login data is null');
+        log.log('Login data is null');
         return false;
       }
 
       final loginData = data['login'];
       if (loginData == null) {
-        print('Login result is null');
+        log.log('Login result is null');
         return false;
       }
 
       return loginData['id'] != null;
     } catch (e) {
-      print('Login error: $e');
+      log.log('Login error: $e');
       return false;
     }
   }
@@ -45,7 +46,7 @@ class AuthRepository implements IAuthService {
       await _apiClient.clearAuth();
       return true;
     } catch (e) {
-      print('Logout error: $e');
+      log.log('Logout error: $e');
       return false;
     }
   }

@@ -7,6 +7,7 @@ import 'package:app_pickleball/screens/Widgets/custom_list_view.dart';
 import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart'; // Import CustomDropdown
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
+import 'dart:developer' as log;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -114,6 +115,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       selectedValue: selectedChannel,
                       onChanged: (String? newValue) {
                         if (newValue != null) {
+                          log.log('\n+++++ HOME SCREEN: CHANNEL CHANGED +++++');
+                          log.log(
+                            'Channel changed from "$selectedChannel" to "$newValue"',
+                          );
+
                           setState(() {
                             selectedChannel = newValue;
                           });
@@ -129,12 +135,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             channelToken = 'demo-channel'; // Mặc định
                           }
 
-                          print('Selected channel: $newValue');
-                          print('Using channel token: $channelToken');
+                          log.log('Selected channel: $newValue');
+                          log.log('Using channel token: $channelToken');
+                          log.log('Sending FetchOrdersEvent to HomeScreenBloc');
 
                           // Kích hoạt sự kiện để lấy dữ liệu mới với token đã chọn
                           context.read<HomeScreenBloc>().add(
                             FetchOrdersEvent(channelToken: channelToken),
+                          );
+
+                          log.log(
+                            '+++++ END HOME SCREEN CHANNEL CHANGE +++++\n',
                           );
                         }
                       },
@@ -146,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Khối thông tin
               BlocBuilder<HomeScreenBloc, HomeScreenState>(
                 builder: (context, state) {
-                  print('Current state: $state');
+                  log.log('Current state: $state');
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Container(

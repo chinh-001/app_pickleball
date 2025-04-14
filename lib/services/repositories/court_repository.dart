@@ -1,5 +1,6 @@
 import '../interfaces/i_court_service.dart';
 import '../api/api_client.dart';
+import 'dart:developer' as log;
 
 class CourtRepository implements ICourtService {
   final ApiClient _apiClient;
@@ -26,30 +27,30 @@ class CourtRepository implements ICourtService {
 
       final response = await _apiClient.query(query);
       if (response == null) {
-        print('Courts response is null');
+        log.log('Courts response is null');
         return [];
       }
 
       final data = response['data'];
       if (data == null) {
-        print('Courts data is null');
+        log.log('Courts data is null');
         return [];
       }
 
       final courts = data['courts'];
       if (courts == null) {
-        print('Courts object is null');
+        log.log('Courts object is null');
         return [];
       }
 
       final items = courts['items'];
       if (items == null) {
-        print('Courts items is null');
+        log.log('Courts items is null');
         return [];
       }
 
       if (items is! List) {
-        print('Courts items is not a List');
+        log.log('Courts items is not a List');
         return [];
       }
 
@@ -58,7 +59,7 @@ class CourtRepository implements ICourtService {
         return Map<String, dynamic>.from(court);
       }).toList();
     } catch (e) {
-      print('Cannot fetch courts: $e');
+      log.log('Cannot fetch courts: $e');
       return [];
     }
   }
@@ -80,25 +81,25 @@ class CourtRepository implements ICourtService {
 
       final response = await _apiClient.query(query, variables: {'id': id});
       if (response == null) {
-        print('Court response is null');
+        log.log('Court response is null');
         return {};
       }
 
       final data = response['data'];
       if (data == null) {
-        print('Court data is null');
+        log.log('Court data is null');
         return {};
       }
 
       final court = data['court'];
       if (court == null) {
-        print('Court object is null');
+        log.log('Court object is null');
         return {};
       }
 
       return Map<String, dynamic>.from(court);
     } catch (e) {
-      print('Cannot fetch court: $e');
+      log.log('Cannot fetch court: $e');
       return {};
     }
   }
@@ -120,25 +121,25 @@ class CourtRepository implements ICourtService {
       );
 
       if (response == null) {
-        print('Booking response is null');
+        log.log('Booking response is null');
         return false;
       }
 
       final data = response['data'];
       if (data == null) {
-        print('Booking data is null');
+        log.log('Booking data is null');
         return false;
       }
 
       final bookCourt = data['bookCourt'];
       if (bookCourt == null) {
-        print('Booking result is null');
+        log.log('Booking result is null');
         return false;
       }
 
       return bookCourt['id'] != null;
     } catch (e) {
-      print('Cannot book court: $e');
+      log.log('Cannot book court: $e');
       return false;
     }
   }

@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:developer' as log;
 import 'api_endpoints.dart';
 import 'api_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,7 +39,7 @@ class ApiClient {
         );
       }
     } catch (e) {
-      print('Error initializing ApiClient: $e');
+      log.log('Error initializing ApiClient: $e');
     }
   }
 
@@ -48,21 +49,34 @@ class ApiClient {
     String? channelToken,
   }) async {
     try {
-      print('Sending GraphQL query: $query');
-      print('Variables: $variables');
-      print('Channel Token: $channelToken');
+      log.log('\n=== API REQUEST ===');
+      log.log('GraphQL Endpoint: ${ApiEndpoints.graphql}');
+      log.log('GraphQL Query: $query');
+      log.log('Variables: $variables');
+      log.log('Channel Token: $channelToken');
+
+      // Tạo body request để in ra
+      final requestBody = json.encode({'query': query, 'variables': variables});
+      log.log('Request Body: $requestBody');
 
       // Kiểm tra nếu là query lấy booking stats thì gọi API thật
       if (query.contains('getBookingExpectedRevenue') ||
           query.contains('GetTotalBooking')) {
+        // Lấy headers
+        final headers = await _getHeaders(channelToken: channelToken);
+        log.log('Request Headers: $headers');
+
         final response = await _client.post(
           Uri.parse(ApiEndpoints.graphql),
-          headers: await _getHeaders(channelToken: channelToken),
-          body: json.encode({'query': query, 'variables': variables}),
+          headers: headers,
+          body: requestBody,
         );
 
-        print('Response status code: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        log.log('\n=== API RESPONSE ===');
+        log.log('Response Status Code: ${response.statusCode}');
+        log.log('Response Headers: ${response.headers}');
+        log.log('Response Body: ${response.body}');
+        log.log('==============================\n');
 
         await _saveCookies(response);
         return _handleResponse(response);
@@ -70,7 +84,7 @@ class ApiClient {
 
       // Giữ lại mock data cho các trường hợp khác
       if (channelToken == 'demo-channel') {
-        print('Using mock data for demo-channel');
+        log.log('Using mock data for demo-channel');
         return {
           'data': {
             // Các mock data khác ở đây
@@ -78,19 +92,28 @@ class ApiClient {
         };
       }
 
+      // Lấy headers
+      final headers = await _getHeaders(channelToken: channelToken);
+      log.log('Request Headers: $headers');
+
       final response = await _client.post(
         Uri.parse(ApiEndpoints.graphql),
-        headers: await _getHeaders(channelToken: channelToken),
-        body: json.encode({'query': query, 'variables': variables}),
+        headers: headers,
+        body: requestBody,
       );
 
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      log.log('\n=== API RESPONSE ===');
+      log.log('Response Status Code: ${response.statusCode}');
+      log.log('Response Headers: ${response.headers}');
+      log.log('Response Body: ${response.body}');
+      log.log('==============================\n');
 
       await _saveCookies(response);
       return _handleResponse(response);
     } catch (e) {
-      print('API Error: $e');
+      log.log('\n=== API ERROR ===');
+      log.log('Error details: $e');
+      log.log('==============================\n');
       return null;
     }
   }
@@ -100,16 +123,13 @@ class ApiClient {
 
     // Xử lý channel token
     if (channelToken != null) {
-      // Nếu là Pikachu Pickleball Xuân Hoà, sử dụng token 'pikachu'
-      if (channelToken == 'Pikachu Pickleball Xuân Hoà') {
-        headers['vendure-token'] = 'pikachu';
-      } else {
-        headers['vendure-token'] = channelToken;
-      }
+      headers['vendure-token'] = channelToken;
     } else {
       // Mặc định sử dụng 'vendure-token': 'demo-channel' nếu không có token cụ thể
       headers['vendure-token'] = 'demo-channel';
     }
+
+    log.log('Using vendure-token: ${headers['vendure-token']}');
 
     if (_authToken != null) {
       headers['Authorization'] = 'Bearer $_authToken';
@@ -123,7 +143,7 @@ class ApiClient {
       headers['Cookie'] = cookies.map((c) => '${c.name}=${c.value}').join('; ');
     }
 
-    print('Request headers: $headers');
+    log.log('Request headers: $headers');
     return headers;
   }
 
@@ -148,26 +168,27 @@ class ApiClient {
         );
       }
     } catch (e) {
-      print('Error saving cookies: $e');
+      log.log('Error saving cookies: $e');
     }
   }
 
   Map<String, dynamic>? _handleResponse(http.Response response) {
     try {
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final data = json.decode(response.body);
-        if (data is Map<String, dynamic>) {
-          if (data.containsKey('errors')) {
-            print('GraphQL Errors: ${data['errors']}');
-            return null;
-          }
+      final data = json.decode(response.body);
+      if (data is Map<String, dynamic>) {
+        if (data.containsKey('errors')) {
+          // Vẫn trả về data ngay cả khi có lỗi, để lớp cao hơn có thể xử lý dữ liệu một phần
+          log.log('GraphQL Errors: ${data['errors']}');
+          return data;
+        }
+        if (response.statusCode >= 200 && response.statusCode < 300) {
           return data;
         }
       }
-      print('Invalid response: ${response.statusCode} - ${response.body}');
+      log.log('Invalid response: ${response.statusCode} - ${response.body}');
       return null;
     } catch (e) {
-      print('Error handling response: $e');
+      log.log('Error handling response: $e');
       return null;
     }
   }
@@ -182,7 +203,7 @@ class ApiClient {
       await prefs.remove('auth_token');
       await prefs.remove('cookies');
     } catch (e) {
-      print('Error clearing auth: $e');
+      log.log('Error clearing auth: $e');
     }
   }
 }
