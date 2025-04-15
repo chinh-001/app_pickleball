@@ -8,10 +8,40 @@ part 'home_screen_state.dart';
 
 class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
   final BookingRepository bookingRepository;
+  final List<String> channels = [
+    'Default channel',
+    'Pikachu Pickleball Xuân Hoà',
+    'Demo-channel',
+    'Stamina 106 Hoàng Quốc Việt',
+    'TADA Sport CN1 - Thanh Đa',
+    'TADA Sport CN2 - Bình Lợi',
+    'TADA Sport CN3 - D2(Ung Văn Khiêm)',
+  ];
 
   HomeScreenBloc({required this.bookingRepository})
     : super(HomeScreenInitial()) {
     on<FetchOrdersEvent>(_onFetchOrders);
+    on<ChangeChannelEvent>(_onChangeChannel);
+  }
+
+  void _onChangeChannel(
+    ChangeChannelEvent event,
+    Emitter<HomeScreenState> emit,
+  ) {
+    log.log('\n***** HOME SCREEN BLOC: _onChangeChannel *****');
+    log.log('Changing channel to: ${event.channelName}');
+
+    emit(
+      HomeScreenLoading(
+        selectedChannel: event.channelName,
+        availableChannels: channels,
+      ),
+    );
+
+    final channelToken = bookingRepository.getChannelToken(event.channelName);
+    add(FetchOrdersEvent(channelToken: channelToken));
+
+    log.log('***** END HOME SCREEN BLOC: _onChangeChannel *****\n');
   }
 
   Future<void> _onFetchOrders(
@@ -25,7 +55,12 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
       );
       log.log('Current state: ${state.runtimeType}');
 
-      emit(HomeScreenLoading());
+      emit(
+        HomeScreenLoading(
+          selectedChannel: state.selectedChannel,
+          availableChannels: channels,
+        ),
+      );
       log.log('Emitted: HomeScreenLoading');
 
       log.log(
@@ -42,35 +77,16 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
         'Stats received: totalOrders=$totalOrders, totalSales=$totalSales',
       );
 
-      final courtItems =
-          [
-            {
-              'id': '1',
-              'name': 'Sân 1',
-              'status': 'có sẵn',
-              'price': '200.000đ/giờ',
-              'star': '3', // Thêm số sao
-            },
-            {
-              'id': '2',
-              'name': 'Sân 2',
-              'status': 'available',
-              'price': '200.000đ/giờ',
-              'star': '5', // Thêm số sao
-            },
-            {
-              'id': '3',
-              'name': 'Sân 3',
-              'status': 'available',
-              'price': '200.000đ/giờ',
-              'star': '4', // Thêm số sao
-            },
-          ].map((item) => Map<String, String>.from(item)).toList();
+      final courtItems = await bookingRepository.getCourtItems(
+        channelToken: event.channelToken,
+      );
 
       final newState = HomeScreenLoaded(
         items: courtItems,
         totalOrders: totalOrders,
         totalSales: totalSales,
+        selectedChannel: state.selectedChannel,
+        availableChannels: channels,
       );
 
       log.log(
@@ -81,7 +97,13 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     } catch (e) {
       log.log('Error in _onFetchOrders: $e');
       log.log('Emitting: HomeScreenError');
-      emit(HomeScreenError('Failed to fetch orders'));
+      emit(
+        HomeScreenError(
+          message: 'Failed to fetch orders',
+          selectedChannel: state.selectedChannel,
+          availableChannels: channels,
+        ),
+      );
       log.log('***** END HOME SCREEN BLOC WITH ERROR *****\n');
     }
   }

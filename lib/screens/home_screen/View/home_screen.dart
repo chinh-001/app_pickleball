@@ -4,7 +4,7 @@ import 'package:app_pickleball/screens/Widgets/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/Widgets/custom_bottom_navigation_bar.dart';
 import 'package:app_pickleball/screens/Widgets/custom_floating_action_button.dart';
 import 'package:app_pickleball/screens/Widgets/custom_list_view.dart';
-import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart'; // Import CustomDropdown
+import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import 'dart:developer' as log;
@@ -17,17 +17,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String selectedChannel = 'Default channel'; // Giá trị mặc định
-  final List<String> channels = [
-    'Default channel',
-    'Pikachu Pickleball Xuân Hoà',
-    'Demo-channel',
-    'Stamina 106 Hoàng Quốc Việt',
-    'TADA Sport CN1 - Thanh Đa',
-    'TADA Sport CN2 - Bình Lợi',
-    'TADA Sport CN3 - D2(Ung Văn Khiêm)',
-  ];
-
   late HomeScreenBloc _homeBloc;
 
   @override
@@ -51,7 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              // Logo, Icon Bell và Thanh tìm kiếm
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16.0,
@@ -60,36 +48,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Logo
                     Image.asset(
                       'assets/images/logo_app_tach_nen.png',
                       height: 60,
                       width: 60,
                     ),
-                    // Thanh tìm kiếm
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: CustomSearchTextField(
                           hintText: 'Tìm kiếm',
-                          prefixIcon: const Icon(
-                            Icons.search,
-                          ), // Thêm tham số prefixIcon
-                          height: 45, // Thêm chiều cao
-                          width: double.infinity, // Thêm chiều rộng
-                          margin: const EdgeInsets.fromLTRB(
-                            5,
-                            5,
-                            5,
-                            0,
-                          ), // Thêm margin
+                          prefixIcon: const Icon(Icons.search),
+                          height: 45,
+                          width: double.infinity,
+                          margin: const EdgeInsets.fromLTRB(5, 5, 5, 0),
                           onChanged: (query) {
                             // Xử lý tìm kiếm
                           },
                         ),
                       ),
                     ),
-                    // Icon Bell
                     IconButton(
                       icon: const Icon(
                         Icons.notifications,
@@ -104,44 +82,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              // CustomDropdown
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: BlocBuilder<HomeScreenBloc, HomeScreenState>(
                   builder: (context, state) {
                     return CustomDropdown(
                       title: 'Chọn kênh :',
-                      options: channels,
-                      selectedValue: selectedChannel,
+                      options: state.availableChannels,
+                      selectedValue: state.selectedChannel,
                       onChanged: (String? newValue) {
                         if (newValue != null) {
                           log.log('\n+++++ HOME SCREEN: CHANNEL CHANGED +++++');
                           log.log(
-                            'Channel changed from "$selectedChannel" to "$newValue"',
+                            'Channel changed from "${state.selectedChannel}" to "$newValue"',
                           );
 
-                          setState(() {
-                            selectedChannel = newValue;
-                          });
-
-                          // Xác định giá trị token dựa trên kênh đã chọn
-                          String channelToken;
-                          if (newValue == 'Demo-channel') {
-                            channelToken = 'demo-channel';
-                          } else if (newValue ==
-                              'Pikachu Pickleball Xuân Hoà') {
-                            channelToken = 'pikachu';
-                          } else {
-                            channelToken = 'demo-channel'; // Mặc định
-                          }
-
-                          log.log('Selected channel: $newValue');
-                          log.log('Using channel token: $channelToken');
-                          log.log('Sending FetchOrdersEvent to HomeScreenBloc');
-
-                          // Kích hoạt sự kiện để lấy dữ liệu mới với token đã chọn
                           context.read<HomeScreenBloc>().add(
-                            FetchOrdersEvent(channelToken: channelToken),
+                            ChangeChannelEvent(channelName: newValue),
                           );
 
                           log.log(
@@ -154,7 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Khối thông tin
               BlocBuilder<HomeScreenBloc, HomeScreenState>(
                 builder: (context, state) {
                   log.log('Current state: $state');
@@ -239,7 +195,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               const SizedBox(height: 20),
-              // Tiêu đề danh sách sân
               Container(
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -249,7 +204,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              // Danh sách sân
               Expanded(
                 child: BlocBuilder<HomeScreenBloc, HomeScreenState>(
                   builder: (context, state) {

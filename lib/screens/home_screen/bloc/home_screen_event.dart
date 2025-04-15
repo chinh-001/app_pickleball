@@ -15,3 +15,12 @@ class FetchOrdersEvent extends HomeScreenEvent {
   @override
   List<Object?> get props => [channelToken];
 }
+
+class ChangeChannelEvent extends HomeScreenEvent {
+  final String channelName;
+
+  const ChangeChannelEvent({required this.channelName});
+
+  @override
+  List<Object?> get props => [channelName];
+}

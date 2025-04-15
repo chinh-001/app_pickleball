@@ -8,6 +8,64 @@ class BookingRepository implements IBookingService {
   BookingRepository({ApiClient? apiClient})
     : _apiClient = apiClient ?? ApiClient.instance;
 
+  String getChannelToken(String channelName) {
+    if (channelName == 'Demo-channel') {
+      return 'demo-channel';
+    } else if (channelName == 'Pikachu Pickleball Xuân Hoà') {
+      return 'pikachu';
+    }
+    return 'demo-channel';
+  }
+
+  Future<List<Map<String, dynamic>>> getCourtItems({
+    String? channelToken,
+  }) async {
+    try {
+      log.log('\n===== BOOKING REPOSITORY: getCourtItems =====');
+
+      const query = '''
+        query GetCourts {
+          GetCourts {
+            id
+            name
+            status
+            price
+            star
+          }
+        }
+      ''';
+
+      final response = await _apiClient.query(
+        query,
+        channelToken: channelToken ?? 'demo-channel',
+      );
+
+      if (response == null || response['data'] == null) {
+        return [];
+      }
+
+      final courts = response['data']['GetCourts'] as List?;
+      if (courts == null) {
+        return [];
+      }
+
+      return courts
+          .map(
+            (court) => {
+              'id': court['id'].toString(),
+              'name': court['name'] ?? 'Unknown Court',
+              'status': court['status'] ?? 'available',
+              'price': '${court['price'] ?? '0'}đ/giờ',
+              'star': court['star']?.toString() ?? '0',
+            },
+          )
+          .toList();
+    } catch (e) {
+      log.log('Error fetching court items: $e');
+      return [];
+    }
+  }
+
   @override
   Future<Map<String, dynamic>> getBookingStats({String? channelToken}) async {
     try {

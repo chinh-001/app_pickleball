@@ -1,15 +1,31 @@
 part of 'home_screen_bloc.dart';
 
 abstract class HomeScreenState extends Equatable {
-  const HomeScreenState();
+  final String selectedChannel;
+  final List<String> availableChannels;
+
+  const HomeScreenState({
+    this.selectedChannel = 'Default channel',
+    this.availableChannels = const [],
+  });
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [selectedChannel, availableChannels];
 }
 
-class HomeScreenInitial extends HomeScreenState {}
+class HomeScreenInitial extends HomeScreenState {
+  const HomeScreenInitial() : super();
+}
 
-class HomeScreenLoading extends HomeScreenState {}
+class HomeScreenLoading extends HomeScreenState {
+  const HomeScreenLoading({
+    required String selectedChannel,
+    required List<String> availableChannels,
+  }) : super(
+         selectedChannel: selectedChannel,
+         availableChannels: availableChannels,
+       );
+}
 
 class HomeScreenLoaded extends HomeScreenState {
   final int totalOrders;
@@ -20,17 +36,35 @@ class HomeScreenLoaded extends HomeScreenState {
     required this.totalOrders,
     required this.totalSales,
     required this.items,
-  });
+    required String selectedChannel,
+    required List<String> availableChannels,
+  }) : super(
+         selectedChannel: selectedChannel,
+         availableChannels: availableChannels,
+       );
 
   @override
-  List<Object> get props => [totalOrders, totalSales, items];
+  List<Object> get props => [
+    totalOrders,
+    totalSales,
+    items,
+    selectedChannel,
+    availableChannels,
+  ];
 }
 
 class HomeScreenError extends HomeScreenState {
   final String message;
 
-  const HomeScreenError(this.message);
+  const HomeScreenError({
+    required this.message,
+    required String selectedChannel,
+    required List<String> availableChannels,
+  }) : super(
+         selectedChannel: selectedChannel,
+         availableChannels: availableChannels,
+       );
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => [message, selectedChannel, availableChannels];
 }
