@@ -18,6 +18,31 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     'TADA Sport CN3 - D2(Ung Văn Khiêm)',
   ];
 
+  // Mock data for courts
+  final List<Map<String, dynamic>> mockCourts = [
+    {
+      'id': '1',
+      'name': 'Sân 1',
+      'status': 'available',
+      'price': 100000,
+      'star': 4.5,
+    },
+    {
+      'id': '2',
+      'name': 'Sân 2',
+      'status': 'available',
+      'price': 120000,
+      'star': 4.8,
+    },
+    {
+      'id': '3',
+      'name': 'Sân 3',
+      'status': 'booked',
+      'price': 150000,
+      'star': 5.0,
+    },
+  ];
+
   HomeScreenBloc({required this.bookingRepository})
     : super(HomeScreenInitial()) {
     on<FetchOrdersEvent>(_onFetchOrders);
@@ -77,9 +102,8 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
         'Stats received: totalOrders=$totalOrders, totalSales=$totalSales',
       );
 
-      final courtItems = await bookingRepository.getCourtItems(
-        channelToken: event.channelToken,
-      );
+      // Use mock data instead of API call
+      final courtItems = mockCourts;
 
       final newState = HomeScreenLoaded(
         items: courtItems,

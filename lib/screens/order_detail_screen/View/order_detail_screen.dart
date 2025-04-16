@@ -184,6 +184,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             return CustomDropdown(
                               title: 'Trạng thái',
                               options: statusOptions,
+                              dropdownHeight: 40,
+                              dropdownWidth: 400,
                               selectedValue: selectedStatus,
                               onChanged: (String? newValue) {
                                 if (newValue != null) {
@@ -203,6 +205,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             return CustomDropdown(
                               title: 'Trạng thái thanh toán',
                               options: paymentStatusOptions,
+                              dropdownHeight: 40,
+                              dropdownWidth: 400,
                               selectedValue: selectedPaymentStatus,
                               onChanged: (String? newValue) {
                                 if (newValue != null) {

@@ -7,6 +7,7 @@ import 'package:app_pickleball/screens/Widgets/custom_list_view.dart';
 import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
+import 'package:app_pickleball/utils/number_format.dart';
 import 'dart:developer' as log;
 
 class HomeScreen extends StatefulWidget {
@@ -16,24 +17,29 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  late HomeScreenBloc _homeBloc;
+class _HomeScreenState extends State<HomeScreen>
+    with AutomaticKeepAliveClientMixin {
+  static HomeScreenBloc? _cachedBloc;
 
-  @override
-  void initState() {
-    super.initState();
-    _homeBloc = HomeScreenBloc(bookingRepository: BookingRepository());
-    _homeBloc.add(FetchOrdersEvent(channelToken: 'demo-channel'));
+  HomeScreenBloc get _homeBloc {
+    _cachedBloc ??= HomeScreenBloc(bookingRepository: BookingRepository())
+      ..add(const FetchOrdersEvent(channelToken: 'demo-channel'));
+    return _cachedBloc!;
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void dispose() {
-    _homeBloc.close();
+    // Don't close the bloc here as it's cached
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required by AutomaticKeepAliveClientMixin
+
     return BlocProvider.value(
       value: _homeBloc,
       child: Scaffold(
@@ -89,6 +95,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     return CustomDropdown(
                       title: 'Chọn kênh :',
                       options: state.availableChannels,
+                      dropdownHeight: 40,
+                      dropdownWidth: 400,
                       selectedValue: state.selectedChannel,
                       onChanged: (String? newValue) {
                         if (newValue != null) {
@@ -97,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Channel changed from "${state.selectedChannel}" to "$newValue"',
                           );
 
-                          context.read<HomeScreenBloc>().add(
+                          _homeBloc.add(
                             ChangeChannelEvent(channelName: newValue),
                           );
 
@@ -162,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Doanh số kì vọng: ${state is HomeScreenLoaded ? state.totalSales.toStringAsFixed(0) : 0} VNĐ',
+                                    'Doanh số kì vọng: ${state is HomeScreenLoaded ? state.totalSales.toInt().toCommaSeparated() : 0} VNĐ',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -212,9 +220,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     } else if (state is HomeScreenLoaded) {
                       return CustomListView(
                         items:
-                            state.items
-                                .map((item) => Map<String, String>.from(item))
-                                .toList(),
+                            state.items.map((item) {
+                              return {
+                                'id': item['id'].toString(),
+                                'name': item['name'].toString(),
+                                'status': item['status'].toString(),
+                                'price': item['price'].toString(),
+                                'star': item['star'].toString(),
+                              };
+                            }).toList(),
                       );
                     } else if (state is HomeScreenError) {
                       return Center(child: Text(state.message));

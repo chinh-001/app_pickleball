@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/Widgets/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/Widgets/custom_bottom_navigation_bar.dart';
 import 'package:app_pickleball/screens/Widgets/custom_order_listview.dart';
+import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/orderlist_screen/bloc/orderlist_screen_bloc.dart';
 import 'package:app_pickleball/screens/order_detail_screen/View/order_detail_screen.dart';
 
@@ -15,6 +16,17 @@ class OrderListScreen extends StatefulWidget {
 }
 
 class _OrderListScreenState extends State<OrderListScreen> {
+  final List<String> channelOptions = [
+    'Default channel',
+    'Pikachu Pickleball Xuân Hoà',
+    'Demo-channel',
+    'Stamina 106 Hoàng Quốc Việt',
+    'TADA Sport CN1 - Thanh Đa',
+    'TADA Sport CN2 - Bình Lợi',
+    'TADA Sport CN3 - D2(Ung Văn Khiêm)',
+  ];
+  String selectedChannel = 'Default channel';
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -49,13 +61,51 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               Container(
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: const Text(
                   "Danh sách đặt sân:",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        "Chọn kênh:",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: CustomDropdown(
+                        titleFontSize: 12,
+                        itemFontSize: 12,
+                        title: '',
+                        options: channelOptions,
+                        selectedValue: selectedChannel,
+                        dropdownHeight: 40,
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              selectedChannel = newValue;
+                            });
+                          }
+                        },
+                        dropdownWidth: 250,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -66,8 +116,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is OrderListLoaded) {
                       return CustomOrderListView(
-                        items:
-                            state.items, // Truyền dữ liệu bao gồm trường "type"
+                        items: state.items,
                         onItemTap: (item) {
                           Navigator.push(
                             context,

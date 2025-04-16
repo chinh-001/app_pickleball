@@ -6,8 +6,6 @@ import 'package:app_pickleball/screens/Widgets/custom_Text_tap.dart';
 import 'package:app_pickleball/screens/Widgets/custom_button.dart';
 import 'package:app_pickleball/enum/CallApiStatus.dart';
 import 'package:app_pickleball/services/repositories/auth_repository.dart';
-import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
-import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import '../bloc/login_bloc.dart';
 
 class LoginScreen extends StatelessWidget {
