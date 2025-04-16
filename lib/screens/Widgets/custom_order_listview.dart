@@ -26,7 +26,7 @@ class CustomOrderListView extends StatelessWidget {
             }
           },
           child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: Colors.blueGrey[50],
@@ -34,57 +34,39 @@ class CustomOrderListView extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4), // Bo tròn ảnh
-                      child: Image.asset(
-                        'assets/images/grass_bg.png', // Đường dẫn tới hình ảnh
-                        width: 60,
-                        height: 80,
-                        fit: BoxFit.cover,
+                    Text(
+                      items[index]['customerName']!,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          items[index]['customerName']!, // Tên khách
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          items[index]['courtName']!, // Tên sân
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          items[index]['time']!, // Thời gian đặt sân
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          items[index]['status']!, // Trạng thái đặt sân
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      items[index]['courtName']!,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      items[index]['time']!,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      items[index]['status']!,
+                      style: const TextStyle(color: Colors.black, fontSize: 14),
                     ),
                   ],
                 ),
-                // Text "Loại lẻ" hoặc "Định kỳ" ở góc trên cùng bên phải
                 Positioned(
                   top: 0,
                   right: 0,
@@ -110,12 +92,11 @@ class CustomOrderListView extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Trạng thái thanh toán ở góc dưới cùng bên phải
                 Positioned(
                   bottom: 0,
                   right: 0,
                   child: Text(
-                    items[index]['paymentStatus']!, // Trạng thái thanh toán
+                    items[index]['paymentStatus']!,
                     style: TextStyle(
                       color:
                           items[index]['paymentStatus'] == 'Đã thanh toán'

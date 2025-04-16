@@ -14,6 +14,17 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  static const List<String> typeOptions = ['Loại lẻ', 'Định kỳ'];
+  static const List<String> statusOptions = [
+    'Đã xác nhận',
+    'Đang chờ',
+    'Đã hủy',
+  ];
+  static const List<String> paymentStatusOptions = [
+    'Đã thanh toán',
+    'Chưa thanh toán',
+  ];
+
   late String selectedStatus;
   late String selectedPaymentStatus;
   late String selectedTime;
@@ -23,10 +34,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   void initState() {
     super.initState();
-    selectedStatus = widget.item['status']!;
-    selectedPaymentStatus = widget.item['paymentStatus']!;
-    selectedTime = widget.item['time']!;
-    selectedType = widget.item['type'] ?? 'Loại lẻ';
+    // Đảm bảo các giá trị khởi tạo nằm trong danh sách options
+    selectedType =
+        typeOptions.contains(widget.item['type'])
+            ? widget.item['type']!
+            : typeOptions.first;
+    selectedStatus =
+        statusOptions.contains(widget.item['status'])
+            ? widget.item['status']!
+            : statusOptions.first;
+    selectedPaymentStatus =
+        paymentStatusOptions.contains(widget.item['paymentStatus'])
+            ? widget.item['paymentStatus']!
+            : paymentStatusOptions.first;
+    selectedTime = widget.item['time'] ?? '';
     noteController.text = widget.item['note'] ?? '';
   }
 
@@ -86,78 +107,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Ảnh
-                        Center(
-                          child: Stack(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  context.read<OrderDetailBloc>().add(
-                                    PickImageEvent(),
-                                  );
-                                },
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  child: BlocBuilder<
-                                    OrderDetailBloc,
-                                    OrderDetailState
-                                  >(
-                                    builder: (context, state) {
-                                      if (state is ImagePickedState) {
-                                        return Image.file(
-                                          state.image,
-                                          width: 200,
-                                          height: 200,
-                                          fit: BoxFit.cover,
-                                        );
-                                      }
-                                      return Image.asset(
-                                        'assets/images/grass_bg.png',
-                                        width: 200,
-                                        height: 200,
-                                        fit: BoxFit.cover,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                              // Loại đặt sân
-                              Positioned(
-                                top: 10,
-                                right: 10,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
-                                    horizontal: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        selectedType == 'Định kỳ'
-                                            ? Colors.green
-                                            : Colors.orange,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    selectedType,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
                         // Loại đặt sân dropdown
                         BlocBuilder<OrderDetailBloc, OrderDetailState>(
                           builder: (context, state) {
                             return CustomDropdown(
                               title: 'Loại đặt sân',
-                              options: ['Loại lẻ', 'Định kỳ'],
+                              options: typeOptions,
                               selectedValue: selectedType,
                               onChanged: (String? newValue) {
                                 if (newValue != null) {
@@ -204,20 +159,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
+                                vertical: 10,
                                 horizontal: 16,
-                                vertical: 12,
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.green,
-                                borderRadius: BorderRadius.circular(8.0),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Text(
-                                "Chọn thời gian",
-                                textAlign: TextAlign.center,
+                                'Chọn thời gian',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -225,12 +178,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Trạng thái đặt
+                        // Trạng thái
                         BlocBuilder<OrderDetailBloc, OrderDetailState>(
                           builder: (context, state) {
                             return CustomDropdown(
-                              title: 'Trạng thái đặt',
-                              options: ['Đã đặt', 'Chưa đặt'],
+                              title: 'Trạng thái',
+                              options: statusOptions,
                               selectedValue: selectedStatus,
                               onChanged: (String? newValue) {
                                 if (newValue != null) {
@@ -249,7 +202,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           builder: (context, state) {
                             return CustomDropdown(
                               title: 'Trạng thái thanh toán',
-                              options: ['Đã thanh toán', 'Chưa thanh toán'],
+                              options: paymentStatusOptions,
                               selectedValue: selectedPaymentStatus,
                               onChanged: (String? newValue) {
                                 if (newValue != null) {
@@ -271,14 +224,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 5),
+                        const SizedBox(height: 10),
                         TextField(
                           controller: noteController,
                           maxLines: 3,
                           decoration: InputDecoration(
                             hintText: 'Nhập ghi chú...',
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
                         ),
@@ -332,7 +285,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Widget buildInfoField(
-    String title,
+    String label,
     TextEditingController controller, {
     bool readOnly = false,
   }) {
@@ -340,28 +293,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
+          label,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 5),
-        readOnly
-            ? TextField(
-              controller: controller,
-              readOnly: true,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-              ),
-            )
-            : CustomSearchTextField(
-              controller: controller,
-              height: 50,
-              width: double.infinity,
-              margin: EdgeInsets.zero,
-              hintText: '',
-              prefixIcon: null,
-            ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: controller,
+          readOnly: readOnly,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
       ],
     );
   }
