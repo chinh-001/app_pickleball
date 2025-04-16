@@ -57,21 +57,30 @@ class OrderListBloc extends Bloc<OrderListEvent, OrderListState> {
     }
   }
 
- void _onSearchOrderList(
-  SearchOrderListEvent event,
-  Emitter<OrderListState> emit,
-) {
-  emit(OrderListLoading());
-  try {
-    final filteredItems = _allItems
-        .where((item) =>
-            item["customerName"]!.toLowerCase().contains(event.query.toLowerCase()) ||
-            item["courtName"]!.toLowerCase().contains(event.query.toLowerCase()) ||
-            item["type"]!.toLowerCase().contains(event.query.toLowerCase())) // Thêm tìm kiếm theo "type"
-        .toList();
-    emit(OrderListLoaded(filteredItems));
-  } catch (e) {
-    emit(OrderListError('Lỗi khi tìm kiếm: $e'));
+  void _onSearchOrderList(
+    SearchOrderListEvent event,
+    Emitter<OrderListState> emit,
+  ) {
+    emit(OrderListLoading());
+    try {
+      final filteredItems =
+          _allItems
+              .where(
+                (item) =>
+                    item["customerName"]!.toLowerCase().contains(
+                      event.query.toLowerCase(),
+                    ) ||
+                    item["courtName"]!.toLowerCase().contains(
+                      event.query.toLowerCase(),
+                    ) ||
+                    item["type"]!.toLowerCase().contains(
+                      event.query.toLowerCase(),
+                    ),
+              ) // Thêm tìm kiếm theo "type"
+              .toList();
+      emit(OrderListLoaded(filteredItems));
+    } catch (e) {
+      emit(OrderListError('Lỗi khi tìm kiếm: $e'));
+    }
   }
-}
 }

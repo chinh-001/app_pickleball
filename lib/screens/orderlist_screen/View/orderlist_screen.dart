@@ -39,9 +39,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           width: double.infinity,
                           margin: const EdgeInsets.fromLTRB(5, 5, 5, 0),
                           onChanged: (query) {
-                            context
-                                .read<OrderListBloc>()
-                                .add(SearchOrderListEvent(query));
+                            context.read<OrderListBloc>().add(
+                              SearchOrderListEvent(query),
+                            );
                           },
                         ),
                       ),
@@ -66,13 +66,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is OrderListLoaded) {
                       return CustomOrderListView(
-                        items: state.items, // Truyền dữ liệu bao gồm trường "type"
+                        items:
+                            state.items, // Truyền dữ liệu bao gồm trường "type"
                         onItemTap: (item) {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  OrderDetailScreen(item: item),
+                              builder:
+                                  (context) => OrderDetailScreen(item: item),
                             ),
                           );
                         },
