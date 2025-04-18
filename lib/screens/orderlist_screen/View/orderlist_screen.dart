@@ -16,21 +16,10 @@ class OrderListScreen extends StatefulWidget {
 }
 
 class _OrderListScreenState extends State<OrderListScreen> {
-  final List<String> channelOptions = [
-    'Default channel',
-    'Pikachu Pickleball Xuân Hoà',
-    'Demo-channel',
-    'Stamina 106 Hoàng Quốc Việt',
-    'TADA Sport CN1 - Thanh Đa',
-    'TADA Sport CN2 - Bình Lợi',
-    'TADA Sport CN3 - D2(Ung Văn Khiêm)',
-  ];
-  String selectedChannel = 'Default channel';
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => OrderListBloc()..add(LoadOrderListEvent()),
+      create: (_) => OrderListScreenBloc()..add(LoadOrderListEvent()),
       child: Scaffold(
         body: SafeArea(
           child: Column(
@@ -51,7 +40,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           width: double.infinity,
                           margin: const EdgeInsets.fromLTRB(5, 5, 5, 0),
                           onChanged: (query) {
-                            context.read<OrderListBloc>().add(
+                            context.read<OrderListScreenBloc>().add(
                               SearchOrderListEvent(query),
                             );
                           },
@@ -88,21 +77,27 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: CustomDropdown(
-                        titleFontSize: 12,
-                        itemFontSize: 12,
-                        title: '',
-                        options: channelOptions,
-                        selectedValue: selectedChannel,
-                        dropdownHeight: 40,
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              selectedChannel = newValue;
-                            });
-                          }
+                      child: BlocBuilder<
+                        OrderListScreenBloc,
+                        OrderListScreenState
+                      >(
+                        builder: (context, state) {
+                          return CustomDropdown(
+                            titleFontSize: 12,
+                            itemFontSize: 12,
+                            title: '',
+                            options: state.availableChannels,
+                            selectedValue: state.selectedChannel,
+                            dropdownHeight: 40,
+                            onChanged: (String? newValue) {
+                              if (newValue != null) {
+                                context.read<OrderListScreenBloc>().add(
+                                  ChangeChannelEvent(channelName: newValue),
+                                );
+                              }
+                            },
+                          );
                         },
-                        dropdownWidth: 250,
                       ),
                     ),
                   ],
@@ -110,11 +105,31 @@ class _OrderListScreenState extends State<OrderListScreen> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: BlocBuilder<OrderListBloc, OrderListState>(
+                child: BlocBuilder<OrderListScreenBloc, OrderListScreenState>(
                   builder: (context, state) {
-                    if (state is OrderListLoading) {
+                    if (state is OrderListScreenLoading) {
                       return const Center(child: CircularProgressIndicator());
-                    } else if (state is OrderListLoaded) {
+                    }
+
+                    if (state is OrderListScreenError) {
+                      return Center(
+                        child: Text(
+                          'Error: ${state.message}',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
+
+                    if (state is OrderListScreenLoaded) {
+                      if (state.items.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'Không có booking',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        );
+                      }
+
                       return CustomOrderListView(
                         items: state.items,
                         onItemTap: (item) {
@@ -127,10 +142,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           );
                         },
                       );
-                    } else if (state is OrderListError) {
-                      return Center(child: Text(state.error));
                     }
-                    return const Center(child: Text('Không có dữ liệu'));
+
+                    return const SizedBox.shrink();
                   },
                 ),
               ),

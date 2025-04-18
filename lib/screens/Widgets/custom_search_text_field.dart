@@ -21,7 +21,7 @@ class CustomSearchTextField extends StatelessWidget {
   });
 
   @override
- Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Container(
       height: height,
       width: width,
@@ -31,9 +31,7 @@ class CustomSearchTextField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           prefixIcon: prefixIcon,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
           contentPadding: const EdgeInsets.symmetric(
             vertical: 12.0,
             horizontal: 16.0, // Tạo khoảng cách bên trái
@@ -44,76 +42,3 @@ class CustomSearchTextField extends StatelessWidget {
     );
   }
 }
-
-// class OrderDetailScreen extends StatelessWidget {
-//   final Map<String, String> item;
-
-//   const OrderDetailScreen({super.key, required this.item});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final TextEditingController customerNameController = TextEditingController(text: item['customerName']);
-//     final TextEditingController courtNameController = TextEditingController(text: item['courtName']);
-//     final TextEditingController timeController = TextEditingController(text: item['time']);
-//     final TextEditingController statusController = TextEditingController(text: item['status']);
-//     final TextEditingController paymentStatusController = TextEditingController(text: item['paymentStatus']);
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Chi tiết đặt sân'),
-//       ),
-//       body: SingleChildScrollView(
-//         child: Padding(
-//           padding: const EdgeInsets.all(16.0),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Center(
-//                 child: ClipRRect(
-//                   borderRadius: BorderRadius.circular(8.0),
-//                   child: Image.asset(
-//                     'assets/images/grass_bg.png', // Đường dẫn tới hình ảnh
-//                     width: 200,
-//                     height: 200,
-//                     fit: BoxFit.cover,
-//                   ),
-//                 ),
-//               ),
-//               SizedBox(height: 20),
-//               buildInfoField('Tên khách', customerNameController),
-//               buildInfoField('Tên sân', courtNameController),
-//               buildInfoField('Thời gian', timeController),
-//               buildInfoField('Trạng thái đặt', statusController),
-//               buildInfoField(
-//                 'Trạng thái thanh toán',
-//                 paymentStatusController,
-//                 color: item['paymentStatus'] == 'Đã thanh toán' ? Colors.green : Colors.red,
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget buildInfoField(String title, TextEditingController controller, {Color? color}) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text(
-//           title,
-//           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-//         ),
-//         SizedBox(height: 5),
-//         CustomSearchTextField(
-//           hintText: '',
-//           prefixIcon: SizedBox.shrink(),
-//           height: 50,
-//           width: double.infinity,
-//           margin: EdgeInsets.zero,
-//         ),
-//         SizedBox(height: 10),
-//       ],
-//     );
-//   }
-// }

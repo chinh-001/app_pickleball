@@ -23,7 +23,7 @@ class BookingItem {
       name: map['customerName'] ?? '',
       court: map['courtName'] ?? '',
       time: map['time'] ?? '',
-      type: map['type'] ?? 'Loại lẻ',
+      type: map['type'] ?? '',
       isPaid: map['paymentStatus'] == 'Đã thanh toán',
       status: map['status'] ?? '',
     );
@@ -44,8 +44,9 @@ class CustomOrderListView extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = items[index];
         final bool isPaid = item['paymentStatus'] == 'Đã thanh toán';
-        final bool isRecurring = item['type'] == 'Định kỳ';
-
+        print(item['type']);
+        final bool isRecurring = item['type'] == 'Định kì';
+        print(isRecurring);
         return GestureDetector(
           onTap: () {
             if (onItemTap != null) {

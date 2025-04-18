@@ -54,20 +54,20 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Image.asset(
-                      'assets/images/logo_app_tach_nen.png',
-                      height: 60,
-                      width: 60,
-                    ),
+                    // Image.asset(
+                    //   'assets/images/logo_app_tach_nen.png',
+                    //   height: 60,
+                    //   width: 60,
+                    // ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 1.0),
                         child: CustomSearchTextField(
                           hintText: 'Tìm kiếm',
                           prefixIcon: const Icon(Icons.search),
-                          height: 45,
+                          height: 35,
                           width: double.infinity,
-                          margin: const EdgeInsets.fromLTRB(5, 5, 5, 0),
+                          margin: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                           onChanged: (query) {
                             // Xử lý tìm kiếm
                           },

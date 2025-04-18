@@ -72,12 +72,6 @@ class ApiClient {
           body: requestBody,
         );
 
-        log.log('\n=== API RESPONSE ===');
-        log.log('Response Status Code: ${response.statusCode}');
-        log.log('Response Headers: ${response.headers}');
-        log.log('Response Body: ${response.body}');
-        log.log('==============================\n');
-
         await _saveCookies(response);
         return _handleResponse(response);
       }
@@ -102,11 +96,11 @@ class ApiClient {
         body: requestBody,
       );
 
-      log.log('\n=== API RESPONSE ===');
-      log.log('Response Status Code: ${response.statusCode}');
-      log.log('Response Headers: ${response.headers}');
-      log.log('Response Body: ${response.body}');
-      log.log('==============================\n');
+      // log.log('\n=== API RESPONSE ===');
+      // log.log('Response Status Code: ${response.statusCode}');
+      // log.log('Response Headers: ${response.headers}');
+      // log.log('Response Body: ${response.body}');
+      // log.log('==============================\n');
 
       await _saveCookies(response);
       return _handleResponse(response);

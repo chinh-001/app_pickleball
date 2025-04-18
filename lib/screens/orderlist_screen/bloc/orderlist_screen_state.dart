@@ -1,30 +1,61 @@
 part of 'orderlist_screen_bloc.dart';
 
-abstract class OrderListState extends Equatable {
-  const OrderListState();
+abstract class OrderListScreenState extends Equatable {
+  final String selectedChannel;
+  final List<String> availableChannels;
+
+  const OrderListScreenState({
+    required this.selectedChannel,
+    required this.availableChannels,
+  });
 
   @override
-  List<Object?> get props => [];
+  List<Object> get props => [selectedChannel, availableChannels];
 }
 
-class OrderListInitial extends OrderListState {}
+class OrderListScreenInitial extends OrderListScreenState {
+  const OrderListScreenInitial({
+    required super.selectedChannel,
+    required super.availableChannels,
+  });
+}
 
-class OrderListLoading extends OrderListState {}
+class OrderListScreenLoading extends OrderListScreenState {
+  const OrderListScreenLoading({
+    required super.selectedChannel,
+    required super.availableChannels,
+  });
+}
 
-class OrderListLoaded extends OrderListState {
+class OrderListScreenLoaded extends OrderListScreenState {
   final List<Map<String, String>> items;
+  final Map<String, dynamic>? bookingData;
 
-  const OrderListLoaded(this.items);
+  const OrderListScreenLoaded({
+    required super.selectedChannel,
+    required super.availableChannels,
+    required this.items,
+    this.bookingData,
+  });
 
   @override
-  List<Object?> get props => [items];
+  List<Object> get props => [
+    selectedChannel,
+    availableChannels,
+    items,
+    bookingData ?? {},
+  ];
 }
 
-class OrderListError extends OrderListState {
-  final String error;
+class OrderListScreenError extends OrderListScreenState {
+  final String message;
 
-  const OrderListError(this.error);
+  const OrderListScreenError({
+    required super.selectedChannel,
+    required super.availableChannels,
+    required this.message,
+  });
 
   @override
-  List<Object?> get props => [error];
+  List<Object> get props => [selectedChannel, availableChannels, message];
 }
