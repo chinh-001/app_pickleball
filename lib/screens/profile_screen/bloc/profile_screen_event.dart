@@ -24,3 +24,8 @@ class SaveInfoEvent extends ProfileScreenEvent {
 class LoadProfileEvent extends ProfileScreenEvent {
   const LoadProfileEvent();
 }
+
+// Sự kiện đăng xuất
+class LogoutEvent extends ProfileScreenEvent {
+  const LogoutEvent();
+}

@@ -52,3 +52,6 @@ class ProfileScreenError extends ProfileScreenState {
   @override
   List<Object> get props => [message];
 }
+
+// Trạng thái đăng xuất
+class ProfileLoggedOutState extends ProfileScreenState {}

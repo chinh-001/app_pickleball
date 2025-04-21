@@ -53,7 +53,13 @@ class AuthRepository implements IAuthService {
 
   @override
   Future<String> getToken() async {
-    // Implementation for getting stored token
+    // Đơn giản trả về chuỗi rỗng, không lưu token
     return '';
+  }
+
+  @override
+  Future<bool> isLoggedIn() async {
+    // Luôn trả về false vì không lưu trạng thái đăng nhập
+    return false;
   }
 }

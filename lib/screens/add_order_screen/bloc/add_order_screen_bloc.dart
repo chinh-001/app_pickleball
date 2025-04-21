@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+// import 'package:image_picker/image_picker.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'dart:async';
 
@@ -9,7 +9,7 @@ part 'add_order_screen_event.dart';
 part 'add_order_screen_state.dart';
 
 class AddOrderBloc extends Bloc<AddOrderEvent, AddOrderState> {
-  final ImagePicker _picker = ImagePicker();
+  // final ImagePicker _picker = ImagePicker();
 
   AddOrderBloc() : super(AddOrderInitial()) {
     on<AddOrderSubmitEvent>(_onSubmitOrder);
