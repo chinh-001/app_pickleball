@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app_pickleball/services/api/api_client.dart';
-import 'package:app_pickleball/screens/splash_screen.dart';
+import 'package:app_pickleball/screens/splash_screen/View/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
