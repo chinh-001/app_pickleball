@@ -10,9 +10,7 @@ class AddOrderScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => AddOrderBloc(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Thêm Mới Thông Tin'),
-        ),
+        appBar: AppBar(title: const Text('Thêm Mới Thông Tin')),
         body: BlocListener<AddOrderBloc, AddOrderState>(
           listener: (context, state) {
             if (state is AddOrderSuccess) {
@@ -21,9 +19,9 @@ class AddOrderScreen extends StatelessWidget {
               );
               Navigator.pop(context);
             } else if (state is AddOrderFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.error)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.error)));
             }
           },
           child: BlocBuilder<AddOrderBloc, AddOrderState>(
@@ -36,30 +34,6 @@ class AddOrderScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Ảnh
-                      Center(
-                        child: GestureDetector(
-                          onTap: () => bloc.add(AddOrderPickImageEvent()),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: state is AddOrderImagePicked
-                                ? Image.file(
-                                    state.image,
-                                    width: 200,
-                                    height: 200,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.asset(
-                                    'assets/images/grass_bg.png',
-                                    width: 200,
-                                    height: 200,
-                                    fit: BoxFit.cover,
-                                  ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
                       // Tên khách
                       buildInfoField('Tên khách', 'Nhập tên khách'),
                       const SizedBox(height: 20),
@@ -133,7 +107,10 @@ class AddOrderScreen extends StatelessWidget {
                       // Ghi chú
                       const Text(
                         'Ghi chú',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 5),
                       TextField(
@@ -152,18 +129,21 @@ class AddOrderScreen extends StatelessWidget {
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () => bloc.add(AddOrderSubmitEvent(
-                              customerName: 'Tên khách',
-                              courtName: 'Tên sân',
-                              time: state is AddOrderTimeSelected
-                                  ? state.time
-                                  : '',
-                              status: 'Đã đặt',
-                              paymentMethod: 'Tiền mặt',
-                              bookingType: 'Loại lẻ',
-                              note: 'Ghi chú',
-                              image: null,
-                            )),
+                            onPressed:
+                                () => bloc.add(
+                                  AddOrderSubmitEvent(
+                                    customerName: 'Tên khách',
+                                    courtName: 'Tên sân',
+                                    time:
+                                        state is AddOrderTimeSelected
+                                            ? state.time
+                                            : '',
+                                    status: 'Đã đặt',
+                                    paymentMethod: 'Tiền mặt',
+                                    bookingType: 'Loại lẻ',
+                                    note: 'Ghi chú',
+                                  ),
+                                ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                               padding: const EdgeInsets.symmetric(vertical: 15),
@@ -193,7 +173,11 @@ class AddOrderScreen extends StatelessWidget {
     );
   }
 
-  Widget buildInfoField(String title, String hintText, {bool readOnly = false}) {
+  Widget buildInfoField(
+    String title,
+    String hintText, {
+    bool readOnly = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -231,12 +215,13 @@ class AddOrderScreen extends StatelessWidget {
         const SizedBox(height: 5),
         DropdownButtonFormField<String>(
           value: selectedValue,
-          items: options
-              .map((option) => DropdownMenuItem(
-                    value: option,
-                    child: Text(option),
-                  ))
-              .toList(),
+          items:
+              options
+                  .map(
+                    (option) =>
+                        DropdownMenuItem(value: option, child: Text(option)),
+                  )
+                  .toList(),
           onChanged: onChanged,
           decoration: InputDecoration(
             border: OutlineInputBorder(

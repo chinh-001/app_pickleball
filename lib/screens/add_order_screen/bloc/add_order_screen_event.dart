@@ -1,6 +1,5 @@
 part of 'add_order_screen_bloc.dart';
 
- 
 abstract class AddOrderEvent extends Equatable {
   const AddOrderEvent();
 
@@ -16,7 +15,6 @@ class AddOrderSubmitEvent extends AddOrderEvent {
   final String paymentMethod;
   final String bookingType;
   final String note;
-  final File? image;
 
   const AddOrderSubmitEvent({
     required this.customerName,
@@ -26,23 +24,19 @@ class AddOrderSubmitEvent extends AddOrderEvent {
     required this.paymentMethod,
     required this.bookingType,
     required this.note,
-    this.image,
   });
 
   @override
   List<Object?> get props => [
-        customerName,
-        courtName,
-        time,
-        status,
-        paymentMethod,
-        bookingType,
-        note,
-        image,
-      ];
+    customerName,
+    courtName,
+    time,
+    status,
+    paymentMethod,
+    bookingType,
+    note,
+  ];
 }
-
-class AddOrderPickImageEvent extends AddOrderEvent {}
 
 class AddOrderSelectTimeEvent extends AddOrderEvent {
   final BuildContext context;

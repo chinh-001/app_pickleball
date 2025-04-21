@@ -22,15 +22,6 @@ class AddOrderFailure extends AddOrderState {
   List<Object?> get props => [error];
 }
 
-class AddOrderImagePicked extends AddOrderState {
-  final File image;
-
-  const AddOrderImagePicked(this.image);
-
-  @override
-  List<Object?> get props => [image];
-}
-
 class AddOrderTimeSelected extends AddOrderState {
   final String time;
 

@@ -10,9 +10,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final IAuthService _authRepository;
 
   LoginBloc({required IAuthService authRepository})
-      : _authRepository = authRepository,
-        super(const LoginState()) {
+    : _authRepository = authRepository,
+      super(const LoginState()) {
     on<LoginButtonPressed>(_onLoginButtonPressed);
+    on<TogglePasswordVisibility>(_onTogglePasswordVisibility);
+  }
+
+  void _onTogglePasswordVisibility(
+    TogglePasswordVisibility event,
+    Emitter<LoginState> emit,
+  ) {
+    emit(state.copyWith(isPasswordVisible: !state.isPasswordVisible));
   }
 
   Future<void> _onLoginButtonPressed(
@@ -20,10 +28,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     Emitter<LoginState> emit,
   ) async {
     try {
-      final success = await _authRepository.login(
-        event.email,
-        event.password,
-      );
+      final success = await _authRepository.login(event.email, event.password);
 
       if (success) {
         emit(state.copyWith(status: CallApiStatus.success));

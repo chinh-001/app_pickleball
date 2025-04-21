@@ -53,33 +53,38 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Image.asset(
-                    //   'assets/images/logo_app_tach_nen.png',
-                    //   height: 60,
-                    //   width: 60,
-                    // ),
                     Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 1.0),
-                        child: CustomSearchTextField(
-                          hintText: 'Tìm kiếm',
-                          prefixIcon: const Icon(Icons.search),
-                          height: 35,
-                          width: double.infinity,
-                          margin: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                          onChanged: (query) {
-                            // Xử lý tìm kiếm
-                          },
+                      child: CustomSearchTextField(
+                        hintText: 'Tìm kiếm',
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          size: 20,
+                          color: Colors.grey,
                         ),
+                        height: 40,
+                        width: double.infinity,
+                        margin: EdgeInsets.zero,
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          255,
+                          255,
+                          255,
+                        ),
+                        onChanged: (query) {
+                          // Xử lý tìm kiếm
+                        },
                       ),
                     ),
                     IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                       icon: const Icon(
                         Icons.notifications,
                         color: Colors.black,
                       ),
-                      iconSize: 30,
+                      iconSize: 24,
                       onPressed: () {
                         // Handle notifications
                       },

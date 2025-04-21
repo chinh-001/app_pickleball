@@ -77,14 +77,30 @@ class _LoginScreenState extends State<LoginWidget> {
                 ),
               ),
               const SizedBox(height: 20),
-              TextField(
-                controller: passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Mật khẩu',
-                  prefixIcon: Icon(Icons.lock),
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
+              BlocBuilder<LoginBloc, LoginState>(
+                builder: (context, state) {
+                  return TextField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Mật khẩu',
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          state.isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          context.read<LoginBloc>().add(
+                            TogglePasswordVisibility(),
+                          );
+                        },
+                      ),
+                      border: const OutlineInputBorder(),
+                    ),
+                    obscureText: !state.isPasswordVisible,
+                  );
+                },
               ),
               const SizedBox(height: 30),
               Align(

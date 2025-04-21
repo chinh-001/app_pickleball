@@ -15,11 +15,30 @@ class OrderListScreen extends StatefulWidget {
   _OrderListScreenState createState() => _OrderListScreenState();
 }
 
-class _OrderListScreenState extends State<OrderListScreen> {
+class _OrderListScreenState extends State<OrderListScreen>
+    with AutomaticKeepAliveClientMixin {
+  static OrderListScreenBloc? _cachedBloc;
+
+  OrderListScreenBloc get _orderListBloc {
+    _cachedBloc ??= OrderListScreenBloc()..add(LoadOrderListEvent());
+    return _cachedBloc!;
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    // Don't close the bloc here as it's cached
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => OrderListScreenBloc()..add(LoadOrderListEvent()),
+    super.build(context); // Required by AutomaticKeepAliveClientMixin
+
+    return BlocProvider.value(
+      value: _orderListBloc,
       child: Scaffold(
         body: SafeArea(
           child: Column(
@@ -29,6 +48,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
                       child: Padding(
@@ -38,7 +58,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           prefixIcon: const Icon(Icons.search),
                           height: 40,
                           width: double.infinity,
-                          margin: const EdgeInsets.fromLTRB(5, 5, 5, 0),
+                          margin: const EdgeInsets.fromLTRB(5, 5, 0, 0),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            255,
+                            255,
+                            255,
+                          ),
                           onChanged: (query) {
                             context.read<OrderListScreenBloc>().add(
                               SearchOrderListEvent(query),
@@ -46,6 +72,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           },
                         ),
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.more_vert, color: Colors.black),
+                      onPressed: () {
+                        // Xử lý khi nhấn vào icon filter
+                      },
                     ),
                   ],
                 ),

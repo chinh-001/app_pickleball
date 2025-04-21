@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'dart:async';
-import 'dart:io';
 
 part 'add_order_screen_event.dart';
 part 'add_order_screen_state.dart';
@@ -14,7 +13,6 @@ class AddOrderBloc extends Bloc<AddOrderEvent, AddOrderState> {
 
   AddOrderBloc() : super(AddOrderInitial()) {
     on<AddOrderSubmitEvent>(_onSubmitOrder);
-    on<AddOrderPickImageEvent>(_onPickImage);
     on<AddOrderSelectTimeEvent>(_onSelectTime);
   }
 
@@ -29,24 +27,6 @@ class AddOrderBloc extends Bloc<AddOrderEvent, AddOrderState> {
       emit(AddOrderSuccess());
     } catch (e) {
       emit(AddOrderFailure('Lỗi khi tạo đơn hàng: $e'));
-    }
-  }
-
-  Future<void> _onPickImage(
-    AddOrderPickImageEvent event,
-    Emitter<AddOrderState> emit,
-  ) async {
-    try {
-      final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 100,
-      );
-
-      if (pickedFile != null) {
-        emit(AddOrderImagePicked(File(pickedFile.path)));
-      }
-    } catch (e) {
-      emit(AddOrderFailure('Lỗi khi chọn ảnh: $e'));
     }
   }
 

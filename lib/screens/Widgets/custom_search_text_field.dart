@@ -6,8 +6,9 @@ class CustomSearchTextField extends StatelessWidget {
   final double height;
   final double width;
   final EdgeInsets margin;
-  final TextEditingController? controller; // Thêm controller
+  final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
+  final Color? backgroundColor;
 
   const CustomSearchTextField({
     super.key,
@@ -16,8 +17,9 @@ class CustomSearchTextField extends StatelessWidget {
     required this.height,
     required this.width,
     required this.margin,
-    this.controller, // Khởi tạo controller
+    this.controller,
     this.onChanged,
+    this.backgroundColor,
   });
 
   @override
@@ -26,16 +28,40 @@ class CustomSearchTextField extends StatelessWidget {
       height: height,
       width: width,
       margin: margin,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20.0),
+      ),
       child: TextField(
         controller: controller,
+        style: const TextStyle(fontSize: 14),
         decoration: InputDecoration(
           hintText: hintText,
+          hintStyle: const TextStyle(fontSize: 14),
           prefixIcon: prefixIcon,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 12.0,
-            horizontal: 16.0, // Tạo khoảng cách bên trái
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 40,
+            minHeight: 40,
           ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20.0),
+            borderSide: const BorderSide(color: Colors.grey),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20.0),
+            borderSide: const BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20.0),
+            borderSide: const BorderSide(color: Colors.grey),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 0,
+            horizontal: 12,
+          ),
+          isDense: true,
+          filled: true,
+          fillColor: backgroundColor ?? Colors.transparent,
         ),
         onChanged: onChanged,
       ),
