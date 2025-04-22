@@ -179,6 +179,8 @@ class OrderListScreenBloc
               firstName.isNotEmpty && lastName.isNotEmpty
                   ? '$firstName $lastName'
                   : 'Không có tên';
+          final phoneNumber = customer['phoneNumber']?.toString() ?? '';
+          final emailAddress = customer['emailAddress']?.toString() ?? '';
 
           // Extract court info
           final court = item['court'] as Map? ?? {};
@@ -191,6 +193,9 @@ class OrderListScreenBloc
               startTime.isNotEmpty && endTime.isNotEmpty
                   ? '$startTime - $endTime'
                   : 'Không có thời gian';
+
+          // Extract total price
+          final totalPrice = item['total_price']?.toString() ?? '';
 
           // Extract and map type
           final rawType = item['type']?.toString().toLowerCase() ?? '';
@@ -214,6 +219,9 @@ class OrderListScreenBloc
             'type': type,
             'status': status,
             'paymentStatus': paymentStatus,
+            'phoneNumber': phoneNumber,
+            'emailAddress': emailAddress,
+            'total_price': totalPrice,
           };
 
           // log.log('Transformed item: $transformedItem');

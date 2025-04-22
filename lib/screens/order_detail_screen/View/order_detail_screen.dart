@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/order_detail_screen/bloc/order_detail_screen_bloc.dart';
+import 'package:app_pickleball/utils/number_format.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final Map<String, String> item;
@@ -13,7 +14,7 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-  static const List<String> typeOptions = ['Loại lẻ', 'Định kỳ'];
+  static const List<String> typeOptions = ['Loại lẻ', 'Định kì'];
   static const List<String> statusOptions = [
     'Đã xác nhận',
     'Đang chờ',
@@ -50,6 +51,22 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     noteController.text = widget.item['note'] ?? '';
   }
 
+  // Hàm định dạng tổng tiền với dấu phẩy phân cách hàng nghìn
+  String formatTotalPrice(String price) {
+    if (price.isEmpty) return '';
+
+    try {
+      // Chuyển chuỗi thành số và định dạng
+      final priceNumber = int.tryParse(price.replaceAll(RegExp(r'[^\d]'), ''));
+      if (priceNumber == null) return price;
+
+      return priceNumber.toCommaSeparated();
+    } catch (e) {
+      print('Error formatting price: $e');
+      return price;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final TextEditingController customerNameController = TextEditingController(
@@ -58,6 +75,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final TextEditingController courtNameController = TextEditingController(
       text: widget.item['courtName'],
     );
+    final TextEditingController phoneNumberController = TextEditingController(
+      text: widget.item['phoneNumber'] ?? '',
+    );
+    final TextEditingController emailAddressController = TextEditingController(
+      text: widget.item['emailAddress'] ?? '',
+    );
+
+    // Lấy giá trị tổng tiền và định dạng
+    final rawTotalPrice = widget.item['total_price'] ?? '';
+    final formattedTotalPrice = formatTotalPrice(rawTotalPrice);
+
+    final TextEditingController totalPriceController = TextEditingController(
+      text: formattedTotalPrice,
+    );
+
+    // Hiển thị thông tin log để debug
+    print('DEBUG - OrderDetailScreen received item: ${widget.item}');
+    print('DEBUG - Raw total price: $rawTotalPrice');
+    print('DEBUG - Formatted total price: $formattedTotalPrice');
 
     return BlocProvider(
       create: (_) => OrderDetailBloc(),
@@ -129,8 +165,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         buildInfoField('Tên khách', customerNameController),
                         const SizedBox(height: 20),
 
+                        // Số điện thoại (Thêm mới)
+                        buildInfoField('Số điện thoại', phoneNumberController),
+                        const SizedBox(height: 20),
+
+                        // Email (Thêm mới)
+                        buildInfoField('Email', emailAddressController),
+                        const SizedBox(height: 20),
+
                         // Tên sân
                         buildInfoField('Tên sân', courtNameController),
+                        const SizedBox(height: 20),
+
+                        // Tổng tiền (Thêm mới với style riêng)
+                        buildPriceField('Tổng tiền', totalPriceController),
                         const SizedBox(height: 20),
 
                         // Thời gian
@@ -246,6 +294,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
+                                // Xử lý giá trị totalPrice để loại bỏ định dạng trước khi submit
+                                String originalTotalPrice =
+                                    totalPriceController.text
+                                        .replaceAll(
+                                          ',',
+                                          '',
+                                        ) // Loại bỏ dấu phẩy phân cách
+                                        .trim(); // Xóa khoảng trắng thừa
+
                                 context.read<OrderDetailBloc>().add(
                                   SubmitOrderDetailEvent(
                                     customerName: customerNameController.text,
@@ -254,6 +311,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     status: selectedStatus,
                                     paymentStatus: selectedPaymentStatus,
                                     note: noteController.text,
+                                    phoneNumber: phoneNumberController.text,
+                                    emailAddress: emailAddressController.text,
+                                    totalPrice: originalTotalPrice,
                                   ),
                                 );
                               },
@@ -306,6 +366,74 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           decoration: InputDecoration(
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildPriceField(String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: controller,
+          readOnly: false,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(fontSize: 16),
+          textAlign: TextAlign.left,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            suffixText: 'VNĐ',
+            suffixStyle: const TextStyle(fontSize: 16),
+          ),
+          onChanged: (value) {
+            if (value.isNotEmpty) {
+              controller.removeListener(() {});
+
+              final cursorPos = controller.selection.start;
+
+              final cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
+              int? intValue = int.tryParse(cleanValue);
+
+              if (intValue != null) {
+                final formattedValue = intValue.toCommaSeparated();
+
+                controller.text = formattedValue;
+
+                final newValue = controller.text;
+                final commasBeforeCursor =
+                    ','
+                        .allMatches(
+                          newValue.substring(
+                            0,
+                            cursorPos > newValue.length
+                                ? newValue.length
+                                : cursorPos,
+                          ),
+                        )
+                        .length;
+                final commasInOldValueBeforeCursor =
+                    ','.allMatches(value.substring(0, cursorPos)).length;
+
+                final newCursorPos =
+                    cursorPos +
+                    (commasBeforeCursor - commasInOldValueBeforeCursor);
+
+                if (newCursorPos >= 0 && newCursorPos <= newValue.length) {
+                  controller.selection = TextSelection.fromPosition(
+                    TextPosition(offset: newCursorPos),
+                  );
+                }
+              }
+
+              controller.addListener(() {});
+            }
+          },
         ),
       ],
     );

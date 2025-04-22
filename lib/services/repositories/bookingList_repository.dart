@@ -95,7 +95,7 @@ class BookingListRepository implements IBookingListService {
             // log.log('Payment Method: ${item['payment_method']}');
             // log.log('Payment Status: ${item['paymentstatus']?['name']}');
             log.log('type ${item['type']}');
-            final customer = item['customer'];
+            // final customer = item['customer'];
             // log.log('Customer:');
             // log.log('  Name: ${customer['firstName']} ${customer['lastName']}');
             // log.log('  Phone: ${customer['phoneNumber']}');
