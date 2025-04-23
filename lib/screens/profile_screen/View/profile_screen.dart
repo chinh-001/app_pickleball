@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:app_pickleball/screens/Widgets/custom_bottom_navigation_bar.dart';
+import 'package:app_pickleball/screens/widgets/custom_bottom_navigation_bar.dart';
 import 'package:app_pickleball/screens/profile_screen/bloc/profile_screen_bloc.dart';
 import 'package:app_pickleball/screens/login_screen/View/login_screen.dart';
-import 'package:app_pickleball/screens/Widgets/custom_confirm_logout_dialog.dart';
+import 'package:app_pickleball/screens/widgets/custom_confirm_logout_dialog.dart';
 import 'dart:developer' as log;
 
 class ProfileScreen extends StatelessWidget {

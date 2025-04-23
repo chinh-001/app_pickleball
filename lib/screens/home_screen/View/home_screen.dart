@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:app_pickleball/screens/Widgets/custom_search_text_field.dart';
-import 'package:app_pickleball/screens/Widgets/custom_bottom_navigation_bar.dart';
-import 'package:app_pickleball/screens/Widgets/custom_floating_action_button.dart';
-import 'package:app_pickleball/screens/Widgets/custom_list_view.dart';
-import 'package:app_pickleball/screens/Widgets/custom_dropdown.dart';
+import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
+import 'package:app_pickleball/screens/widgets/custom_bottom_navigation_bar.dart';
+import 'package:app_pickleball/screens/widgets/custom_floating_action_button.dart';
+import 'package:app_pickleball/screens/widgets/custom_list_view.dart';
+import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import 'package:app_pickleball/utils/number_format.dart';

@@ -1,8 +1,8 @@
 import 'package:app_pickleball/screens/login_screen/View/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:app_pickleball/screens/Widgets/custom_button.dart'; // Import CustomElevatedButton
+import 'package:app_pickleball/screens/widgets/custom_button.dart'; // Import CustomElevatedButton
 import 'package:app_pickleball/Screens/Widgets/custom_textfield.dart'; // Import CustomTextField
-import 'package:app_pickleball/screens/Widgets/custom_Text_tap.dart';
+import 'package:app_pickleball/screens/widgets/custom_Text_tap.dart';
 
 class RegisterScreen extends StatelessWidget {
   // Controller để lấy giá trị nhập từ các TextField
@@ -19,9 +19,9 @@ class RegisterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-       backgroundColor: Colors.white,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-         backgroundColor: Colors.grey.shade300,
+        backgroundColor: Colors.grey.shade300,
         title: Text("Đăng Ký"),
         centerTitle: true, // Căn giữa tiêu đề
       ),

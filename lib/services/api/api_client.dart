@@ -158,7 +158,7 @@ class ApiClient {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(
           'cookies',
-          cookies.map((c) => '${c.name}=${c.value}').join('; '),
+          cookies.map((c) => '${c.name}=${c.value}').join(';'),
         );
       }
     } catch (e) {
