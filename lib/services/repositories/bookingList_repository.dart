@@ -54,6 +54,9 @@ class BookingListRepository implements IBookingListService {
               paymentstatus {
                 name
               }
+              status {
+                name
+              }
             }
           }
         }

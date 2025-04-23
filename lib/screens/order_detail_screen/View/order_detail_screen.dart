@@ -16,9 +16,8 @@ class OrderDetailScreen extends StatefulWidget {
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   static const List<String> typeOptions = ['Loại lẻ', 'Định kì'];
   static const List<String> statusOptions = [
-    'Đã xác nhận',
-    'Đang chờ',
-    'Đã hủy',
+    'Mới',
+    'Đặt sân',
   ];
   static const List<String> paymentStatusOptions = [
     'Đã thanh toán',
@@ -39,10 +38,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         typeOptions.contains(widget.item['type'])
             ? widget.item['type']!
             : typeOptions.first;
-    selectedStatus =
-        statusOptions.contains(widget.item['status'])
-            ? widget.item['status']!
-            : statusOptions.first;
+    
+    // Lấy giá trị status từ order list và chỉ chấp nhận 'Mới' hoặc 'Đặt sân'
+    final originalStatus = widget.item['status'] ?? '';
+    if (originalStatus == 'Mới' || originalStatus == 'Đặt sân') {
+      selectedStatus = originalStatus;
+    } else {
+      // Nếu status không thuộc 2 giá trị trên, mặc định là 'Mới'
+      selectedStatus = 'Mới';
+    }
+    
     selectedPaymentStatus =
         paymentStatusOptions.contains(widget.item['paymentStatus'])
             ? widget.item['paymentStatus']!

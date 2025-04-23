@@ -206,23 +206,31 @@ class OrderListScreenBloc
           };
           log.log('Booking type: $rawType -> $type');
 
-          final status = 'Đã đặt'; // Default status
-
+          // Extract booking status from API response - get ONLY the name value
+          final statusObj = item['status'] as Map?;
+          final status = statusObj?['name']?.toString() ?? 'Mới';
+          
           // Extract payment status
           final paymentStatus =
               item['paymentstatus']?['name']?.toString() ?? 'Chưa thanh toán';
+              
+          // Log the actual status for debugging
+          log.log('Raw status object from API: ${item['status']}');
+          log.log('Extracted status name value: $status');
 
           final transformedItem = {
             'customerName': customerName,
             'courtName': courtName,
             'time': timeRange,
             'type': type,
-            'status': status,
+            'status': status, // This contains ONLY the name value, not the object
             'paymentStatus': paymentStatus,
             'phoneNumber': phoneNumber,
             'emailAddress': emailAddress,
             'total_price': totalPrice,
           };
+          
+          log.log('Status value being sent to UI: ${transformedItem['status']}');
 
           // log.log('Transformed item: $transformedItem');
           transformedItems.add(transformedItem);
