@@ -12,3 +12,6 @@ class SplashStartedEvent extends SplashScreenEvent {}
 
 // Sự kiện chuyển đến màn hình đăng nhập
 class NavigateToLoginEvent extends SplashScreenEvent {}
+
+// Sự kiện chuyển đến màn hình trang chủ (đã đăng nhập)
+class NavigateToHomeEvent extends SplashScreenEvent {}

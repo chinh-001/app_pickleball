@@ -15,3 +15,6 @@ class SplashLoadingState extends SplashScreenState {}
 
 // Trạng thái sẵn sàng để chuyển đến màn hình login
 class SplashNavigateToLoginState extends SplashScreenState {}
+
+// Trạng thái sẵn sàng để chuyển đến màn hình trang chủ (đã đăng nhập)
+class SplashNavigateToHomeState extends SplashScreenState {}

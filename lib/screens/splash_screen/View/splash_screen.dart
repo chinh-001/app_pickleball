@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/login_screen/View/login_screen.dart';
+import 'package:app_pickleball/screens/home_screen/View/home_screen.dart';
 import '../bloc/splash_screen_bloc.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -22,6 +23,12 @@ class SplashScreen extends StatelessWidget {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          } else if (state is SplashNavigateToHomeState) {
+            // Người dùng đã đăng nhập, chuyển đến trang chủ
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
           }
         },

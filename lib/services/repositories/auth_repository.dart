@@ -1,6 +1,7 @@
 import '../interfaces/i_auth_service.dart';
 import '../api/api_client.dart';
 import 'dart:developer' as log;
+import '../../utils/auth_helper.dart';
 
 class AuthRepository implements IAuthService {
   final ApiClient _apiClient;
@@ -33,7 +34,34 @@ class AuthRepository implements IAuthService {
         return false;
       }
 
-      return loginData['id'] != null;
+      // Kiểm tra đăng nhập thành công
+      final successful = loginData['id'] != null;
+      if (successful) {
+        // Lưu trạng thái đăng nhập
+        await AuthHelper.saveUserLoggedInStatus(true);
+        
+        // Lưu thông tin người dùng nếu có
+        final id = loginData['id']?.toString() ?? '';
+        final identifier = loginData['identifier']?.toString() ?? '';
+        
+        if (id.isNotEmpty) {
+          // Tạo token từ ID và identifier
+          final token = '$id:$identifier';
+          await AuthHelper.saveUserToken(token);
+          
+          // Lưu tên người dùng nếu có thông tin
+          if (identifier.isNotEmpty) {
+            await AuthHelper.saveUserName(identifier);
+          }
+          
+          // Cập nhật token trong ApiClient để sử dụng cho các request tiếp theo
+          _apiClient.setAuthToken(token);
+        }
+        
+        log.log('Đăng nhập thành công và đã lưu trạng thái');
+      }
+      
+      return successful;
     } catch (e) {
       log.log('Login error: $e');
       return false;
@@ -43,7 +71,13 @@ class AuthRepository implements IAuthService {
   @override
   Future<bool> logout() async {
     try {
+      // Xóa token trong ApiClient
       await _apiClient.clearAuth();
+      
+      // Xóa tất cả dữ liệu đăng nhập đã lưu
+      await AuthHelper.clearUserData();
+      
+      log.log('Đăng xuất thành công và đã xóa trạng thái');
       return true;
     } catch (e) {
       log.log('Logout error: $e');
@@ -53,13 +87,26 @@ class AuthRepository implements IAuthService {
 
   @override
   Future<String> getToken() async {
-    // Đơn giản trả về chuỗi rỗng, không lưu token
-    return '';
+    // Lấy token đã lưu từ SharedPreferences
+    return await AuthHelper.getUserToken();
   }
 
   @override
   Future<bool> isLoggedIn() async {
-    // Luôn trả về false vì không lưu trạng thái đăng nhập
+    // Kiểm tra trạng thái đăng nhập từ SharedPreferences
+    final loggedIn = await AuthHelper.getUserLoggedInStatus();
+    
+    // Double-check: nếu loggedIn = true nhưng token không tồn tại thì vẫn coi là chưa đăng nhập
+    if (loggedIn) {
+      final token = await AuthHelper.getUserToken();
+      if (token.isEmpty) {
+        // Token không tồn tại, cập nhật lại trạng thái
+        await AuthHelper.saveUserLoggedInStatus(false);
+        return false;
+      }
+      return true;
+    }
+    
     return false;
   }
 }
