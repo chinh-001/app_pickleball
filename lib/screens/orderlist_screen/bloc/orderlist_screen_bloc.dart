@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:app_pickleball/services/repositories/bookingList_repository.dart';
 import 'dart:developer' as log;
+import 'package:app_pickleball/model/bookingList_model.dart';
 
 part 'orderlist_screen_event.dart';
 part 'orderlist_screen_state.dart';
@@ -57,6 +58,7 @@ class OrderListScreenBloc
         selectedChannel: state.selectedChannel,
         availableChannels: _availableChannels,
         items: const [],
+        bookingOrderList: null,
       ),
     );
   }
@@ -67,22 +69,41 @@ class OrderListScreenBloc
   ) {
     if (state is OrderListScreenLoaded) {
       final currentState = state as OrderListScreenLoaded;
-      final filteredItems =
-          currentState.items
-              .where(
-                (item) =>
-                    item['customerName']?.toLowerCase().contains(
-                      event.query.toLowerCase(),
-                    ) ??
-                    false,
-              )
-              .toList();
+
+      // Lọc dữ liệu dựa trên tên khách hàng
+      List<Map<String, String>> filteredItems;
+
+      if (currentState.bookingOrderList != null) {
+        // Sử dụng BookingOrderList để lọc nếu có
+        filteredItems =
+            currentState.bookingOrderList!.orders
+                .where(
+                  (order) => order.customerName.toLowerCase().contains(
+                    event.query.toLowerCase(),
+                  ),
+                )
+                .map((order) => order.toJson())
+                .toList();
+      } else {
+        // Sử dụng danh sách items nếu không có BookingOrderList
+        filteredItems =
+            currentState.items
+                .where(
+                  (item) =>
+                      item['customerName']?.toLowerCase().contains(
+                        event.query.toLowerCase(),
+                      ) ??
+                      false,
+                )
+                .toList();
+      }
 
       emit(
         OrderListScreenLoaded(
           selectedChannel: state.selectedChannel,
           availableChannels: _availableChannels,
           items: filteredItems,
+          bookingOrderList: currentState.bookingOrderList,
         ),
       );
     }
@@ -107,6 +128,7 @@ class OrderListScreenBloc
           selectedChannel: event.channelName,
           availableChannels: _availableChannels,
           items: const [],
+          bookingOrderList: null,
         ),
       );
     }
@@ -119,146 +141,55 @@ class OrderListScreenBloc
     try {
       log.log('Fetching bookings for channel: ${event.channelToken}');
 
-      final response = await _bookingListRepository.getAllBookings(
+      emit(
+        OrderListScreenLoading(
+          selectedChannel: state.selectedChannel,
+          availableChannels: _availableChannels,
+        ),
+      );
+
+      // Sử dụng model để lấy dữ liệu
+      final bookingOrderList = await _bookingListRepository.getAllBookings(
         channelToken: event.channelToken,
         date: event.date,
       );
 
-      // log.log('Raw API response: $response');
-
-      if (response['data'] == null) {
-        log.log('Response or data is null');
+      // Kiểm tra kết quả
+      if (bookingOrderList.orders.isEmpty) {
+        log.log('Không có đơn đặt sân nào');
         emit(
           OrderListScreenLoaded(
             selectedChannel: state.selectedChannel,
             availableChannels: _availableChannels,
             items: const [],
+            bookingOrderList: bookingOrderList,
           ),
         );
         return;
       }
 
-      final getAllBooking = response['data']['getAllBooking'];
-      if (getAllBooking == null) {
-        log.log('getAllBooking is null');
-        emit(
-          OrderListScreenLoaded(
-            selectedChannel: state.selectedChannel,
-            availableChannels: _availableChannels,
-            items: const [],
-          ),
-        );
-        return;
-      }
+      log.log('Tìm thấy ${bookingOrderList.orders.length} đơn đặt sân');
 
-      final items = getAllBooking['items'] as List?;
-      if (items == null || items.isEmpty) {
-        log.log('No booking items found');
-        emit(
-          OrderListScreenLoaded(
-            selectedChannel: state.selectedChannel,
-            availableChannels: _availableChannels,
-            items: const [],
-          ),
-        );
-        return;
-      }
-
-      log.log('Found ${items.length} booking items');
-      final transformedItems = <Map<String, String>>[];
-
-      for (final item in items) {
-        try {
-          // log.log('Processing booking item: $item');
-
-          // Extract customer info
-          final customer = item['customer'] as Map? ?? {};
-          final firstName = customer['firstName']?.toString() ?? '';
-          final lastName = customer['lastName']?.toString() ?? '';
-          final customerName =
-              firstName.isNotEmpty && lastName.isNotEmpty
-                  ? '$firstName $lastName'
-                  : 'Không có tên';
-          final phoneNumber = customer['phoneNumber']?.toString() ?? '';
-          final emailAddress = customer['emailAddress']?.toString() ?? '';
-
-          // Extract court info
-          final court = item['court'] as Map? ?? {};
-          final courtName = court['name']?.toString() ?? 'Không có tên sân';
-
-          // Extract time info
-          final startTime = item['start_time']?.toString() ?? '';
-          final endTime = item['end_time']?.toString() ?? '';
-          final timeRange =
-              startTime.isNotEmpty && endTime.isNotEmpty
-                  ? '$startTime - $endTime'
-                  : 'Không có thời gian';
-
-          // Extract total price
-          final totalPrice = item['total_price']?.toString() ?? '';
-
-          // Extract and map type
-          final rawType = item['type']?.toString().toLowerCase() ?? '';
-          final type = switch (rawType) {
-            'periodic' => 'Định kì',
-            'retail' => 'Loại lẻ1111',
-            _ => 'Loại lẻ', // default case
-          };
-          log.log('Booking type: $rawType -> $type');
-
-          // Extract booking status from API response - get ONLY the name value
-          final statusObj = item['status'] as Map?;
-          final status = statusObj?['name']?.toString() ?? 'Mới';
-          
-          // Extract payment status
-          final paymentStatus =
-              item['paymentstatus']?['name']?.toString() ?? 'Chưa thanh toán';
-              
-          // Log the actual status for debugging
-          log.log('Raw status object from API: ${item['status']}');
-          log.log('Extracted status name value: $status');
-
-          final transformedItem = {
-            'customerName': customerName,
-            'courtName': courtName,
-            'time': timeRange,
-            'type': type,
-            'status': status, // This contains ONLY the name value, not the object
-            'paymentStatus': paymentStatus,
-            'phoneNumber': phoneNumber,
-            'emailAddress': emailAddress,
-            'total_price': totalPrice,
-          };
-          
-          log.log('Status value being sent to UI: ${transformedItem['status']}');
-
-          // log.log('Transformed item: $transformedItem');
-          transformedItems.add(transformedItem);
-        } catch (e, stackTrace) {
-          log.log('Error transforming item: $e');
-          log.log('Stack trace: $stackTrace');
-          continue;
-        }
-      }
-
-      // log.log('Final transformed items count: ${transformedItems.length}');
-      // log.log('Final transformed items: $transformedItems');
+      // Chuyển đổi dữ liệu sang định dạng cũ để tương thích ngược
+      final transformedItems = bookingOrderList.toSimpleMapList();
 
       emit(
         OrderListScreenLoaded(
           selectedChannel: state.selectedChannel,
           availableChannels: _availableChannels,
           items: transformedItems,
+          bookingOrderList: bookingOrderList,
         ),
       );
     } catch (e, stackTrace) {
       log.log('Error fetching bookings: $e');
       log.log('Stack trace: $stackTrace');
+
       emit(
         OrderListScreenError(
+          message: 'Không thể tải danh sách đặt sân: $e',
           selectedChannel: state.selectedChannel,
           availableChannels: _availableChannels,
-          message: e.toString(),
         ),
       );
     }

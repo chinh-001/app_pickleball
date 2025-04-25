@@ -1,6 +1,8 @@
 import '../interfaces/i_booking_service.dart';
 import '../api/api_client.dart';
 import 'dart:developer' as log;
+import '../../model/bookingStatus_model.dart';
+import '../../model/bookingList_model.dart';
 
 class BookingRepository implements IBookingService {
   final ApiClient _apiClient;
@@ -17,12 +19,25 @@ class BookingRepository implements IBookingService {
     return 'demo-channel';
   }
 
-  Future<List<Map<String, dynamic>>> getCourtItems({
-    String? channelToken,
-  }) async {
+  @override
+  Future<BookingList> getCourtItems({String? channelToken}) async {
     try {
       log.log('\n===== BOOKING REPOSITORY: getCourtItems =====');
 
+      // Thử lấy dữ liệu đã lưu từ storage
+      final storedList = await BookingList.getFromStorage(
+        channelToken: channelToken,
+      );
+
+      // Nếu có dữ liệu và chưa hết hạn, sử dụng dữ liệu đã lưu
+      if (storedList.courts.isNotEmpty && !storedList.isExpired()) {
+        log.log(
+          'Using stored court data for channel: ${channelToken ?? "default"}',
+        );
+        return storedList;
+      }
+
+      // Nếu không có dữ liệu hoặc dữ liệu đã hết hạn, gọi API
       const query = '''
         query GetCourts {
           GetCourts {
@@ -41,33 +56,48 @@ class BookingRepository implements IBookingService {
       );
 
       if (response == null || response['data'] == null) {
-        return [];
+        return BookingList.empty();
       }
 
       final courts = response['data']['GetCourts'] as List?;
       if (courts == null) {
-        return [];
+        return BookingList.empty();
       }
 
-      return courts
-          .map(
-            (court) => {
-              'id': court['id'].toString(),
-              'name': court['name'] ?? 'Unknown Court',
-              'status': court['status'] ?? 'available',
-              'price': '${court['price'] ?? '0'}đ/giờ',
-              'star': court['star']?.toString() ?? '0',
-            },
-          )
-          .toList();
+      final courtsData =
+          courts
+              .map(
+                (court) => {
+                  'id': court['id'].toString(),
+                  'name': court['name'] ?? 'Unknown Court',
+                  'status': court['status'] ?? 'available',
+                  'price': '${court['price'] ?? '0'}đ/giờ',
+                  'star': court['star']?.toString() ?? '0',
+                },
+              )
+              .toList();
+
+      // Tạo BookingList từ dữ liệu API và lưu vào storage
+      final bookingList = BookingList.fromMapList(
+        courtsData,
+        channelToken: channelToken,
+      );
+      await bookingList.saveListData();
+
+      log.log(
+        'Fetched and saved ${courtsData.length} courts for channel: ${channelToken ?? "default"}',
+      );
+      return bookingList;
     } catch (e) {
       log.log('Error fetching court items: $e');
-      return [];
+
+      // Nếu có lỗi, thử lấy dữ liệu đã lưu từ storage
+      return await BookingList.getFromStorage(channelToken: channelToken);
     }
   }
 
   @override
-  Future<Map<String, dynamic>> getBookingStats({String? channelToken}) async {
+  Future<BookingStatus> getBookingStats({String? channelToken}) async {
     try {
       log.log('\n===== BOOKING REPOSITORY: getBookingStats =====');
       log.log('Starting request with channel token: $channelToken');
@@ -129,13 +159,19 @@ class BookingRepository implements IBookingService {
 
       if (response == null) {
         log.log('Response is null');
-        return {'totalBookings': 0, 'totalRevenue': 0.0};
+        return _getOrCreateBookingStatus({
+          'totalBookings': 0,
+          'totalRevenue': 0.0,
+        }, channelToken: channelToken);
       }
 
       final data = response['data'];
       if (data == null) {
         log.log('Data is null');
-        return {'totalBookings': 0, 'totalRevenue': 0.0};
+        return _getOrCreateBookingStatus({
+          'totalBookings': 0,
+          'totalRevenue': 0.0,
+        }, channelToken: channelToken);
       }
 
       // Lấy doanh thu từ getBookingExpectedRevenue
@@ -153,12 +189,42 @@ class BookingRepository implements IBookingService {
       log.log('Result: Revenue = $revenue, Total bookings = $totalBookings');
       log.log('===== END BOOKING REPOSITORY =====\n');
 
-      return {'totalBookings': totalBookings, 'totalRevenue': revenue};
+      final bookingData = {
+        'totalBookings': totalBookings,
+        'totalRevenue': revenue,
+      };
+
+      // Tạo đối tượng BookingStatus và lưu vào storage
+      return _getOrCreateBookingStatus(bookingData, channelToken: channelToken);
     } catch (e) {
       log.log('Error fetching booking stats: $e');
       log.log('===== END BOOKING REPOSITORY WITH ERROR =====\n');
-      return {'totalBookings': 0, 'totalRevenue': 0.0};
+
+      // Nếu có lỗi, thử lấy dữ liệu đã lưu từ storage
+      return await _getStoredBookingStatus(channelToken: channelToken);
     }
+  }
+
+  // Lấy BookingStatus từ dữ liệu API hoặc tạo mới
+  Future<BookingStatus> _getOrCreateBookingStatus(
+    Map<String, dynamic> data, {
+    String? channelToken,
+  }) async {
+    // Tạo đối tượng BookingStatus từ dữ liệu API
+    final bookingStatus = BookingStatus.fromMap(
+      data,
+      channelToken: channelToken,
+    );
+
+    // Lưu vào storage
+    await bookingStatus.saveBookingData();
+
+    return bookingStatus;
+  }
+
+  // Lấy dữ liệu BookingStatus đã lưu từ storage
+  Future<BookingStatus> _getStoredBookingStatus({String? channelToken}) async {
+    return await BookingStatus.getFromStorage(channelToken: channelToken);
   }
 
   // Hàm hỗ trợ chuyển đổi giá trị sang double

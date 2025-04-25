@@ -1,0 +1,436 @@
+import 'dart:developer' as log;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
+class Court {
+  final String id;
+  final String name;
+  final String status;
+  final String price;
+  final String star;
+
+  Court({
+    required this.id,
+    required this.name,
+    required this.status,
+    required this.price,
+    required this.star,
+  });
+
+  factory Court.fromMap(Map<String, dynamic> map) {
+    return Court(
+      id: map['id']?.toString() ?? '',
+      name: map['name']?.toString() ?? 'Unknown Court',
+      status: map['status']?.toString() ?? 'available',
+      price: map['price']?.toString() ?? '0đ/giờ',
+      star: map['star']?.toString() ?? '0',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'status': status,
+      'price': price,
+      'star': star,
+    };
+  }
+}
+
+// Mô hình cho một đặt sân cụ thể
+class BookingOrder {
+  final String customerName;
+  final String courtName;
+  final String time;
+  final String type;
+  final String status;
+  final String paymentStatus;
+  final String phoneNumber;
+  final String emailAddress;
+  final String totalPrice;
+
+  BookingOrder({
+    required this.customerName,
+    required this.courtName,
+    required this.time,
+    required this.type,
+    required this.status,
+    required this.paymentStatus,
+    required this.phoneNumber,
+    required this.emailAddress,
+    required this.totalPrice,
+  });
+
+  factory BookingOrder.fromMap(Map<String, dynamic> map) {
+    // Extract customer info
+    final customer = map['customer'] as Map? ?? {};
+    final firstName = customer['firstName']?.toString() ?? '';
+    final lastName = customer['lastName']?.toString() ?? '';
+    final customerName =
+        firstName.isNotEmpty && lastName.isNotEmpty
+            ? '$firstName $lastName'
+            : 'Không có tên';
+    final phoneNumber = customer['phoneNumber']?.toString() ?? '';
+    final emailAddress = customer['emailAddress']?.toString() ?? '';
+
+    // Extract court info
+    final court = map['court'] as Map? ?? {};
+    final courtName = court['name']?.toString() ?? 'Không có tên sân';
+
+    // Extract time info
+    final startTime = map['start_time']?.toString() ?? '';
+    final endTime = map['end_time']?.toString() ?? '';
+    final timeRange =
+        startTime.isNotEmpty && endTime.isNotEmpty
+            ? '$startTime - $endTime'
+            : 'Không có thời gian';
+
+    // Extract total price
+    final totalPrice = map['total_price']?.toString() ?? '';
+
+    // Extract and map type
+    final rawType = map['type']?.toString().toLowerCase() ?? '';
+    final type = switch (rawType) {
+      'periodic' => 'Định kì',
+      'retail' => 'Loại lẻ',
+      _ => 'Loại lẻ', // default case
+    };
+
+    // Extract booking status from API response
+    final statusObj = map['status'] as Map?;
+    final status = statusObj?['name']?.toString() ?? 'Mới';
+
+    // Extract payment status
+    final paymentStatus =
+        map['paymentstatus']?['name']?.toString() ?? 'Chưa thanh toán';
+
+    return BookingOrder(
+      customerName: customerName,
+      courtName: courtName,
+      time: timeRange,
+      type: type,
+      status: status,
+      paymentStatus: paymentStatus,
+      phoneNumber: phoneNumber,
+      emailAddress: emailAddress,
+      totalPrice: totalPrice,
+    );
+  }
+
+  Map<String, String> toJson() {
+    return {
+      'customerName': customerName,
+      'courtName': courtName,
+      'time': time,
+      'type': type,
+      'status': status,
+      'paymentStatus': paymentStatus,
+      'phoneNumber': phoneNumber,
+      'emailAddress': emailAddress,
+      'total_price': totalPrice,
+    };
+  }
+}
+
+// Mô hình danh sách đặt sân (orders)
+class BookingOrderList {
+  final List<BookingOrder> orders;
+  final DateTime lastUpdated;
+  final String channelToken;
+  final DateTime bookingDate;
+  final int totalItems;
+
+  BookingOrderList({
+    required this.orders,
+    required this.channelToken,
+    required this.bookingDate,
+    this.totalItems = 0,
+    DateTime? lastUpdated,
+  }) : lastUpdated = lastUpdated ?? DateTime.now();
+
+  factory BookingOrderList.fromApiResponse(
+    Map<String, dynamic> response, {
+    required String channelToken,
+    required DateTime bookingDate,
+  }) {
+    try {
+      // Xử lý response và tạo danh sách BookingOrder
+      final data = response['data'];
+      if (data == null) {
+        log.log('Dữ liệu API không hợp lệ: data is null');
+        return BookingOrderList(
+          orders: [],
+          channelToken: channelToken,
+          bookingDate: bookingDate,
+        );
+      }
+
+      final getAllBooking = data['getAllBooking'];
+      if (getAllBooking == null) {
+        log.log('Dữ liệu API không hợp lệ: getAllBooking is null');
+        return BookingOrderList(
+          orders: [],
+          channelToken: channelToken,
+          bookingDate: bookingDate,
+        );
+      }
+
+      final totalItems = getAllBooking['totalItems'] as int? ?? 0;
+      final items = getAllBooking['items'] as List? ?? [];
+
+      if (items.isEmpty) {
+        log.log('Không có đặt sân nào trong danh sách');
+        return BookingOrderList(
+          orders: [],
+          channelToken: channelToken,
+          bookingDate: bookingDate,
+          totalItems: totalItems,
+        );
+      }
+
+      final orders =
+          items
+              .map((item) {
+                try {
+                  return BookingOrder.fromMap(item as Map<String, dynamic>);
+                } catch (e) {
+                  log.log('Lỗi chuyển đổi đơn đặt sân: $e');
+                  return null;
+                }
+              })
+              .whereType<BookingOrder>()
+              .toList();
+
+      log.log('Đã xử lý ${orders.length} đơn đặt sân');
+      return BookingOrderList(
+        orders: orders,
+        channelToken: channelToken,
+        bookingDate: bookingDate,
+        totalItems: totalItems,
+      );
+    } catch (e) {
+      log.log('Lỗi xử lý dữ liệu API đặt sân: $e');
+      return BookingOrderList(
+        orders: [],
+        channelToken: channelToken,
+        bookingDate: bookingDate,
+      );
+    }
+  }
+
+  // Lưu danh sách vào SharedPreferences
+  Future<bool> saveOrderListData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Lưu toàn bộ dữ liệu dưới dạng JSON
+      final key = _getOrderStorageKey(channelToken, bookingDate);
+      final jsonString = json.encode(toJson());
+      await prefs.setString(key, jsonString);
+
+      log.log(
+        'BookingOrderList đã lưu thành công cho channel: $channelToken, ngày: ${bookingDate.toIso8601String()}',
+      );
+      return true;
+    } catch (e) {
+      log.log('Lỗi khi lưu BookingOrderList: $e');
+      return false;
+    }
+  }
+
+  // Lấy danh sách từ SharedPreferences
+  static Future<BookingOrderList> getFromStorage({
+    required String channelToken,
+    required DateTime bookingDate,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = _getOrderStorageKey(channelToken, bookingDate);
+      final jsonString = prefs.getString(key);
+
+      if (jsonString == null || jsonString.isEmpty) {
+        return BookingOrderList(
+          orders: [],
+          channelToken: channelToken,
+          bookingDate: bookingDate,
+        );
+      }
+
+      // Decode JSON
+      final Map<String, dynamic> map = json.decode(jsonString);
+
+      // Parse orders list
+      final List<dynamic> ordersList = map['orders'] ?? [];
+      final List<BookingOrder> orders =
+          ordersList.map((item) {
+            final Map<String, dynamic> orderMap = Map<String, dynamic>.from(
+              item,
+            );
+
+            return BookingOrder(
+              customerName: orderMap['customerName'] ?? '',
+              courtName: orderMap['courtName'] ?? '',
+              time: orderMap['time'] ?? '',
+              type: orderMap['type'] ?? '',
+              status: orderMap['status'] ?? '',
+              paymentStatus: orderMap['paymentStatus'] ?? '',
+              phoneNumber: orderMap['phoneNumber'] ?? '',
+              emailAddress: orderMap['emailAddress'] ?? '',
+              totalPrice: orderMap['total_price'] ?? '',
+            );
+          }).toList();
+
+      // Parse other fields
+      final DateTime lastUpdated =
+          map['lastUpdated'] != null
+              ? DateTime.parse(map['lastUpdated'])
+              : DateTime.now();
+      final int totalItems = map['totalItems'] ?? 0;
+
+      return BookingOrderList(
+        orders: orders,
+        channelToken: channelToken,
+        bookingDate: bookingDate,
+        lastUpdated: lastUpdated,
+        totalItems: totalItems,
+      );
+    } catch (e) {
+      log.log('Lỗi khi lấy BookingOrderList từ storage: $e');
+      return BookingOrderList(
+        orders: [],
+        channelToken: channelToken,
+        bookingDate: bookingDate,
+      );
+    }
+  }
+
+  // Convert danh sách thành JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'orders': orders.map((order) => order.toJson()).toList(),
+      'lastUpdated': lastUpdated.toIso8601String(),
+      'channelToken': channelToken,
+      'bookingDate': bookingDate.toIso8601String(),
+      'totalItems': totalItems,
+    };
+  }
+
+  // Kiểm tra xem dữ liệu có hết hạn chưa (quá 30 phút)
+  bool isExpired() {
+    final now = DateTime.now();
+    return now.difference(lastUpdated).inMinutes >= 30;
+  }
+
+  // Tạo key lưu trữ trong SharedPreferences dựa vào channelToken và ngày
+  static String _getOrderStorageKey(String channelToken, DateTime date) {
+    final dateString = '${date.year}-${date.month}-${date.day}';
+    return 'BOOKING_ORDERS_${channelToken}_$dateString';
+  }
+
+  // Chuyển đổi sang định dạng mà bloc hiện tại đang sử dụng
+  List<Map<String, String>> toSimpleMapList() {
+    return orders.map((order) => order.toJson()).toList();
+  }
+}
+
+class BookingList {
+  final List<Court> courts;
+  final DateTime lastUpdated;
+  final String? channelToken;
+
+  BookingList({required this.courts, DateTime? lastUpdated, this.channelToken})
+    : lastUpdated = lastUpdated ?? DateTime.now();
+
+  // Tạo danh sách từ API response
+  factory BookingList.fromMapList(
+    List<Map<String, dynamic>> maps, {
+    String? channelToken,
+  }) {
+    return BookingList(
+      courts: maps.map((map) => Court.fromMap(map)).toList(),
+      lastUpdated: DateTime.now(),
+      channelToken: channelToken,
+    );
+  }
+
+  // Convert danh sách thành JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'courts': courts.map((court) => court.toJson()).toList(),
+      'lastUpdated': lastUpdated.toIso8601String(),
+      'channelToken': channelToken,
+    };
+  }
+
+  // Tạo danh sách rỗng
+  factory BookingList.empty() {
+    return BookingList(courts: []);
+  }
+
+  // Lưu danh sách vào SharedPreferences
+  Future<bool> saveListData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Lưu toàn bộ dữ liệu dưới dạng JSON
+      final key = _getStorageKey(channelToken);
+      final jsonString = json.encode(toJson());
+      await prefs.setString(key, jsonString);
+
+      log.log(
+        'BookingList data saved successfully for channel: ${channelToken ?? "default"}',
+      );
+      return true;
+    } catch (e) {
+      log.log('Error saving BookingList data: $e');
+      return false;
+    }
+  }
+
+  // Lấy danh sách từ SharedPreferences
+  static Future<BookingList> getFromStorage({String? channelToken}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = _getStorageKey(channelToken);
+      final jsonString = prefs.getString(key);
+
+      if (jsonString == null || jsonString.isEmpty) {
+        return BookingList.empty();
+      }
+
+      // Decode JSON
+      final Map<String, dynamic> map = json.decode(jsonString);
+
+      // Parse courts list
+      final List<dynamic> courtsList = map['courts'] ?? [];
+      final List<Court> courts =
+          courtsList
+              .map((item) => Court.fromMap(item as Map<String, dynamic>))
+              .toList();
+
+      return BookingList(
+        courts: courts,
+        lastUpdated:
+            map['lastUpdated'] != null
+                ? DateTime.parse(map['lastUpdated'])
+                : DateTime.now(),
+        channelToken: channelToken,
+      );
+    } catch (e) {
+      log.log('Error retrieving BookingList data: $e');
+      return BookingList.empty();
+    }
+  }
+
+  // Kiểm tra xem dữ liệu có hết hạn chưa (quá 1 giờ)
+  bool isExpired() {
+    final now = DateTime.now();
+    return now.difference(lastUpdated).inHours >= 1;
+  }
+
+  // Tạo key lưu trữ trong SharedPreferences dựa vào channelToken
+  static String _getStorageKey(String? channelToken) {
+    return 'BOOKING_LIST_${channelToken ?? "default"}';
+  }
+}

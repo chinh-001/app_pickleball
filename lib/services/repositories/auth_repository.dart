@@ -2,6 +2,7 @@ import '../interfaces/i_auth_service.dart';
 import '../api/api_client.dart';
 import 'dart:developer' as log;
 import '../../utils/auth_helper.dart';
+import '../../model/userAccount_model.dart';
 
 class AuthRepository implements IAuthService {
   final ApiClient _apiClient;
@@ -10,7 +11,7 @@ class AuthRepository implements IAuthService {
     : _apiClient = apiClient ?? ApiClient.instance;
 
   @override
-  Future<bool> login(String username, String password) async {
+  Future<UserAccount?> login(String username, String password) async {
     try {
       final response = await _apiClient.query(
         'mutation Login(\$username: String!, \$password: String!) { login(username: \$username, password: \$password) { ... on CurrentUser { id identifier } } }',
@@ -19,52 +20,40 @@ class AuthRepository implements IAuthService {
 
       if (response == null) {
         log.log('Login response is null');
-        return false;
+        return null;
       }
 
       final data = response['data'];
       if (data == null) {
         log.log('Login data is null');
-        return false;
+        return null;
       }
 
       final loginData = data['login'];
       if (loginData == null) {
         log.log('Login result is null');
-        return false;
+        return null;
       }
 
-      // Kiểm tra đăng nhập thành công
-      final successful = loginData['id'] != null;
-      if (successful) {
-        // Lưu trạng thái đăng nhập
-        await AuthHelper.saveUserLoggedInStatus(true);
-        
-        // Lưu thông tin người dùng nếu có
-        final id = loginData['id']?.toString() ?? '';
-        final identifier = loginData['identifier']?.toString() ?? '';
-        
-        if (id.isNotEmpty) {
-          // Tạo token từ ID và identifier
-          final token = '$id:$identifier';
-          await AuthHelper.saveUserToken(token);
-          
-          // Lưu tên người dùng nếu có thông tin
-          if (identifier.isNotEmpty) {
-            await AuthHelper.saveUserName(identifier);
-          }
-          
-          // Cập nhật token trong ApiClient để sử dụng cho các request tiếp theo
-          _apiClient.setAuthToken(token);
+      // Check if login was successful
+      if (loginData['id'] != null) {
+        // Create user model from response
+        final user = UserAccount.fromMap(loginData);
+
+        // User model sẽ tự xử lý lưu dữ liệu đăng nhập
+        final saved = await user.saveLoginData();
+        if (!saved) {
+          log.log('User data không được lưu thành công');
         }
-        
-        log.log('Đăng nhập thành công và đã lưu trạng thái');
+
+        log.log('Login successful and passed to User model');
+        return user;
       }
-      
-      return successful;
+
+      return null;
     } catch (e) {
       log.log('Login error: $e');
-      return false;
+      return null;
     }
   }
 
@@ -73,10 +62,10 @@ class AuthRepository implements IAuthService {
     try {
       // Xóa token trong ApiClient
       await _apiClient.clearAuth();
-      
+
       // Xóa tất cả dữ liệu đăng nhập đã lưu
       await AuthHelper.clearUserData();
-      
+
       log.log('Đăng xuất thành công và đã xóa trạng thái');
       return true;
     } catch (e) {
@@ -95,7 +84,7 @@ class AuthRepository implements IAuthService {
   Future<bool> isLoggedIn() async {
     // Kiểm tra trạng thái đăng nhập từ SharedPreferences
     final loggedIn = await AuthHelper.getUserLoggedInStatus();
-    
+
     // Double-check: nếu loggedIn = true nhưng token không tồn tại thì vẫn coi là chưa đăng nhập
     if (loggedIn) {
       final token = await AuthHelper.getUserToken();
@@ -106,7 +95,7 @@ class AuthRepository implements IAuthService {
       }
       return true;
     }
-    
+
     return false;
   }
 }

@@ -29,13 +29,13 @@ class OrderListScreenLoading extends OrderListScreenState {
 
 class OrderListScreenLoaded extends OrderListScreenState {
   final List<Map<String, String>> items;
-  final Map<String, dynamic>? bookingData;
+  final BookingOrderList? bookingOrderList;
 
   const OrderListScreenLoaded({
     required super.selectedChannel,
     required super.availableChannels,
     required this.items,
-    this.bookingData,
+    this.bookingOrderList,
   });
 
   @override
@@ -43,7 +43,7 @@ class OrderListScreenLoaded extends OrderListScreenState {
     selectedChannel,
     availableChannels,
     items,
-    bookingData ?? {},
+    if (bookingOrderList != null) bookingOrderList!,
   ];
 }
 

@@ -2,6 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import 'dart:developer' as log;
+import 'package:app_pickleball/model/bookingStatus_model.dart';
+import 'package:app_pickleball/model/bookingList_model.dart';
 
 part 'home_screen_event.dart';
 part 'home_screen_state.dart';
@@ -24,22 +26,22 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
       'id': '1',
       'name': 'Sân 1',
       'status': 'available',
-      'price': 100000,
-      'star': 4.5,
+      'price': '100000đ/giờ',
+      'star': '4.5',
     },
     {
       'id': '2',
       'name': 'Sân 2',
       'status': 'available',
-      'price': 120000,
-      'star': 4.8,
+      'price': '120000đ/giờ',
+      'star': '4.8',
     },
     {
       'id': '3',
       'name': 'Sân 3',
       'status': 'booked',
-      'price': 150000,
-      'star': 5.0,
+      'price': '150000đ/giờ',
+      'star': '5.0',
     },
   ];
 
@@ -88,29 +90,48 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
       );
       log.log('Emitted: HomeScreenLoading');
 
+      // Lấy dữ liệu booking stats thông qua BookingStatus model
       log.log(
         'Calling bookingRepository.getBookingStats with token: ${event.channelToken}',
       );
-      final stats = await bookingRepository.getBookingStats(
+      final bookingStatus = await bookingRepository.getBookingStats(
         channelToken: event.channelToken,
       );
 
-      final totalOrders = stats['totalBookings'] ?? 0;
-      final totalSales = stats['totalRevenue'] ?? 0.0;
+      final totalOrders = bookingStatus.totalBookings;
+      final totalSales = bookingStatus.totalRevenue;
 
       log.log(
         'Stats received: totalOrders=$totalOrders, totalSales=$totalSales',
       );
 
-      // Use mock data instead of API call
-      final courtItems = mockCourts;
+      // Lấy danh sách court thông qua BookingList model
+      log.log(
+        'Calling bookingRepository.getCourtItems with token: ${event.channelToken}',
+      );
+      BookingList bookingList;
+      try {
+        bookingList = await bookingRepository.getCourtItems(
+          channelToken: event.channelToken,
+        );
+
+        if (bookingList.courts.isEmpty) {
+          // Nếu không có dữ liệu, sử dụng mock data
+          log.log('No courts available from API, using mock data');
+          bookingList = BookingList.fromMapList(mockCourts);
+        }
+      } catch (e) {
+        log.log('Error fetching courts, using mock data: $e');
+        bookingList = BookingList.fromMapList(mockCourts);
+      }
 
       final newState = HomeScreenLoaded(
-        items: courtItems,
+        bookingList: bookingList,
         totalOrders: totalOrders,
         totalSales: totalSales,
         selectedChannel: state.selectedChannel,
         availableChannels: channels,
+        bookingStatus: bookingStatus,
       );
 
       log.log(

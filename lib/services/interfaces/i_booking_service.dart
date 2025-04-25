@@ -1,3 +1,7 @@
+import '../../model/bookingStatus_model.dart';
+import '../../model/bookingList_model.dart';
+
 abstract class IBookingService {
-  Future<Map<String, dynamic>> getBookingStats({String? channelToken});
+  Future<BookingStatus> getBookingStats({String? channelToken});
+  Future<BookingList> getCourtItems({String? channelToken});
 }

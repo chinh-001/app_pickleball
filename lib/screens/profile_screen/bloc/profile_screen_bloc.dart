@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../services/repositories/administrator_repository.dart';
 import '../../../services/repositories/auth_repository.dart';
+import '../../../model/userInfo_model.dart';
 import 'dart:developer' as log;
 
 part 'profile_screen_event.dart';
@@ -17,7 +18,7 @@ class ProfileScreenBloc extends Bloc<ProfileScreenEvent, ProfileScreenState> {
   }) : _administratorRepository =
            administratorRepository ?? AdministratorRepository(),
        _authRepository = authRepository ?? AuthRepository(),
-       super(ProfileReadOnlyState(name: '', email: '')) {
+       super(ProfileReadOnlyState(name: '', email: '', userInfo: null)) {
     on<LoadProfileEvent>(_onLoadProfile);
     on<EnableEditEvent>(_onEnableEdit);
     on<SaveInfoEvent>(_onSaveInfo);
@@ -31,6 +32,10 @@ class ProfileScreenBloc extends Bloc<ProfileScreenEvent, ProfileScreenState> {
     try {
       log.log('Processing logout...');
       final success = await _authRepository.logout();
+
+      // Xóa thông tin người dùng khỏi storage
+      await UserInfo.clearUserInfo();
+
       if (success) {
         log.log('Logout successful');
         emit(ProfileLoggedOutState());
@@ -50,22 +55,24 @@ class ProfileScreenBloc extends Bloc<ProfileScreenEvent, ProfileScreenState> {
     Emitter<ProfileScreenState> emit,
   ) async {
     try {
-      final administrator =
-          await _administratorRepository.getActiveAdministrator();
-      if (administrator.isEmpty) {
-        emit(ProfileReadOnlyState(name: '', email: ''));
+      // Sử dụng UserInfo model
+      final userInfo = await _administratorRepository.getActiveAdministrator();
+
+      if (userInfo.name.isEmpty && userInfo.email.isEmpty) {
+        emit(ProfileReadOnlyState(name: '', email: '', userInfo: userInfo));
         return;
       }
 
       emit(
         ProfileReadOnlyState(
-          name: administrator['name'] ?? '',
-          email: administrator['email'] ?? '',
+          name: userInfo.name,
+          email: userInfo.email,
+          userInfo: userInfo,
         ),
       );
     } catch (e) {
       log.log('Error loading profile: $e');
-      emit(ProfileReadOnlyState(name: '', email: ''));
+      emit(ProfileReadOnlyState(name: '', email: '', userInfo: null));
     }
   }
 
@@ -76,6 +83,7 @@ class ProfileScreenBloc extends Bloc<ProfileScreenEvent, ProfileScreenState> {
         ProfileEditableState(
           name: currentState.name,
           email: currentState.email,
+          userInfo: currentState.userInfo,
         ),
       );
     }
@@ -86,8 +94,39 @@ class ProfileScreenBloc extends Bloc<ProfileScreenEvent, ProfileScreenState> {
     Emitter<ProfileScreenState> emit,
   ) async {
     try {
-      // TODO: Implement save to repository
-      emit(ProfileReadOnlyState(name: event.name, email: event.email));
+      log.log('Saving profile info: ${event.name}, ${event.email}');
+
+      // Nếu có UserInfo hiện tại, cập nhật nó
+      UserInfo? updatedUserInfo;
+      if (state is ProfileEditableState) {
+        final currentState = state as ProfileEditableState;
+        if (currentState.userInfo != null) {
+          updatedUserInfo = await currentState.userInfo!.updateUserInfo(
+            name: event.name,
+            email: event.email,
+          );
+        } else {
+          // Tạo mới nếu không có
+          updatedUserInfo = UserInfo(name: event.name, email: event.email);
+          await updatedUserInfo.saveUserInfo();
+        }
+      } else {
+        // Tạo mới nếu không có
+        updatedUserInfo = UserInfo(name: event.name, email: event.email);
+        await updatedUserInfo.saveUserInfo();
+      }
+
+      // TODO: Implement save to API repository here
+
+      emit(
+        ProfileReadOnlyState(
+          name: event.name,
+          email: event.email,
+          userInfo: updatedUserInfo,
+        ),
+      );
+
+      log.log('Profile info saved successfully');
     } catch (e) {
       log.log('Error saving profile: $e');
       // Keep the current state if save fails

@@ -6,7 +6,6 @@ import 'api_endpoints.dart';
 import 'api_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cookie_jar/cookie_jar.dart';
-import '../repositories/auth_repository.dart';
 import '../../utils/auth_helper.dart';
 
 class ApiClient {
@@ -26,7 +25,7 @@ class ApiClient {
       if (token.isNotEmpty) {
         log.log('Khởi tạo ApiClient với token đã lưu: $token');
         instance._authToken = token;
-        
+
         // Xác minh token có hợp lệ không bằng cách log token
         log.log('Token được đặt thành công: ${instance._authToken}');
       } else {
@@ -38,14 +37,23 @@ class ApiClient {
       final savedCookies = prefs.getString('cookies');
       if (savedCookies != null && savedCookies.isNotEmpty) {
         try {
-          final cookies = savedCookies.split(';').map((cookie) {
-            final parts = cookie.trim().split('=');
-            if (parts.length >= 2) {
-              return Cookie(parts[0], parts.join('=').substring(parts[0].length + 1));
-            }
-            log.log('Bỏ qua cookie không hợp lệ: $cookie');
-            return null;
-          }).where((c) => c != null).cast<Cookie>().toList();
+          final cookies =
+              savedCookies
+                  .split(';')
+                  .map((cookie) {
+                    final parts = cookie.trim().split('=');
+                    if (parts.length >= 2) {
+                      return Cookie(
+                        parts[0],
+                        parts.join('=').substring(parts[0].length + 1),
+                      );
+                    }
+                    log.log('Bỏ qua cookie không hợp lệ: $cookie');
+                    return null;
+                  })
+                  .where((c) => c != null)
+                  .cast<Cookie>()
+                  .toList();
 
           if (cookies.isNotEmpty) {
             log.log('Đã tải ${cookies.length} cookies từ SharedPreferences');
@@ -84,13 +92,15 @@ class ApiClient {
           query.contains('GetTotalBooking')) {
         // Đảm bảo có channel token đúng cho các API liên quan đến booking
         final bookingChannelToken = channelToken ?? 'demo-channel';
-        log.log('Sử dụng channel token đặc biệt cho booking API: $bookingChannelToken');
-        
+        log.log(
+          'Sử dụng channel token đặc biệt cho booking API: $bookingChannelToken',
+        );
+
         // Đặc biệt log debug cho booking API
         final savedToken = await AuthHelper.getUserToken();
         log.log('Token hiện tại từ AuthHelper: $savedToken');
         log.log('Token hiện tại trong ApiClient: $_authToken');
-        
+
         // Lấy headers với channel token đặc biệt
         final headers = await _getHeaders(channelToken: bookingChannelToken);
         log.log('Request Headers cho booking API: $headers');
@@ -146,7 +156,9 @@ class ApiClient {
 
     // Thêm tham số để debug
     final bool isBookingQuery = channelToken == null ? false : true;
-    log.log('Đang chuẩn bị headers cho ${isBookingQuery ? "booking query" : "query thông thường"}');
+    log.log(
+      'Đang chuẩn bị headers cho ${isBookingQuery ? "booking query" : "query thông thường"}',
+    );
 
     // Xử lý channel token - Đảm bảo luôn có channel token cho queries liên quan đến booking
     if (channelToken != null) {
@@ -155,7 +167,8 @@ class ApiClient {
     } else {
       // Đối với booking queries, sử dụng channel token của production
       // Với các API khác, sử dụng demo-channel
-      headers['vendure-token'] = 'demo-channel'; // Đã sửa lại từ default-channel sang demo-channel
+      headers['vendure-token'] =
+          'demo-channel'; // Đã sửa lại từ default-channel sang demo-channel
       log.log('Sử dụng channel token mặc định: ${headers["vendure-token"]}');
     }
 

@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:app_pickleball/enum/CallApiStatus.dart';
 import 'package:app_pickleball/services/interfaces/i_auth_service.dart';
-
+import 'package:app_pickleball/model/userAccount_model.dart';
 part 'login_event.dart';
 part 'login_state.dart';
 
@@ -28,10 +28,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     Emitter<LoginState> emit,
   ) async {
     try {
-      final success = await _authRepository.login(event.email, event.password);
+      emit(state.copyWith(status: CallApiStatus.loading));
 
-      if (success) {
-        emit(state.copyWith(status: CallApiStatus.success));
+      final user = await _authRepository.login(event.email, event.password);
+
+      if (user != null) {
+        emit(state.copyWith(status: CallApiStatus.success, currentUser: user));
       } else {
         emit(state.copyWith(status: CallApiStatus.failure));
       }
