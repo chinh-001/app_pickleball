@@ -68,10 +68,11 @@ class BookingListRepository implements IBookingListService {
       log.log('Date: $date');
       log.log('Query: $query');
 
-      final response = await _apiClient.query(
+      final response = await _apiClient.query<Map<String, dynamic>>(
         query,
         variables: {},
         channelToken: channelToken,
+        converter: (json) => json,
       );
 
       if (response == null) {

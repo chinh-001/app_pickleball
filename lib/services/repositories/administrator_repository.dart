@@ -22,7 +22,10 @@ class AdministratorRepository implements IAdministratorService {
         }
       ''';
 
-      final response = await _apiClient.query(query);
+      final response = await _apiClient.query<Map<String, dynamic>>(
+        query,
+        converter: (json) => json,
+      );
       if (response == null) {
         log.log('ActiveAdministrator response is null');
         return {};

@@ -50,9 +50,10 @@ class BookingRepository implements IBookingService {
         }
       ''';
 
-      final response = await _apiClient.query(
+      final response = await _apiClient.query<Map<String, dynamic>>(
         query,
         channelToken: channelToken ?? 'demo-channel',
+        converter: (json) => json,
       );
 
       if (response == null || response['data'] == null) {
@@ -151,10 +152,11 @@ class BookingRepository implements IBookingService {
         }
       ''';
 
-      final response = await _apiClient.query(
+      final response = await _apiClient.query<Map<String, dynamic>>(
         query,
         variables: {'startDate': startDateStr, 'endDate': endDateStr},
         channelToken: channelToken ?? 'demo-channel',
+        converter: (json) => json,
       );
 
       if (response == null) {

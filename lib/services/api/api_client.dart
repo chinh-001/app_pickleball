@@ -8,6 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import '../../utils/auth_helper.dart';
 
+/// Định nghĩa kiểu hàm chuyển đổi từ JSON sang kiểu T
+typedef JsonConverter<T> = T Function(Map<String, dynamic> json);
+
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
   static ApiClient get instance => _instance;
@@ -71,37 +74,25 @@ class ApiClient {
     }
   }
 
-  Future<Map<String, dynamic>?> query(
+  /// Query GraphQL và trả về kiểu T
+  /// [converter] là hàm chuyển đổi từ JSON sang kiểu T
+  Future<T?> query<T>(
     String query, {
     Map<String, dynamic>? variables,
     String? channelToken,
+    required JsonConverter<T> converter,
   }) async {
     try {
-      log.log('\n=== API REQUEST ===');
-      log.log('GraphQL Endpoint: ${ApiEndpoints.graphql}');
-      log.log('GraphQL Query: $query');
-      log.log('Variables: $variables');
-      log.log('Channel Token: $channelToken');
-
-      // Tạo body request để in ra
       final requestBody = json.encode({'query': query, 'variables': variables});
-      log.log('Request Body: $requestBody');
 
       // Kiểm tra nếu là query lấy booking stats thì gọi API thật
       if (query.contains('getBookingExpectedRevenue') ||
           query.contains('GetTotalBooking')) {
-        // Đảm bảo có channel token đúng cho các API liên quan đến booking
         final bookingChannelToken = channelToken ?? 'demo-channel';
         log.log(
           'Sử dụng channel token đặc biệt cho booking API: $bookingChannelToken',
         );
 
-        // Đặc biệt log debug cho booking API
-        final savedToken = await AuthHelper.getUserToken();
-        log.log('Token hiện tại từ AuthHelper: $savedToken');
-        log.log('Token hiện tại trong ApiClient: $_authToken');
-
-        // Lấy headers với channel token đặc biệt
         final headers = await _getHeaders(channelToken: bookingChannelToken);
         log.log('Request Headers cho booking API: $headers');
 
@@ -112,17 +103,22 @@ class ApiClient {
         );
 
         await _saveCookies(response);
-        return _handleResponse(response);
+        final jsonResponse = _handleResponse(response);
+        if (jsonResponse != null) {
+          return converter(jsonResponse);
+        }
+        return null;
       }
 
       // Giữ lại mock data cho các trường hợp khác
       if (channelToken == 'demo-channel') {
         log.log('Using mock data for demo-channel');
-        return {
+        final mockData = {
           'data': {
             // Các mock data khác ở đây
           },
         };
+        return converter(mockData);
       }
 
       // Lấy headers
@@ -135,18 +131,62 @@ class ApiClient {
         body: requestBody,
       );
 
-      // log.log('\n=== API RESPONSE ===');
-      // log.log('Response Status Code: ${response.statusCode}');
-      // log.log('Response Headers: ${response.headers}');
-      // log.log('Response Body: ${response.body}');
-      // log.log('==============================\n');
-
       await _saveCookies(response);
-      return _handleResponse(response);
+      final jsonResponse = _handleResponse(response);
+      if (jsonResponse != null) {
+        return converter(jsonResponse);
+      }
+      return null;
     } catch (e) {
       log.log('\n=== API ERROR ===');
       log.log('Error details: $e');
       log.log('==============================\n');
+      return null;
+    }
+  }
+
+  /// Query với đường dẫn đến field data cụ thể trong GraphQL response
+  /// Tiện ích khi bạn chỉ quan tâm đến một phần nhỏ của response
+  Future<T?> queryField<T>(
+    String query, {
+    Map<String, dynamic>? variables,
+    String? channelToken,
+    required String fieldPath,
+    required JsonConverter<T> converter,
+  }) async {
+    try {
+      // Sử dụng query<Map<String, dynamic>> thay vì queryMap
+      final Map<String, dynamic>? response = await this
+          .query<Map<String, dynamic>>(
+            query,
+            variables: variables,
+            channelToken: channelToken,
+            converter: (json) => json,
+          );
+
+      if (response == null || !response.containsKey('data')) {
+        return null;
+      }
+
+      // Hỗ trợ đường dẫn với dấu chấm, ví dụ "me.channels"
+      final pathParts = fieldPath.split('.');
+      dynamic data = response['data'];
+
+      for (final part in pathParts) {
+        if (data is! Map<String, dynamic> || !data.containsKey(part)) {
+          log.log('Field path không hợp lệ: $fieldPath');
+          return null;
+        }
+        data = data[part];
+      }
+
+      if (data == null) {
+        return null;
+      }
+
+      return converter(data is Map<String, dynamic> ? data : {'result': data});
+    } catch (e) {
+      log.log('Error querying field: $e');
       return null;
     }
   }

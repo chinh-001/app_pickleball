@@ -13,9 +13,10 @@ class AuthRepository implements IAuthService {
   @override
   Future<UserAccount?> login(String username, String password) async {
     try {
-      final response = await _apiClient.query(
+      final response = await _apiClient.query<Map<String, dynamic>>(
         'mutation Login(\$username: String!, \$password: String!) { login(username: \$username, password: \$password) { ... on CurrentUser { id identifier } } }',
         variables: {'username': username, 'password': password},
+        converter: (json) => json,
       );
 
       if (response == null) {
