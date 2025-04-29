@@ -11,7 +11,7 @@ import 'package:app_pickleball/utils/number_format.dart';
 import 'dart:developer' as log;
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen>
                       selectedValue: state.selectedChannel,
                       onChanged: (String? newValue) {
                         if (newValue != null) {
-                          log.log('\n+++++ HOME SCREEN: CHANNEL CHANGED +++++');
+                          // log.log('\n+++++ HOME SCREEN: CHANNEL CHANGED +++++');
                           log.log(
                             'Channel changed from "${state.selectedChannel}" to "$newValue"',
                           );
@@ -114,9 +114,9 @@ class _HomeScreenState extends State<HomeScreen>
                             ChangeChannelEvent(channelName: newValue),
                           );
 
-                          log.log(
-                            '+++++ END HOME SCREEN CHANNEL CHANGE +++++\n',
-                          );
+                          // log.log(
+                          //   '+++++ END HOME SCREEN CHANNEL CHANGE +++++\n',
+                          // );
                         }
                       },
                     );

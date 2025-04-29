@@ -3,6 +3,8 @@ import '../api/api_client.dart';
 import 'dart:developer' as log;
 import '../../utils/auth_helper.dart';
 import '../../model/userAccount_model.dart';
+import '../../model/userPermissions_model.dart';
+import '../../utils/env_helper.dart';
 
 class AuthRepository implements IAuthService {
   final ApiClient _apiClient;
@@ -47,14 +49,92 @@ class AuthRepository implements IAuthService {
           log.log('User data không được lưu thành công');
         }
 
-        log.log('Login successful and passed to User model');
+        log.log('Đăng nhập thành công và đã lưu thông tin người dùng');
+
+        // Sau khi đăng nhập thành công, thực hiện truy vấn "query Me"
+        await _fetchUserPermissions();
+
         return user;
       }
 
       return null;
     } catch (e) {
-      log.log('Login error: $e');
+      log.log('Lỗi đăng nhập: $e');
       return null;
+    }
+  }
+
+  // Phương thức để thực hiện truy vấn "query Me" và log kết quả
+  Future<void> _fetchUserPermissions() async {
+    try {
+      log.log(
+        'Đang thực hiện truy vấn "query Me" sau khi đăng nhập thành công...',
+      );
+
+      final response = await _apiClient.query<Map<String, dynamic>>(
+        '''
+        query Me {
+            me {
+                id
+                identifier
+                channels {
+                    id
+                    token
+                    code
+                    permissions
+                }
+            }
+        }
+        ''',
+        variables: {},
+        converter: (json) => json,
+      );
+
+      if (response == null) {
+        log.log('Kết quả truy vấn "query Me" trả về null');
+        return;
+      }
+
+      // Log toàn bộ kết quả truy vấn "query Me" ra console
+      log.log('Kết quả truy vấn "query Me": $response');
+
+      final data = response['data'];
+      if (data == null) {
+        log.log('Dữ liệu từ truy vấn "query Me" là null');
+        return;
+      }
+
+      final meData = data['me'];
+      if (meData == null) {
+        log.log('Dữ liệu "me" từ truy vấn là null');
+        return;
+      }
+
+      // Chuyển đổi dữ liệu thành đối tượng UserPermissions để dễ sử dụng
+      final permissions = UserPermissions.fromMap(meData);
+
+      // Lưu kết quả vào bộ nhớ cục bộ thông qua AuthHelper
+      await AuthHelper.saveUserPermissionsData(permissions.toJson());
+
+      // Log thông tin chi tiết về quyền hạn của người dùng
+      log.log(
+        'Thông tin người dùng - ID: ${permissions.id}, Identifier: ${permissions.identifier}',
+      );
+      log.log('Số lượng channel: ${permissions.channels.length}');
+
+      for (final channel in permissions.channels) {
+        log.log('Channel - ID: ${channel.id}, Code: ${channel.code}');
+        log.log('Permissions: ${channel.permissions.join(", ")}');
+      }
+
+      // So sánh với giá trị mặc định từ .env file
+      final defaultPermissions = EnvHelper.getDefaultUserPermissions();
+      log.log('So sánh với quyền hạn mặc định từ file .env:');
+      log.log(
+        'Channel mặc định từ .env: ${defaultPermissions.channels.map((c) => c.code).join(", ")}',
+      );
+    } catch (e) {
+      log.log('Lỗi khi thực hiện truy vấn "query Me": $e');
     }
   }
 
@@ -70,7 +150,7 @@ class AuthRepository implements IAuthService {
       log.log('Đăng xuất thành công và đã xóa trạng thái');
       return true;
     } catch (e) {
-      log.log('Logout error: $e');
+      log.log('Lỗi đăng xuất: $e');
       return false;
     }
   }

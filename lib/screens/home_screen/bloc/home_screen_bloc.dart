@@ -68,7 +68,7 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     final channelToken = bookingRepository.getChannelToken(event.channelName);
     add(FetchOrdersEvent(channelToken: channelToken));
 
-    log.log('***** END HOME SCREEN BLOC: _onChangeChannel *****\n');
+    // log.log('***** END HOME SCREEN BLOC: _onChangeChannel *****\n');
   }
 
   Future<void> _onFetchOrders(
@@ -76,11 +76,11 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     Emitter<HomeScreenState> emit,
   ) async {
     try {
-      log.log('\n***** HOME SCREEN BLOC: _onFetchOrders *****');
-      log.log(
-        'Event: ${event.runtimeType} with channel token: ${event.channelToken}',
-      );
-      log.log('Current state: ${state.runtimeType}');
+      // log.log('\n***** HOME SCREEN BLOC: _onFetchOrders *****');
+      // log.log(
+      //   'Event: ${event.runtimeType} with channel token: ${event.channelToken}',
+      // );
+      // log.log('Current state: ${state.runtimeType}');
 
       emit(
         HomeScreenLoading(
@@ -88,12 +88,12 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
           availableChannels: channels,
         ),
       );
-      log.log('Emitted: HomeScreenLoading');
+      // log.log('Emitted: HomeScreenLoading');
 
       // Lấy dữ liệu booking stats thông qua BookingStatus model
-      log.log(
-        'Calling bookingRepository.getBookingStats with token: ${event.channelToken}',
-      );
+      // log.log(
+      //   'Calling bookingRepository.getBookingStats with token: ${event.channelToken}',
+      // );
       final bookingStatus = await bookingRepository.getBookingStats(
         channelToken: event.channelToken,
       );
@@ -101,14 +101,14 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
       final totalOrders = bookingStatus.totalBookings;
       final totalSales = bookingStatus.totalRevenue;
 
-      log.log(
-        'Stats received: totalOrders=$totalOrders, totalSales=$totalSales',
-      );
+      // log.log(
+      //   'Stats received: totalOrders=$totalOrders, totalSales=$totalSales',
+      // );
 
       // Lấy danh sách court thông qua BookingList model
-      log.log(
-        'Calling bookingRepository.getCourtItems with token: ${event.channelToken}',
-      );
+      // log.log(
+      //   'Calling bookingRepository.getCourtItems with token: ${event.channelToken}',
+      // );
       BookingList bookingList;
       try {
         bookingList = await bookingRepository.getCourtItems(
@@ -117,7 +117,7 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
 
         if (bookingList.courts.isEmpty) {
           // Nếu không có dữ liệu, sử dụng mock data
-          log.log('No courts available from API, using mock data');
+          // log.log('No courts available from API, using mock data');
           bookingList = BookingList.fromMapList(mockCourts);
         }
       } catch (e) {
@@ -134,11 +134,11 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
         bookingStatus: bookingStatus,
       );
 
-      log.log(
-        'Emitting: HomeScreenLoaded with totalOrders=$totalOrders, totalSales=$totalSales',
-      );
+      // log.log(
+      //   'Emitting: HomeScreenLoaded with totalOrders=$totalOrders, totalSales=$totalSales',
+      // );
       emit(newState);
-      log.log('***** END HOME SCREEN BLOC *****\n');
+      // log.log('***** END HOME SCREEN BLOC *****\n');
     } catch (e) {
       log.log('Error in _onFetchOrders: $e');
       log.log('Emitting: HomeScreenError');

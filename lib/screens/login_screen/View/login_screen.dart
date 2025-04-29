@@ -9,7 +9,7 @@ import 'package:app_pickleball/services/repositories/auth_repository.dart';
 import '../bloc/login_bloc.dart';
 
 class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer' as log;
-import 'dart:io';
 import 'api_endpoints.dart';
 import 'api_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,7 +50,7 @@ class ApiClient {
                         parts.join('=').substring(parts[0].length + 1),
                       );
                     }
-                    log.log('Bỏ qua cookie không hợp lệ: $cookie');
+                    // log.log('Bỏ qua cookie không hợp lệ: $cookie');
                     return null;
                   })
                   .where((c) => c != null)
@@ -59,7 +58,7 @@ class ApiClient {
                   .toList();
 
           if (cookies.isNotEmpty) {
-            log.log('Đã tải ${cookies.length} cookies từ SharedPreferences');
+            // log.log('Đã tải ${cookies.length} cookies từ SharedPreferences');
             await instance._cookieJar.saveFromResponse(
               Uri.parse(ApiConstants.baseUrl),
               cookies,
@@ -89,12 +88,12 @@ class ApiClient {
       if (query.contains('getBookingExpectedRevenue') ||
           query.contains('GetTotalBooking')) {
         final bookingChannelToken = channelToken ?? 'demo-channel';
-        log.log(
-          'Sử dụng channel token đặc biệt cho booking API: $bookingChannelToken',
-        );
+        // log.log(
+        //   'Sử dụng channel token đặc biệt cho booking API: $bookingChannelToken',
+        // );
 
         final headers = await _getHeaders(channelToken: bookingChannelToken);
-        log.log('Request Headers cho booking API: $headers');
+        // log.log('Request Headers cho booking API: $headers');
 
         final response = await _client.post(
           Uri.parse(ApiEndpoints.graphql),
@@ -112,7 +111,7 @@ class ApiClient {
 
       // Giữ lại mock data cho các trường hợp khác
       if (channelToken == 'demo-channel') {
-        log.log('Using mock data for demo-channel');
+        // log.log('Using mock data for demo-channel');
         final mockData = {
           'data': {
             // Các mock data khác ở đây
@@ -123,7 +122,7 @@ class ApiClient {
 
       // Lấy headers
       final headers = await _getHeaders(channelToken: channelToken);
-      log.log('Request Headers: $headers');
+      // log.log('Request Headers: $headers');
 
       final response = await _client.post(
         Uri.parse(ApiEndpoints.graphql),
@@ -174,7 +173,7 @@ class ApiClient {
 
       for (final part in pathParts) {
         if (data is! Map<String, dynamic> || !data.containsKey(part)) {
-          log.log('Field path không hợp lệ: $fieldPath');
+          // log.log('Field path không hợp lệ: $fieldPath');
           return null;
         }
         data = data[part];
@@ -203,27 +202,27 @@ class ApiClient {
     // Xử lý channel token - Đảm bảo luôn có channel token cho queries liên quan đến booking
     if (channelToken != null) {
       headers['vendure-token'] = channelToken;
-      log.log('Sử dụng channel token cụ thể: $channelToken');
+      // log.log('Sử dụng channel token cụ thể: $channelToken');
     } else {
       // Đối với booking queries, sử dụng channel token của production
       // Với các API khác, sử dụng demo-channel
       headers['vendure-token'] =
           'demo-channel'; // Đã sửa lại từ default-channel sang demo-channel
-      log.log('Sử dụng channel token mặc định: ${headers["vendure-token"]}');
+      // log.log('Sử dụng channel token mặc định: ${headers["vendure-token"]}');
     }
 
     // Xử lý authentication token
     if (_authToken != null && _authToken!.isNotEmpty) {
       headers['Authorization'] = 'Bearer $_authToken';
-      log.log('Đang sử dụng auth token: $_authToken');
+      // log.log('Đang sử dụng auth token: $_authToken');
     } else {
-      log.log('CẢNH BÁO: Thiếu auth token cho request');
+      // log.log('CẢNH BÁO: Thiếu auth token cho request');
       // Thử lấy lại token từ AuthHelper trong trường hợp khẩn cấp
       final token = await AuthHelper.getUserToken();
       if (token.isNotEmpty) {
         headers['Authorization'] = 'Bearer $token';
         _authToken = token; // Cập nhật token cho các request sau
-        log.log('Đã khôi phục auth token từ AuthHelper: $token');
+        // log.log('Đã khôi phục auth token từ AuthHelper: $token');
       }
     }
 
@@ -233,10 +232,10 @@ class ApiClient {
 
     if (cookies.isNotEmpty) {
       headers['Cookie'] = cookies.map((c) => '${c.name}=${c.value}').join('; ');
-      log.log('Đã thêm ${cookies.length} cookies vào request');
+      // log.log('Đã thêm ${cookies.length} cookies vào request');
     }
 
-    log.log('Headers cuối cùng: $headers');
+    // log.log('Headers cuối cùng: $headers');
     return headers;
   }
 
@@ -271,7 +270,7 @@ class ApiClient {
       if (data is Map<String, dynamic>) {
         if (data.containsKey('errors')) {
           // Vẫn trả về data ngay cả khi có lỗi, để lớp cao hơn có thể xử lý dữ liệu một phần
-          log.log('GraphQL Errors: ${data['errors']}');
+          // log.log('GraphQL Errors: ${data['errors']}');
           return data;
         }
         if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -287,7 +286,7 @@ class ApiClient {
   }
 
   void setAuthToken(String token) {
-    log.log('Setting auth token: $token');
+    // log.log('Setting auth token: $token');
     _authToken = token;
   }
 

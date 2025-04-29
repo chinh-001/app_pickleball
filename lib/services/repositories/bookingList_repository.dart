@@ -1,7 +1,7 @@
 import 'package:app_pickleball/services/interfaces/i_bookingList_service.dart';
 import 'package:app_pickleball/services/api/api_client.dart';
 import 'dart:developer' as log;
-import 'dart:convert';
+// import 'dart:convert';
 import 'package:app_pickleball/model/bookingList_model.dart';
 
 class BookingListRepository implements IBookingListService {
@@ -63,10 +63,10 @@ class BookingListRepository implements IBookingListService {
         }
       ''';
 
-      log.log('\n***** BOOKING LIST REPOSITORY: getAllBookingsRaw *****');
-      log.log('Channel Token: $channelToken');
-      log.log('Date: $date');
-      log.log('Query: $query');
+      // log.log('\n***** BOOKING LIST REPOSITORY: getAllBookingsRaw *****');
+      // log.log('Channel Token: $channelToken');
+      // log.log('Date: $date');
+      // log.log('Query: $query');
 
       final response = await _apiClient.query<Map<String, dynamic>>(
         query,
@@ -80,16 +80,16 @@ class BookingListRepository implements IBookingListService {
       }
 
       // Log detailed response
-      log.log('\n=== API RESPONSE DETAILS ===');
-      log.log('Raw Response: ${json.encode(response)}');
+      // log.log('\n=== API RESPONSE DETAILS ===');
+      // log.log('Raw Response: ${json.encode(response)}');
 
       if (response['data'] != null) {
         final data = response['data'];
-        log.log('\nTotal Items: ${data['getAllBooking']?['totalItems']}');
+        // log.log('\nTotal Items: ${data['getAllBooking']?['totalItems']}');
 
         final items = data['getAllBooking']?['items'] as List?;
         if (items != null) {
-          log.log('\nBooking Items: found ${items.length} items');
+          // log.log('\nBooking Items: found ${items.length} items');
           for (var i = 0; i < items.length; i++) {
             final item = items[i];
             log.log('Booking #${i + 1} type: ${item['type']}');
@@ -97,8 +97,8 @@ class BookingListRepository implements IBookingListService {
         }
       }
 
-      log.log('\n=== END API RESPONSE DETAILS ===');
-      log.log('***** END BOOKING LIST REPOSITORY *****\n');
+      // log.log('\n=== END API RESPONSE DETAILS ===');
+      // log.log('***** END BOOKING LIST REPOSITORY *****\n');
 
       return response;
     } catch (e) {
@@ -113,7 +113,7 @@ class BookingListRepository implements IBookingListService {
     required DateTime date,
   }) async {
     try {
-      log.log('\n***** BOOKING LIST REPOSITORY: getAllBookings *****');
+      // log.log('\n***** BOOKING LIST REPOSITORY: getAllBookings *****');
 
       // Kiểm tra xem có dữ liệu đã lưu trong storage không và có còn hiệu lực
       final storedData = await BookingOrderList.getFromStorage(
@@ -123,15 +123,15 @@ class BookingListRepository implements IBookingListService {
 
       // Nếu có dữ liệu đã lưu và chưa hết hạn, trả về dữ liệu đó
       if (storedData.orders.isNotEmpty && !storedData.isExpired()) {
-        log.log(
-          'Sử dụng dữ liệu đặt sân đã lưu từ storage cho channel: $channelToken, ngày: ${date.toIso8601String()}',
-        );
-        log.log('Số lượng đơn đặt sân: ${storedData.orders.length}');
+        // log.log(
+        //   'Sử dụng dữ liệu đặt sân đã lưu từ storage cho channel: $channelToken, ngày: ${date.toIso8601String()}',
+        // );
+        ('Số lượng đơn đặt sân: ${storedData.orders.length}');
         return storedData;
       }
 
       // Nếu không có dữ liệu hoặc dữ liệu đã hết hạn, gọi API
-      log.log('Không có dữ liệu trong cache hoặc đã hết hạn, gọi API mới');
+      // log.log('Không có dữ liệu trong cache hoặc đã hết hạn, gọi API mới');
       final response = await getAllBookingsRaw(
         channelToken: channelToken,
         date: date,
@@ -147,8 +147,8 @@ class BookingListRepository implements IBookingListService {
       // Lưu dữ liệu vào storage
       await bookingOrderList.saveOrderListData();
 
-      log.log('Đã xử lý và lưu ${bookingOrderList.orders.length} đơn đặt sân');
-      log.log('***** END BOOKING LIST REPOSITORY *****\n');
+      // log.log('Đã xử lý và lưu ${bookingOrderList.orders.length} đơn đặt sân');
+      // log.log('***** END BOOKING LIST REPOSITORY *****\n');
 
       return bookingOrderList;
     } catch (e) {
@@ -162,7 +162,7 @@ class BookingListRepository implements IBookingListService {
         );
 
         if (storedData.orders.isNotEmpty) {
-          log.log('Sử dụng dữ liệu dự phòng từ storage do lỗi API');
+          // log.log('Sử dụng dữ liệu dự phòng từ storage do lỗi API');
           return storedData;
         }
       } catch (storageError) {

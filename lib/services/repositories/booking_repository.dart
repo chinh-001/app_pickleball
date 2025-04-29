@@ -22,7 +22,7 @@ class BookingRepository implements IBookingService {
   @override
   Future<BookingList> getCourtItems({String? channelToken}) async {
     try {
-      log.log('\n===== BOOKING REPOSITORY: getCourtItems =====');
+      // log.log('\n===== BOOKING REPOSITORY: getCourtItems =====');
 
       // Thử lấy dữ liệu đã lưu từ storage
       final storedList = await BookingList.getFromStorage(
@@ -31,9 +31,9 @@ class BookingRepository implements IBookingService {
 
       // Nếu có dữ liệu và chưa hết hạn, sử dụng dữ liệu đã lưu
       if (storedList.courts.isNotEmpty && !storedList.isExpired()) {
-        log.log(
-          'Using stored court data for channel: ${channelToken ?? "default"}',
-        );
+        // log.log(
+        //   'Using stored court data for channel: ${channelToken ?? "default"}',
+        // );
         return storedList;
       }
 
@@ -85,9 +85,9 @@ class BookingRepository implements IBookingService {
       );
       await bookingList.saveListData();
 
-      log.log(
-        'Fetched and saved ${courtsData.length} courts for channel: ${channelToken ?? "default"}',
-      );
+      // log.log(
+      //   'Fetched and saved ${courtsData.length} courts for channel: ${channelToken ?? "default"}',
+      // );
       return bookingList;
     } catch (e) {
       log.log('Error fetching court items: $e');
@@ -100,8 +100,8 @@ class BookingRepository implements IBookingService {
   @override
   Future<BookingStatus> getBookingStats({String? channelToken}) async {
     try {
-      log.log('\n===== BOOKING REPOSITORY: getBookingStats =====');
-      log.log('Starting request with channel token: $channelToken');
+      // log.log('\n===== BOOKING REPOSITORY: getBookingStats =====');
+      // log.log('Starting request with channel token: $channelToken');
 
       // Lấy ngày hiện tại
       final now = DateTime.now();
@@ -116,7 +116,7 @@ class BookingRepository implements IBookingService {
       final endDateStr =
           '${endOfDay.year}-${endOfDay.month.toString().padLeft(2, '0')}-${endOfDay.day.toString().padLeft(2, '0')}';
 
-      log.log('Date range: $startDateStr to $endDateStr');
+      // log.log('Date range: $startDateStr to $endDateStr');
 
       const query = '''
         query GetBookingStats(\$startDate: Date!, \$endDate: Date!) {
@@ -160,7 +160,7 @@ class BookingRepository implements IBookingService {
       );
 
       if (response == null) {
-        log.log('Response is null');
+        // log.log('Response is null');
         return _getOrCreateBookingStatus({
           'totalBookings': 0,
           'totalRevenue': 0.0,
@@ -169,7 +169,7 @@ class BookingRepository implements IBookingService {
 
       final data = response['data'];
       if (data == null) {
-        log.log('Data is null');
+        // log.log('Data is null');
         return _getOrCreateBookingStatus({
           'totalBookings': 0,
           'totalRevenue': 0.0,
@@ -188,8 +188,8 @@ class BookingRepository implements IBookingService {
       final totalBookings =
           totalBookingData != null ? totalBookingData['totalItems'] ?? 0 : 0;
 
-      log.log('Result: Revenue = $revenue, Total bookings = $totalBookings');
-      log.log('===== END BOOKING REPOSITORY =====\n');
+      // log.log('Result: Revenue = $revenue, Total bookings = $totalBookings');
+      // log.log('===== END BOOKING REPOSITORY =====\n');
 
       final bookingData = {
         'totalBookings': totalBookings,
