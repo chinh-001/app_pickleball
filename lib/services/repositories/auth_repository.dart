@@ -72,14 +72,14 @@ class AuthRepository implements IAuthService {
   @override
   Future<bool> logout() async {
     try {
+      // Đánh dấu cần reset các bloc trước khi xóa dữ liệu
+      AuthHelper.markBlocsForReset();
+
       // Xóa token trong ApiClient
       await _apiClient.clearAuth();
 
-      // Xóa tất cả dữ liệu đăng nhập đã lưu
+      // Xóa tất cả dữ liệu đăng nhập đã lưu (đã bao gồm xóa dữ liệu quyền hạn)
       await AuthHelper.clearUserData();
-
-      // Xóa dữ liệu quyền hạn
-      await AuthHelper.clearUserPermissionsData();
 
       log.log('Đăng xuất thành công và đã xóa trạng thái');
       return true;

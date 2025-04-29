@@ -8,6 +8,8 @@ import 'package:app_pickleball/screens/orderlist_screen/bloc/orderlist_screen_bl
 import 'package:app_pickleball/screens/order_detail_screen/View/order_detail_screen.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'package:app_pickleball/services/repositories/bookingList_repository.dart';
+import 'package:app_pickleball/utils/auth_helper.dart';
+import 'dart:developer' as log;
 
 class OrderListScreen extends StatefulWidget {
   const OrderListScreen({super.key, required this.token});
@@ -21,7 +23,21 @@ class _OrderListScreenState extends State<OrderListScreen>
     with AutomaticKeepAliveClientMixin {
   static OrderListScreenBloc? _cachedBloc;
 
+  // Reset bloc khi có flag đánh dấu cần reset
+  static void resetBloc() {
+    if (_cachedBloc != null) {
+      _cachedBloc!.close();
+      _cachedBloc = null;
+      log.log('OrderListScreenBloc đã được reset');
+    }
+  }
+
   OrderListScreenBloc get _orderListBloc {
+    // Kiểm tra xem có cần reset bloc không
+    if (AuthHelper.shouldResetBlocs()) {
+      resetBloc();
+    }
+
     _cachedBloc ??= OrderListScreenBloc(
       bookingListRepository: BookingListRepository(),
       permissionsRepository: UserPermissionsRepository(),

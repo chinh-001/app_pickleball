@@ -15,6 +15,29 @@ class AuthHelper {
   // Constants for user permissions data
   static const String userPermissionsKey = 'user_permissions';
 
+  // Thêm biến để theo dõi trạng thái đăng xuất - đăng nhập
+  static bool _needsResetBlocs = false;
+
+  // Getter và setter cho biến _needsResetBlocs
+  static bool get needsResetBlocs => _needsResetBlocs;
+  static set needsResetBlocs(bool value) => _needsResetBlocs = value;
+
+  // Đánh dấu cần reset các bloc
+  static void markBlocsForReset() {
+    _needsResetBlocs = true;
+    log.log('Đã đánh dấu tất cả các bloc cần được reset');
+  }
+
+  // Phương thức để kiểm tra và reset các bloc nếu cần
+  static bool shouldResetBlocs() {
+    if (_needsResetBlocs) {
+      _needsResetBlocs = false; // Reset lại flag
+      log.log('Cần reset các bloc và đã reset flag');
+      return true;
+    }
+    return false;
+  }
+
   // Lưu trạng thái đăng nhập của người dùng
   static Future<bool> saveUserLoggedInStatus(bool isLoggedIn) async {
     try {
@@ -85,9 +108,19 @@ class AuthHelper {
   static Future<bool> clearUserData() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.remove(userTokenKey);
-      await prefs.remove(userNameKey);
-      return await prefs.setBool(userLoggedInKey, false);
+
+      // Lấy danh sách tất cả các keys trong SharedPreferences
+      final keys = prefs.getKeys();
+      log.log('Các keys sẽ bị xóa: $keys');
+
+      // Xóa tất cả dữ liệu trong SharedPreferences
+      await prefs.clear();
+
+      // Đặt trạng thái đăng nhập về false để đảm bảo
+      await prefs.setBool(userLoggedInKey, false);
+
+      log.log('Đã xóa toàn bộ dữ liệu trong SharedPreferences');
+      return true;
     } catch (e) {
       log.log('Lỗi khi xóa dữ liệu người dùng: $e');
       return false;

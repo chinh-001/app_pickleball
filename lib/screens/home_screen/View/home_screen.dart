@@ -9,6 +9,7 @@ import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'package:app_pickleball/utils/number_format.dart';
+import 'package:app_pickleball/utils/auth_helper.dart';
 import 'dart:developer' as log;
 
 class HomeScreen extends StatefulWidget {
@@ -22,7 +23,21 @@ class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
   static HomeScreenBloc? _cachedBloc;
 
+  // Reset bloc khi có flag đánh dấu cần reset
+  static void resetBloc() {
+    if (_cachedBloc != null) {
+      _cachedBloc!.close();
+      _cachedBloc = null;
+      log.log('HomeScreenBloc đã được reset');
+    }
+  }
+
   HomeScreenBloc get _homeBloc {
+    // Kiểm tra xem có cần reset bloc không
+    if (AuthHelper.shouldResetBlocs()) {
+      resetBloc();
+    }
+
     _cachedBloc ??= HomeScreenBloc(
       bookingRepository: BookingRepository(),
       permissionsRepository: UserPermissionsRepository(),
