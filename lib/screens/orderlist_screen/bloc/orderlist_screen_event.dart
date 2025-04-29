@@ -38,3 +38,7 @@ class FetchBookingsEvent extends OrderListScreenEvent {
   @override
   List<Object> get props => [channelToken, date];
 }
+
+class InitializeOrderListScreenEvent extends OrderListScreenEvent {
+  const InitializeOrderListScreenEvent();
+}

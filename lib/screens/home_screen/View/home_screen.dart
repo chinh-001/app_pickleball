@@ -7,6 +7,7 @@ import 'package:app_pickleball/screens/widgets/custom_list_view.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
+import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'package:app_pickleball/utils/number_format.dart';
 import 'dart:developer' as log;
 
@@ -22,8 +23,10 @@ class _HomeScreenState extends State<HomeScreen>
   static HomeScreenBloc? _cachedBloc;
 
   HomeScreenBloc get _homeBloc {
-    _cachedBloc ??= HomeScreenBloc(bookingRepository: BookingRepository())
-      ..add(const FetchOrdersEvent(channelToken: 'demo-channel'));
+    _cachedBloc ??= HomeScreenBloc(
+      bookingRepository: BookingRepository(),
+      permissionsRepository: UserPermissionsRepository(),
+    );
     return _cachedBloc!;
   }
 
