@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:app_pickleball/services/repositories/bookingList_repository.dart';
+import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'dart:developer' as log;
 import 'package:app_pickleball/model/bookingList_model.dart';
 
@@ -10,57 +11,113 @@ part 'orderlist_screen_state.dart';
 class OrderListScreenBloc
     extends Bloc<OrderListScreenEvent, OrderListScreenState> {
   final BookingListRepository _bookingListRepository;
-  final List<String> _availableChannels = [
-    'Default channel',
-    'Pikachu Pickleball Xuân Hoà',
-    'Demo-channel',
-    'Stamina 106 Hoàng Quốc Việt',
-    'TADA Sport CN1 - Thanh Đa',
-    'TADA Sport CN2 - Bình Lợi',
-    'TADA Sport CN3 - D2(Ung Văn Khiêm)',
-  ];
+  final UserPermissionsRepository _permissionsRepository;
 
-  OrderListScreenBloc({BookingListRepository? bookingListRepository})
-    : _bookingListRepository = bookingListRepository ?? BookingListRepository(),
-      super(
-        const OrderListScreenInitial(
-          selectedChannel: 'Default channel',
-          availableChannels: [
-            'Default channel',
-            'Pikachu Pickleball Xuân Hoà',
-            'Demo-channel',
-            'Stamina 106 Hoàng Quốc Việt',
-            'TADA Sport CN1 - Thanh Đa',
-            'TADA Sport CN2 - Bình Lợi',
-            'TADA Sport CN3 - D2(Ung Văn Khiêm)',
-          ],
-        ),
-      ) {
+  // Kênh dự phòng nếu không có kênh từ quyền hạn
+  final List<String> _fallbackChannels = ['Default channel', 'Demo-channel'];
+
+  OrderListScreenBloc({
+    BookingListRepository? bookingListRepository,
+    UserPermissionsRepository? permissionsRepository,
+  }) : _bookingListRepository =
+           bookingListRepository ?? BookingListRepository(),
+       _permissionsRepository =
+           permissionsRepository ?? UserPermissionsRepository(),
+       super(
+         const OrderListScreenInitial(
+           selectedChannel: '',
+           availableChannels: [],
+         ),
+       ) {
     on<LoadOrderListEvent>(_onLoadOrderList);
     on<SearchOrderListEvent>(_onSearchOrderList);
     on<ChangeChannelEvent>(_onChangeChannel);
     on<FetchBookingsEvent>(_onFetchBookings);
+    on<InitializeOrderListScreenEvent>(_onInitializeOrderListScreen);
+
+    // Khởi tạo danh sách kênh từ quyền hạn người dùng
+    add(InitializeOrderListScreenEvent());
+  }
+
+  // Phương thức khởi tạo để lấy danh sách kênh từ quyền hạn người dùng
+  Future<void> _onInitializeOrderListScreen(
+    InitializeOrderListScreenEvent event,
+    Emitter<OrderListScreenState> emit,
+  ) async {
+    try {
+      log.log('Initializing OrderListScreen...');
+      emit(OrderListScreenLoading(selectedChannel: '', availableChannels: []));
+
+      // Lấy danh sách kênh từ quyền hạn người dùng
+      final userChannels = await _permissionsRepository.getAvailableChannels();
+
+      if (userChannels.isEmpty) {
+        log.log(
+          'Không tìm thấy kênh từ quyền hạn người dùng, sử dụng kênh dự phòng',
+        );
+        emit(
+          OrderListScreenLoaded(
+            selectedChannel: _fallbackChannels.first,
+            availableChannels: _fallbackChannels,
+            items: const [],
+            bookingOrderList: null,
+          ),
+        );
+        return;
+      }
+
+      log.log(
+        'Đã tìm thấy ${userChannels.length} kênh từ quyền hạn người dùng',
+      );
+
+      // Emit state mới với kênh từ quyền hạn người dùng
+      final selectedChannel = userChannels.first;
+      emit(
+        OrderListScreenLoaded(
+          selectedChannel: selectedChannel,
+          availableChannels: userChannels,
+          items: const [],
+          bookingOrderList: null,
+        ),
+      );
+
+      // Nếu có kênh Pikachu, gọi API lấy danh sách booking
+      if (selectedChannel == 'Pikachu Pickleball Xuân Hoà') {
+        add(FetchBookingsEvent(channelToken: 'pikachu', date: DateTime.now()));
+      } else {
+        // Lấy token từ UserPermissionsRepository
+        final channelToken = await _permissionsRepository.getChannelToken(
+          selectedChannel,
+        );
+        if (channelToken.isNotEmpty) {
+          add(
+            FetchBookingsEvent(
+              channelToken: channelToken,
+              date: DateTime.now(),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      log.log('Lỗi khi khởi tạo OrderListScreen: $e');
+      emit(
+        OrderListScreenError(
+          message: 'Không thể khởi tạo màn hình danh sách đặt sân',
+          selectedChannel: '',
+          availableChannels: _fallbackChannels,
+        ),
+      );
+    }
   }
 
   void _onLoadOrderList(
     LoadOrderListEvent event,
     Emitter<OrderListScreenState> emit,
   ) {
-    emit(
-      OrderListScreenLoading(
-        selectedChannel: state.selectedChannel,
-        availableChannels: _availableChannels,
-      ),
-    );
-
-    emit(
-      OrderListScreenLoaded(
-        selectedChannel: state.selectedChannel,
-        availableChannels: _availableChannels,
-        items: const [],
-        bookingOrderList: null,
-      ),
-    );
+    // Không càn emit state loading và loaded ở đây nữa
+    // vì đã được xử lý trong InitializeOrderListScreenEvent
+    // Chỉ cần gọi InitializeOrderListScreenEvent
+    add(InitializeOrderListScreenEvent());
   }
 
   void _onSearchOrderList(
@@ -101,7 +158,7 @@ class OrderListScreenBloc
       emit(
         OrderListScreenLoaded(
           selectedChannel: state.selectedChannel,
-          availableChannels: _availableChannels,
+          availableChannels: state.availableChannels,
           items: filteredItems,
           bookingOrderList: currentState.bookingOrderList,
         ),
@@ -116,21 +173,29 @@ class OrderListScreenBloc
     emit(
       OrderListScreenLoading(
         selectedChannel: event.channelName,
-        availableChannels: _availableChannels,
+        availableChannels: state.availableChannels,
       ),
     );
 
     if (event.channelName == 'Pikachu Pickleball Xuân Hoà') {
       add(FetchBookingsEvent(channelToken: 'pikachu', date: DateTime.now()));
     } else {
-      emit(
-        OrderListScreenLoaded(
-          selectedChannel: event.channelName,
-          availableChannels: _availableChannels,
-          items: const [],
-          bookingOrderList: null,
-        ),
-      );
+      // Lấy token từ UserPermissionsRepository
+      _permissionsRepository.getChannelToken(event.channelName).then((token) {
+        if (token.isNotEmpty) {
+          add(FetchBookingsEvent(channelToken: token, date: DateTime.now()));
+        } else {
+          // Nếu không tìm thấy token, emit state loaded với danh sách trống
+          emit(
+            OrderListScreenLoaded(
+              selectedChannel: event.channelName,
+              availableChannels: state.availableChannels,
+              items: const [],
+              bookingOrderList: null,
+            ),
+          );
+        }
+      });
     }
   }
 
@@ -144,7 +209,7 @@ class OrderListScreenBloc
       emit(
         OrderListScreenLoading(
           selectedChannel: state.selectedChannel,
-          availableChannels: _availableChannels,
+          availableChannels: state.availableChannels,
         ),
       );
 
@@ -160,7 +225,7 @@ class OrderListScreenBloc
         emit(
           OrderListScreenLoaded(
             selectedChannel: state.selectedChannel,
-            availableChannels: _availableChannels,
+            availableChannels: state.availableChannels,
             items: const [],
             bookingOrderList: bookingOrderList,
           ),
@@ -176,7 +241,7 @@ class OrderListScreenBloc
       emit(
         OrderListScreenLoaded(
           selectedChannel: state.selectedChannel,
-          availableChannels: _availableChannels,
+          availableChannels: state.availableChannels,
           items: transformedItems,
           bookingOrderList: bookingOrderList,
         ),
@@ -189,7 +254,7 @@ class OrderListScreenBloc
         OrderListScreenError(
           message: 'Không thể tải danh sách đặt sân: $e',
           selectedChannel: state.selectedChannel,
-          availableChannels: _availableChannels,
+          availableChannels: state.availableChannels,
         ),
       );
     }

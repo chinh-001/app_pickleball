@@ -24,3 +24,7 @@ class ChangeChannelEvent extends HomeScreenEvent {
   @override
   List<Object?> get props => [channelName];
 }
+
+class InitializeHomeScreenEvent extends HomeScreenEvent {
+  const InitializeHomeScreenEvent();
+}

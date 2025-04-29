@@ -6,6 +6,8 @@ import 'package:app_pickleball/screens/widgets/custom_order_listview.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/orderlist_screen/bloc/orderlist_screen_bloc.dart';
 import 'package:app_pickleball/screens/order_detail_screen/View/order_detail_screen.dart';
+import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
+import 'package:app_pickleball/services/repositories/bookingList_repository.dart';
 
 class OrderListScreen extends StatefulWidget {
   const OrderListScreen({super.key, required this.token});
@@ -20,7 +22,10 @@ class _OrderListScreenState extends State<OrderListScreen>
   static OrderListScreenBloc? _cachedBloc;
 
   OrderListScreenBloc get _orderListBloc {
-    _cachedBloc ??= OrderListScreenBloc()..add(LoadOrderListEvent());
+    _cachedBloc ??= OrderListScreenBloc(
+      bookingListRepository: BookingListRepository(),
+      permissionsRepository: UserPermissionsRepository(),
+    );
     return _cachedBloc!;
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
+import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'dart:developer' as log;
 import 'package:app_pickleball/model/bookingStatus_model.dart';
 import 'package:app_pickleball/model/bookingList_model.dart';
@@ -10,15 +11,10 @@ part 'home_screen_state.dart';
 
 class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
   final BookingRepository bookingRepository;
-  final List<String> channels = [
-    'Default channel',
-    'Pikachu Pickleball Xuân Hoà',
-    'Demo-channel',
-    'Stamina 106 Hoàng Quốc Việt',
-    'TADA Sport CN1 - Thanh Đa',
-    'TADA Sport CN2 - Bình Lợi',
-    'TADA Sport CN3 - D2(Ung Văn Khiêm)',
-  ];
+  final UserPermissionsRepository _permissionsRepository;
+
+  // Kênh dự phòng nếu không có kênh từ quyền hạn
+  final List<String> fallbackChannels = ['Default channel', 'Demo-channel'];
 
   // Mock data for courts
   final List<Map<String, dynamic>> mockCourts = [
@@ -45,10 +41,87 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     },
   ];
 
-  HomeScreenBloc({required this.bookingRepository})
-    : super(HomeScreenInitial()) {
+  HomeScreenBloc({
+    required this.bookingRepository,
+    UserPermissionsRepository? permissionsRepository,
+  }) : _permissionsRepository =
+           permissionsRepository ?? UserPermissionsRepository(),
+       super(HomeScreenInitial()) {
     on<FetchOrdersEvent>(_onFetchOrders);
     on<ChangeChannelEvent>(_onChangeChannel);
+    on<InitializeHomeScreenEvent>(_onInitializeHomeScreen);
+
+    // Thêm event để khởi tạo dữ liệu từ SharedPreferences
+    add(InitializeHomeScreenEvent());
+  }
+
+  // Xử lý event khởi tạo để lấy channels từ quyền hạn người dùng
+  Future<void> _onInitializeHomeScreen(
+    InitializeHomeScreenEvent event,
+    Emitter<HomeScreenState> emit,
+  ) async {
+    try {
+      log.log('Initializing HomeScreen...');
+      emit(HomeScreenLoading(selectedChannel: '', availableChannels: []));
+
+      // Lấy danh sách channel từ quyền hạn người dùng
+      final userChannels = await _permissionsRepository.getAvailableChannels();
+
+      if (userChannels.isEmpty) {
+        log.log(
+          'Không tìm thấy channel từ quyền hạn người dùng, sử dụng channels dự phòng',
+        );
+        emit(
+          HomeScreenLoaded(
+            bookingList: BookingList.fromMapList(mockCourts),
+            totalOrders: 0,
+            totalSales: 0,
+            selectedChannel: fallbackChannels.first,
+            availableChannels: fallbackChannels,
+            bookingStatus: BookingStatus(totalBookings: 0, totalRevenue: 0),
+          ),
+        );
+
+        // Sử dụng channel đầu tiên để fetch dữ liệu
+        if (fallbackChannels.isNotEmpty) {
+          final channelToken = await bookingRepository.getChannelToken(
+            fallbackChannels.first,
+          );
+          add(FetchOrdersEvent(channelToken: channelToken));
+        }
+        return;
+      }
+
+      log.log(
+        'Đã tìm thấy ${userChannels.length} channel từ quyền hạn người dùng',
+      );
+
+      // Lấy token của channel đầu tiên
+      final selectedChannel = userChannels.first;
+      final channelToken = await _permissionsRepository.getChannelToken(
+        selectedChannel,
+      );
+
+      // Emit state mới với channels từ quyền hạn người dùng
+      emit(
+        HomeScreenLoading(
+          selectedChannel: selectedChannel,
+          availableChannels: userChannels,
+        ),
+      );
+
+      // Fetch dữ liệu với channel đầu tiên
+      add(FetchOrdersEvent(channelToken: channelToken));
+    } catch (e) {
+      log.log('Lỗi khi khởi tạo HomeScreen: $e');
+      emit(
+        HomeScreenError(
+          message: 'Không thể khởi tạo màn hình chính',
+          selectedChannel: '',
+          availableChannels: fallbackChannels,
+        ),
+      );
+    }
   }
 
   void _onChangeChannel(
@@ -61,14 +134,22 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     emit(
       HomeScreenLoading(
         selectedChannel: event.channelName,
-        availableChannels: channels,
+        availableChannels: state.availableChannels,
       ),
     );
 
-    final channelToken = bookingRepository.getChannelToken(event.channelName);
-    add(FetchOrdersEvent(channelToken: channelToken));
-
-    // log.log('***** END HOME SCREEN BLOC: _onChangeChannel *****\n');
+    // Lấy token từ UserPermissionsRepository thay vì BookingRepository
+    _permissionsRepository.getChannelToken(event.channelName).then((token) {
+      if (token.isEmpty) {
+        // Nếu không tìm thấy token từ UserPermissionsRepository, sử dụng token từ BookingRepository
+        final fallbackToken = bookingRepository.getChannelToken(
+          event.channelName,
+        );
+        add(FetchOrdersEvent(channelToken: fallbackToken));
+      } else {
+        add(FetchOrdersEvent(channelToken: token));
+      }
+    });
   }
 
   Future<void> _onFetchOrders(
@@ -85,7 +166,7 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
       emit(
         HomeScreenLoading(
           selectedChannel: state.selectedChannel,
-          availableChannels: channels,
+          availableChannels: state.availableChannels,
         ),
       );
       // log.log('Emitted: HomeScreenLoading');
@@ -130,7 +211,7 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
         totalOrders: totalOrders,
         totalSales: totalSales,
         selectedChannel: state.selectedChannel,
-        availableChannels: channels,
+        availableChannels: state.availableChannels,
         bookingStatus: bookingStatus,
       );
 
@@ -146,7 +227,7 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
         HomeScreenError(
           message: 'Failed to fetch orders',
           selectedChannel: state.selectedChannel,
-          availableChannels: channels,
+          availableChannels: state.availableChannels,
         ),
       );
       log.log('***** END HOME SCREEN BLOC WITH ERROR *****\n');
