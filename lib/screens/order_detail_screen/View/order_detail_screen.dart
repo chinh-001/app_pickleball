@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/order_detail_screen/bloc/order_detail_screen_bloc.dart';
 import 'package:app_pickleball/utils/number_format.dart';
+import 'dart:convert';
+import 'dart:developer' as log;
 
 class OrderDetailScreen extends StatefulWidget {
   final Map<String, String> item;
@@ -15,10 +17,7 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   static const List<String> typeOptions = ['Loại lẻ', 'Định kì'];
-  static const List<String> statusOptions = [
-    'Mới',
-    'Đặt sân',
-  ];
+  static const List<String> statusOptions = ['Mới', 'Đặt sân'];
   static const List<String> paymentStatusOptions = [
     'Đã thanh toán',
     'Chưa thanh toán',
@@ -33,12 +32,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Debug logging to verify received values
+    log.log('\n=== ORDER DETAIL SCREEN RECEIVED DATA ===');
+    log.log('Available keys: ${widget.item.keys.join(", ")}');
+    log.log('Code value: "${widget.item['code']}"');
+    log.log('NoteCustomer value: "${widget.item['noteCustomer']}"');
+
     // Đảm bảo các giá trị khởi tạo nằm trong danh sách options
     selectedType =
         typeOptions.contains(widget.item['type'])
             ? widget.item['type']!
             : typeOptions.first;
-    
+
     // Lấy giá trị status từ order list và chỉ chấp nhận 'Mới' hoặc 'Đặt sân'
     final originalStatus = widget.item['status'] ?? '';
     if (originalStatus == 'Mới' || originalStatus == 'Đặt sân') {
@@ -47,13 +53,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       // Nếu status không thuộc 2 giá trị trên, mặc định là 'Mới'
       selectedStatus = 'Mới';
     }
-    
+
     selectedPaymentStatus =
         paymentStatusOptions.contains(widget.item['paymentStatus'])
             ? widget.item['paymentStatus']!
             : paymentStatusOptions.first;
     selectedTime = widget.item['time'] ?? '';
-    noteController.text = widget.item['note'] ?? '';
+
+    // Set the note controller with noteCustomer value
+    noteController.text = widget.item['noteCustomer'] ?? '';
   }
 
   // Hàm định dạng tổng tiền với dấu phẩy phân cách hàng nghìn
@@ -86,6 +94,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final TextEditingController emailAddressController = TextEditingController(
       text: widget.item['emailAddress'] ?? '',
     );
+    final TextEditingController codeController = TextEditingController(
+      text: widget.item['code'] ?? '',
+    );
 
     // Lấy giá trị tổng tiền và định dạng
     final rawTotalPrice = widget.item['total_price'] ?? '';
@@ -99,6 +110,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     print('DEBUG - OrderDetailScreen received item: ${widget.item}');
     print('DEBUG - Raw total price: $rawTotalPrice');
     print('DEBUG - Formatted total price: $formattedTotalPrice');
+    print('DEBUG - Note: ${widget.item['noteCustomer']}');
+    print('DEBUG - Code: ${widget.item['code']}');
 
     return BlocProvider(
       create: (_) => OrderDetailBloc(),
@@ -180,6 +193,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
                         // Tên sân
                         buildInfoField('Tên sân', courtNameController),
+                        const SizedBox(height: 20),
+
+                        // Mã đơn hàng (Code)
+                        buildInfoField(
+                          'Mã đơn hàng',
+                          codeController,
+                          readOnly: true,
+                        ),
                         const SizedBox(height: 20),
 
                         // Tổng tiền (Thêm mới với style riêng)
@@ -272,24 +293,34 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Ghi chú
-                        const Text(
-                          'Ghi chú',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: noteController,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            hintText: 'Nhập ghi chú...',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                        // Ghi chú của khách hàng
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Ghi chú',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: TextField(
+                                controller: noteController,
+                                maxLines: 3,
+                                decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.all(12),
+                                  border: InputBorder.none,
+                                  hintText: 'Ghi chú của khách hàng',
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 20),
 

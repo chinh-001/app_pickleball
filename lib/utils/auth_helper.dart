@@ -113,6 +113,9 @@ class AuthHelper {
       final keys = prefs.getKeys();
       log.log('Các keys sẽ bị xóa: $keys');
 
+      // Đảm bảo xóa dữ liệu quyền hạn người dùng trước
+      await clearUserPermissionsData();
+
       // Xóa tất cả dữ liệu trong SharedPreferences
       await prefs.clear();
 
@@ -160,6 +163,7 @@ class AuthHelper {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(userPermissionsKey);
+      log.log('User permissions data cleared successfully');
       return true;
     } catch (e) {
       log.log('Error clearing user permissions data: $e');

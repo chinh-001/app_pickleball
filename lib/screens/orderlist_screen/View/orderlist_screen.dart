@@ -10,6 +10,7 @@ import 'package:app_pickleball/services/repositories/userPermissions_repository.
 import 'package:app_pickleball/services/repositories/bookingList_repository.dart';
 import 'package:app_pickleball/utils/auth_helper.dart';
 import 'dart:developer' as log;
+import 'dart:convert';
 
 class OrderListScreen extends StatefulWidget {
   const OrderListScreen({super.key, required this.token});
@@ -21,28 +22,20 @@ class OrderListScreen extends StatefulWidget {
 
 class _OrderListScreenState extends State<OrderListScreen>
     with AutomaticKeepAliveClientMixin {
-  static OrderListScreenBloc? _cachedBloc;
+  OrderListScreenBloc? _bloc;
 
-  // Reset bloc khi có flag đánh dấu cần reset
-  static void resetBloc() {
-    if (_cachedBloc != null) {
-      _cachedBloc!.close();
-      _cachedBloc = null;
-      log.log('OrderListScreenBloc đã được reset');
-    }
+  @override
+  void initState() {
+    super.initState();
+    _createBloc();
   }
 
-  OrderListScreenBloc get _orderListBloc {
-    // Kiểm tra xem có cần reset bloc không
-    if (AuthHelper.shouldResetBlocs()) {
-      resetBloc();
-    }
-
-    _cachedBloc ??= OrderListScreenBloc(
+  void _createBloc() {
+    _bloc = OrderListScreenBloc(
       bookingListRepository: BookingListRepository(),
       permissionsRepository: UserPermissionsRepository(),
     );
-    return _cachedBloc!;
+    log.log('New OrderListScreenBloc created');
   }
 
   @override
@@ -50,7 +43,8 @@ class _OrderListScreenState extends State<OrderListScreen>
 
   @override
   void dispose() {
-    // Don't close the bloc here as it's cached
+    // Close the bloc when the widget is disposed
+    _bloc?.close();
     super.dispose();
   }
 
@@ -58,8 +52,18 @@ class _OrderListScreenState extends State<OrderListScreen>
   Widget build(BuildContext context) {
     super.build(context); // Required by AutomaticKeepAliveClientMixin
 
+    // Check if we need to reset the bloc (user logged out and in again)
+    if (AuthHelper.shouldResetBlocs()) {
+      if (_bloc != null) {
+        _bloc!.close();
+        _bloc = null;
+      }
+      _createBloc();
+      log.log('OrderListScreenBloc recreated after login/logout');
+    }
+
     return BlocProvider.value(
-      value: _orderListBloc,
+      value: _bloc!,
       child: Scaffold(
         body: SafeArea(
           child: Column(
@@ -186,6 +190,14 @@ class _OrderListScreenState extends State<OrderListScreen>
                       return CustomOrderListView(
                         items: state.items,
                         onItemTap: (item) {
+                          // Log the exact data being passed to OrderDetailScreen
+                          log.log('\n=== PASSING TO ORDER DETAIL SCREEN ===');
+                          log.log('Item keys: ${item.keys.join(", ")}');
+                          log.log('Code value: "${item['code']}"');
+                          log.log(
+                            'NoteCustomer value: "${item['noteCustomer']}"',
+                          );
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(

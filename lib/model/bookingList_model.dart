@@ -49,6 +49,9 @@ class BookingOrder {
   final String phoneNumber;
   final String emailAddress;
   final String totalPrice;
+  final String noteCustomer;
+  final String code;
+  final String id;
 
   BookingOrder({
     required this.customerName,
@@ -60,9 +63,15 @@ class BookingOrder {
     required this.phoneNumber,
     required this.emailAddress,
     required this.totalPrice,
+    this.noteCustomer = '',
+    this.code = '',
+    this.id = '',
   });
 
   factory BookingOrder.fromMap(Map<String, dynamic> map) {
+    // Log the raw map for debugging
+    log.log('BookingOrder.fromMap received: ${json.encode(map)}');
+
     // Extract customer info
     final customer = map['customer'] as Map? ?? {};
     final firstName = customer['firstName']?.toString() ?? '';
@@ -105,6 +114,20 @@ class BookingOrder {
     final paymentStatus =
         map['paymentstatus']?['name']?.toString() ?? 'Chưa thanh toán';
 
+    // Extract new fields with detailed logging
+    log.log('Extracting noteCustomer, code, and id fields:');
+    log.log('  Raw noteCustomer: "${map['noteCustomer']}"');
+    log.log('  Raw code: "${map['code']}"');
+    log.log('  Raw id: "${map['id']}"');
+
+    final noteCustomer = map['noteCustomer']?.toString() ?? '';
+    final code = map['code']?.toString() ?? '';
+    final id = map['id']?.toString() ?? '';
+
+    log.log('  Extracted noteCustomer: "$noteCustomer"');
+    log.log('  Extracted code: "$code"');
+    log.log('  Extracted id: "$id"');
+
     return BookingOrder(
       customerName: customerName,
       courtName: courtName,
@@ -115,11 +138,15 @@ class BookingOrder {
       phoneNumber: phoneNumber,
       emailAddress: emailAddress,
       totalPrice: totalPrice,
+      noteCustomer: noteCustomer,
+      code: code,
+      id: id,
     );
   }
 
   Map<String, String> toJson() {
-    return {
+    // Explicitly include all fields in the JSON representation
+    final map = {
       'customerName': customerName,
       'courtName': courtName,
       'time': time,
@@ -129,7 +156,18 @@ class BookingOrder {
       'phoneNumber': phoneNumber,
       'emailAddress': emailAddress,
       'total_price': totalPrice,
+      // Always include these fields, even if empty
+      'id': id,
+      'code': code,
+      'noteCustomer': noteCustomer,
     };
+
+    // Log the map for debugging purposes
+    log.log(
+      'BookingOrder.toJson() result contains fields: ${map.keys.join(", ")}',
+    );
+
+    return map;
   }
 }
 
@@ -278,6 +316,9 @@ class BookingOrderList {
               phoneNumber: orderMap['phoneNumber'] ?? '',
               emailAddress: orderMap['emailAddress'] ?? '',
               totalPrice: orderMap['total_price'] ?? '',
+              noteCustomer: orderMap['noteCustomer'] ?? '',
+              code: orderMap['code'] ?? '',
+              id: orderMap['id'] ?? '',
             );
           }).toList();
 
@@ -330,7 +371,26 @@ class BookingOrderList {
 
   // Chuyển đổi sang định dạng mà bloc hiện tại đang sử dụng
   List<Map<String, String>> toSimpleMapList() {
-    return orders.map((order) => order.toJson()).toList();
+    log.log('\n=== CONVERTING BOOKING ORDER LIST TO SIMPLE MAP LIST ===');
+    log.log('Number of orders to convert: ${orders.length}');
+
+    if (orders.isNotEmpty) {
+      log.log('First order before conversion:');
+      log.log('  noteCustomer: "${orders[0].noteCustomer}"');
+      log.log('  code: "${orders[0].code}"');
+      log.log('  id: "${orders[0].id}"');
+    }
+
+    final result = orders.map((order) => order.toJson()).toList();
+
+    if (result.isNotEmpty) {
+      log.log('First order after conversion:');
+      log.log('  noteCustomer: "${result[0]['noteCustomer']}"');
+      log.log('  code: "${result[0]['code']}"');
+      log.log('  id: "${result[0]['id']}"');
+    }
+
+    return result;
   }
 }
 

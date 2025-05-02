@@ -89,6 +89,8 @@ class UserPermissionsRepository implements IUserPermissionsService {
   @override
   Future<UserPermissions?> getUserPermissions() async {
     try {
+      // Always fetch fresh data from the API
+      log.log('Fetching fresh user permissions from API');
       final response = await _apiClient.query<Map<String, dynamic>>(
         '''
         query Me {
@@ -130,6 +132,7 @@ class UserPermissionsRepository implements IUserPermissionsService {
 
       // Save permissions data
       await saveUserPermissions(permissions);
+      log.log('Saved fresh user permissions data');
 
       return permissions;
     } catch (e) {
@@ -182,6 +185,7 @@ class UserPermissionsRepository implements IUserPermissionsService {
   // Phương thức mới để lấy danh sách channel của người dùng
   Future<List<String>> getAvailableChannels() async {
     try {
+      // Force fetch fresh permissions instead of relying on cached data
       final permissions = await getUserPermissions();
       if (permissions == null || permissions.channels.isEmpty) {
         log.log('Không có channel nào cho người dùng');
@@ -202,6 +206,7 @@ class UserPermissionsRepository implements IUserPermissionsService {
   // Phương thức mới để lấy token của channel dựa trên code
   Future<String> getChannelToken(String channelCode) async {
     try {
+      // Force fetch fresh permissions instead of relying on cached data
       final permissions = await getUserPermissions();
       if (permissions == null || permissions.channels.isEmpty) {
         log.log('Không có channel nào cho người dùng');

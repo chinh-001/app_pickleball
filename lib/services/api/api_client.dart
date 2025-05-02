@@ -84,42 +84,6 @@ class ApiClient {
     try {
       final requestBody = json.encode({'query': query, 'variables': variables});
 
-      // Kiểm tra nếu là query lấy booking stats thì gọi API thật
-      if (query.contains('getBookingExpectedRevenue') ||
-          query.contains('GetTotalBooking')) {
-        final bookingChannelToken = channelToken ?? 'demo-channel';
-        // log.log(
-        //   'Sử dụng channel token đặc biệt cho booking API: $bookingChannelToken',
-        // );
-
-        final headers = await _getHeaders(channelToken: bookingChannelToken);
-        // log.log('Request Headers cho booking API: $headers');
-
-        final response = await _client.post(
-          Uri.parse(ApiEndpoints.graphql),
-          headers: headers,
-          body: requestBody,
-        );
-
-        await _saveCookies(response);
-        final jsonResponse = _handleResponse(response);
-        if (jsonResponse != null) {
-          return converter(jsonResponse);
-        }
-        return null;
-      }
-
-      // Giữ lại mock data cho các trường hợp khác
-      if (channelToken == 'demo-channel') {
-        // log.log('Using mock data for demo-channel');
-        final mockData = {
-          'data': {
-            // Các mock data khác ở đây
-          },
-        };
-        return converter(mockData);
-      }
-
       // Lấy headers
       final headers = await _getHeaders(channelToken: channelToken);
       // log.log('Request Headers: $headers');
@@ -193,49 +157,35 @@ class ApiClient {
   Future<Map<String, String>> _getHeaders({String? channelToken}) async {
     final headers = {'Content-Type': 'application/json'};
 
-    // Thêm tham số để debug
-    final bool isBookingQuery = channelToken == null ? false : true;
-    log.log(
-      'Đang chuẩn bị headers cho ${isBookingQuery ? "booking query" : "query thông thường"}',
-    );
-
-    // Xử lý channel token - Đảm bảo luôn có channel token cho queries liên quan đến booking
+    // Add channel token if provided
     if (channelToken != null) {
       headers['vendure-token'] = channelToken;
-      // log.log('Sử dụng channel token cụ thể: $channelToken');
     } else {
-      // Đối với booking queries, sử dụng channel token của production
-      // Với các API khác, sử dụng demo-channel
-      headers['vendure-token'] =
-          'demo-channel'; // Đã sửa lại từ default-channel sang demo-channel
-      // log.log('Sử dụng channel token mặc định: ${headers["vendure-token"]}');
+      // Default channel token
+      headers['vendure-token'] = 'demo-channel';
     }
 
-    // Xử lý authentication token
+    // Add auth token if available
     if (_authToken != null && _authToken!.isNotEmpty) {
       headers['Authorization'] = 'Bearer $_authToken';
-      // log.log('Đang sử dụng auth token: $_authToken');
     } else {
-      // log.log('CẢNH BÁO: Thiếu auth token cho request');
-      // Thử lấy lại token từ AuthHelper trong trường hợp khẩn cấp
+      // Try to get token from AuthHelper
       final token = await AuthHelper.getUserToken();
       if (token.isNotEmpty) {
         headers['Authorization'] = 'Bearer $token';
-        _authToken = token; // Cập nhật token cho các request sau
-        // log.log('Đã khôi phục auth token từ AuthHelper: $token');
+        _authToken = token; // Update token for future requests
       }
     }
 
+    // Add cookies if available
     final cookies = await _cookieJar.loadForRequest(
       Uri.parse(ApiConstants.baseUrl),
     );
 
     if (cookies.isNotEmpty) {
       headers['Cookie'] = cookies.map((c) => '${c.name}=${c.value}').join('; ');
-      // log.log('Đã thêm ${cookies.length} cookies vào request');
     }
 
-    // log.log('Headers cuối cùng: $headers');
     return headers;
   }
 

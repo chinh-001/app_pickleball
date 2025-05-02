@@ -1,8 +1,10 @@
 import '../interfaces/i_booking_service.dart';
 import '../api/api_client.dart';
+// import '../api/api_endpoints.dart';
 import 'dart:developer' as log;
 import '../../model/bookingStatus_model.dart';
 import '../../model/bookingList_model.dart';
+// import 'dart:convert';
 
 class BookingRepository implements IBookingService {
   final ApiClient _apiClient;
@@ -152,14 +154,20 @@ class BookingRepository implements IBookingService {
         }
       ''';
 
-      final response = await _apiClient.query<Map<String, dynamic>>(
+      // Đảm bảo sử dụng channel token đúng cho booking API
+      final bookingChannelToken = channelToken ?? 'demo-channel';
+
+      // Sử dụng phương thức query công khai của ApiClient thay vì truy cập private members
+      final variables = {'startDate': startDateStr, 'endDate': endDateStr};
+
+      final jsonResponse = await _apiClient.query<Map<String, dynamic>>(
         query,
-        variables: {'startDate': startDateStr, 'endDate': endDateStr},
-        channelToken: channelToken ?? 'demo-channel',
+        variables: variables,
+        channelToken: bookingChannelToken,
         converter: (json) => json,
       );
 
-      if (response == null) {
+      if (jsonResponse == null) {
         // log.log('Response is null');
         return _getOrCreateBookingStatus({
           'totalBookings': 0,
@@ -167,7 +175,7 @@ class BookingRepository implements IBookingService {
         }, channelToken: channelToken);
       }
 
-      final data = response['data'];
+      final data = jsonResponse['data'];
       if (data == null) {
         // log.log('Data is null');
         return _getOrCreateBookingStatus({

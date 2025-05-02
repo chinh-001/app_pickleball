@@ -3,7 +3,7 @@ import '../api/api_client.dart';
 import 'dart:developer' as log;
 import '../../utils/auth_helper.dart';
 import '../../model/userAccount_model.dart';
-import '../../model/userPermissions_model.dart';
+// import '../../model/userPermissions_model.dart';
 import '../repositories/userPermissions_repository.dart';
 
 class AuthRepository implements IAuthService {
@@ -80,6 +80,9 @@ class AuthRepository implements IAuthService {
 
       // Xóa tất cả dữ liệu đăng nhập đã lưu (đã bao gồm xóa dữ liệu quyền hạn)
       await AuthHelper.clearUserData();
+
+      // Make sure we completely clear any cached permissions data
+      await AuthHelper.clearUserPermissionsData();
 
       log.log('Đăng xuất thành công và đã xóa trạng thái');
       return true;

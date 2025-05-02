@@ -45,11 +45,16 @@ class OrderListScreenBloc
     Emitter<OrderListScreenState> emit,
   ) async {
     try {
-      log.log('Initializing OrderListScreen...');
+      log.log('Initializing OrderListScreen bloc...');
       emit(OrderListScreenLoading(selectedChannel: '', availableChannels: []));
 
+      // Always force a fresh API call to get user permissions
+      await _permissionsRepository.getUserPermissions();
+
+      // Luôn truy xuất trực tiếp từ repository để có dữ liệu mới nhất
       // Lấy danh sách kênh từ quyền hạn người dùng
       final userChannels = await _permissionsRepository.getAvailableChannels();
+      log.log('Fetched user channels: $userChannels');
 
       if (userChannels.isEmpty) {
         log.log(
