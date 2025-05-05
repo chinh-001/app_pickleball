@@ -4,11 +4,13 @@ import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/widgets/custom_bottom_navigation_bar.dart';
 import 'package:app_pickleball/screens/widgets/custom_order_listview.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
+import 'package:app_pickleball/screens/widgets/custom_floating_action_button.dart';
 import 'package:app_pickleball/screens/orderlist_screen/bloc/orderlist_screen_bloc.dart';
 import 'package:app_pickleball/screens/order_detail_screen/View/order_detail_screen.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'package:app_pickleball/services/repositories/bookingList_repository.dart';
 import 'package:app_pickleball/utils/auth_helper.dart';
+import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'dart:developer' as log;
 // import 'dart:convert';
 
@@ -79,7 +81,9 @@ class _OrderListScreenState extends State<OrderListScreen>
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: CustomSearchTextField(
-                          hintText: 'Tìm kiếm',
+                          hintText: AppLocalizations.of(
+                            context,
+                          ).translate('searchHint'),
                           prefixIcon: const Icon(Icons.search),
                           height: 40,
                           width: double.infinity,
@@ -111,9 +115,12 @@ class _OrderListScreenState extends State<OrderListScreen>
               Container(
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: const Text(
-                  "Danh sách đặt sân:",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                child: Text(
+                  AppLocalizations.of(context).translate('bookingList'),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 2),
@@ -122,11 +129,11 @@ class _OrderListScreenState extends State<OrderListScreen>
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8.0),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        "Chọn kênh:",
-                        style: TextStyle(
+                        AppLocalizations.of(context).translate('selectChannel'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -179,10 +186,15 @@ class _OrderListScreenState extends State<OrderListScreen>
 
                     if (state is OrderListScreenLoaded) {
                       if (state.items.isEmpty) {
-                        return const Center(
+                        return Center(
                           child: Text(
-                            'Không có booking',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                            AppLocalizations.of(
+                              context,
+                            ).translate('noBookings'),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
                           ),
                         );
                       }
@@ -216,6 +228,7 @@ class _OrderListScreenState extends State<OrderListScreen>
             ],
           ),
         ),
+        floatingActionButton: const CustomFloatingActionButton(),
         bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 1),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../utils/connectivity_service.dart';
+import '../services/localization/app_localizations.dart';
 
 class ConnectivityWrapper extends StatefulWidget {
   final Widget child;
@@ -69,14 +70,14 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
-          'Không có kết nối mạng, vui lòng kiểm tra lại',
-          style: TextStyle(color: Colors.white),
+        content: Text(
+          AppLocalizations.of(context).translate('noNetworkConnection'),
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.red,
         duration: const Duration(days: 365), // "Permanent" until dismissed
         action: SnackBarAction(
-          label: 'Đóng',
+          label: AppLocalizations.of(context).translate('close'),
           textColor: Colors.white,
           onPressed: () {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -94,9 +95,9 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
-          'Kết nối mạng đã được khôi phục',
-          style: TextStyle(color: Colors.white),
+        content: Text(
+          AppLocalizations.of(context).translate('networkRestored'),
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 3),

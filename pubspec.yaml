@@ -55,6 +55,9 @@ dependencies:
   equatable: ^2.0.7
   flutter_dotenv: ^5.2.1
   flutter_localization: ^0.2.1
+  provider: ^6.1.5
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -85,6 +88,7 @@ flutter:
     - assets/images/
     - assets/images/logo_app_tach_nen.png
     - assets/images/grass_bg.png
+    - lib/l10n/
 
   #   - images/a_dot_ham.jpeg
 

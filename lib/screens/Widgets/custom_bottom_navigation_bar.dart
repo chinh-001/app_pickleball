@@ -3,6 +3,7 @@ import 'package:app_pickleball/screens/home_screen/View/home_screen.dart';
 import 'package:app_pickleball/screens/orderlist_screen/View/orderlist_screen.dart';
 import 'package:app_pickleball/screens/profile_screen/View/profile_screen.dart';
 import 'package:app_pickleball/screens/setting_screen/View/setting_screen.dart';
+import 'package:app_pickleball/services/localization/app_localizations.dart';
 
 // Tạo một key toàn cục để giữ trạng thái của navigation bar
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -21,14 +22,23 @@ class CustomBottomNavigationBar extends StatelessWidget {
       child: BottomNavigationBar(
         backgroundColor: Colors.green, // Đặt màu nền cho BottomNavigationBar
         type: BottomNavigationBarType.fixed, // Giữ màu nền cố định
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Trang chủ'),
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.sports_soccer),
-            label: 'Đặt Sân',
+            icon: const Icon(Icons.home),
+            label: AppLocalizations.of(context).translate('home'),
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Tôi'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.sports_soccer),
+            label: AppLocalizations.of(context).translate('bookingList'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person),
+            label: AppLocalizations.of(context).translate('profile'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.settings),
+            label: AppLocalizations.of(context).translate('settings'),
+          ),
         ],
         currentIndex: currentIndex,
         selectedItemColor: Colors.white,

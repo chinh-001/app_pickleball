@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/order_detail_screen/bloc/order_detail_screen_bloc.dart';
 import 'package:app_pickleball/utils/number_format.dart';
+import 'package:app_pickleball/services/localization/app_localizations.dart';
 // import 'dart:convert';
 import 'dart:developer' as log;
 
@@ -16,12 +17,9 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-  static const List<String> typeOptions = ['Loại lẻ', 'Định kì'];
-  static const List<String> statusOptions = ['Mới', 'Đặt sân'];
-  static const List<String> paymentStatusOptions = [
-    'Đã thanh toán',
-    'Chưa thanh toán',
-  ];
+  late List<String> typeOptions;
+  late List<String> statusOptions;
+  late List<String> paymentStatusOptions;
 
   late String selectedStatus;
   late String selectedPaymentStatus;
@@ -38,6 +36,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     log.log('Available keys: ${widget.item.keys.join(", ")}');
     log.log('Code value: "${widget.item['code']}"');
     log.log('NoteCustomer value: "${widget.item['noteCustomer']}"');
+
+    // Initialize option lists here since context is not available yet
+    typeOptions = ['Loại lẻ', 'Định kì'];
+    statusOptions = ['Mới', 'Đặt sân'];
+    paymentStatusOptions = ['Đã thanh toán', 'Chưa thanh toán'];
 
     // Đảm bảo các giá trị khởi tạo nằm trong danh sách options
     selectedType =
@@ -62,6 +65,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
     // Set the note controller with noteCustomer value
     noteController.text = widget.item['noteCustomer'] ?? '';
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Update option lists with localized strings once context is available
+    typeOptions = [
+      AppLocalizations.of(context).translate('singleType'),
+      AppLocalizations.of(context).translate('periodicType'),
+    ];
+
+    statusOptions = [
+      AppLocalizations.of(context).translate('new'),
+      AppLocalizations.of(context).translate('booked'),
+    ];
+
+    paymentStatusOptions = [
+      AppLocalizations.of(context).translate('paid'),
+      AppLocalizations.of(context).translate('unpaid'),
+    ];
   }
 
   // Hàm định dạng tổng tiền với dấu phẩy phân cách hàng nghìn
@@ -127,9 +151,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     Navigator.pop(context);
                   },
                 ),
-                title: const Text(
-                  "Chi Tiết Đơn Hàng",
-                  style: TextStyle(
+                title: Text(
+                  AppLocalizations.of(context).translate('orderDetails'),
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 20,
                     fontWeight: FontWeight.w500,
@@ -164,7 +188,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         BlocBuilder<OrderDetailBloc, OrderDetailState>(
                           builder: (context, state) {
                             return CustomDropdown(
-                              title: 'Loại đặt sân',
+                              title: AppLocalizations.of(
+                                context,
+                              ).translate('bookingType'),
                               options: typeOptions,
                               selectedValue: selectedType,
                               onChanged: (String? newValue) {
@@ -180,36 +206,50 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         const SizedBox(height: 20),
 
                         // Tên khách
-                        buildInfoField('Tên khách', customerNameController),
+                        buildInfoField(
+                          AppLocalizations.of(
+                            context,
+                          ).translate('customerName'),
+                          customerNameController,
+                        ),
                         const SizedBox(height: 20),
 
-                        // Số điện thoại (Thêm mới)
-                        buildInfoField('Số điện thoại', phoneNumberController),
+                        // Số điện thoại
+                        buildInfoField(
+                          AppLocalizations.of(context).translate('phoneNumber'),
+                          phoneNumberController,
+                        ),
                         const SizedBox(height: 20),
 
-                        // Email (Thêm mới)
+                        // Email
                         buildInfoField('Email', emailAddressController),
                         const SizedBox(height: 20),
 
                         // Tên sân
-                        buildInfoField('Tên sân', courtNameController),
+                        buildInfoField(
+                          AppLocalizations.of(context).translate('courtName'),
+                          courtNameController,
+                        ),
                         const SizedBox(height: 20),
 
                         // Mã đơn hàng (Code)
                         buildInfoField(
-                          'Mã đơn hàng',
+                          AppLocalizations.of(context).translate('orderCode'),
                           codeController,
                           readOnly: true,
                         ),
                         const SizedBox(height: 20),
 
-                        // Tổng tiền (Thêm mới với style riêng)
-                        buildPriceField('Tổng tiền', totalPriceController),
+                        // Tổng tiền
+                        buildPriceField(
+                          AppLocalizations.of(context).translate('totalPrice'),
+                          totalPriceController,
+                        ),
                         const SizedBox(height: 20),
 
                         // Thời gian
                         buildInfoField(
-                          'Thời gian',
+                          AppLocalizations.of(context).translate('time'),
                           TextEditingController(text: selectedTime),
                           readOnly: true,
                         ),
@@ -239,9 +279,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 color: Colors.green,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text(
-                                'Chọn thời gian',
-                                style: TextStyle(
+                              child: Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('selectTime'),
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
                                 ),
@@ -255,7 +297,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         BlocBuilder<OrderDetailBloc, OrderDetailState>(
                           builder: (context, state) {
                             return CustomDropdown(
-                              title: 'Trạng thái',
+                              title: AppLocalizations.of(
+                                context,
+                              ).translate('status'),
                               options: statusOptions,
                               dropdownHeight: 40,
                               dropdownWidth: 400,
@@ -276,7 +320,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         BlocBuilder<OrderDetailBloc, OrderDetailState>(
                           builder: (context, state) {
                             return CustomDropdown(
-                              title: 'Trạng thái thanh toán',
+                              title: AppLocalizations.of(
+                                context,
+                              ).translate('paymentStatus'),
                               options: paymentStatusOptions,
                               dropdownHeight: 40,
                               dropdownWidth: 400,
@@ -297,9 +343,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Ghi chú',
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context).translate('notes'),
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -313,10 +359,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               child: TextField(
                                 controller: noteController,
                                 maxLines: 3,
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.all(12),
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.all(12),
                                   border: InputBorder.none,
-                                  hintText: 'Ghi chú của khách hàng',
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('customerNotes'),
                                 ),
                               ),
                             ),
@@ -362,9 +410,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: const Text(
-                                'Sửa',
-                                style: TextStyle(
+                              child: Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('modify'),
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,

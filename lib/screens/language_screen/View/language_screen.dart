@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../screens/widgets/custom_choice_item.dart';
 import '../bloc/language_screen_bloc.dart';
+import '../../../services/localization/app_localizations.dart';
+import '../../../services/localization/language_provider.dart';
+import 'package:provider/provider.dart';
 
 class LanguageScreen extends StatelessWidget {
   const LanguageScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return BlocProvider(
-      create: (context) => LanguageScreenBloc(),
+      create: (context) => LanguageScreenBloc(context),
       child: BlocBuilder<LanguageScreenBloc, LanguageScreenState>(
         builder: (context, state) {
           // Mặc định chọn tiếng Việt
@@ -26,9 +31,9 @@ class LanguageScreen extends StatelessWidget {
                   Navigator.of(context).pop();
                 },
               ),
-              title: const Text(
-                'Chọn ngôn ngữ',
-                style: TextStyle(
+              title: Text(
+                localizations.translate('selectLanguage'),
+                style: const TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
@@ -37,6 +42,25 @@ class LanguageScreen extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.check, color: Colors.green),
                   onPressed: () {
+                    // Áp dụng ngôn ngữ đã chọn
+                    Provider.of<LanguageProvider>(
+                      context,
+                      listen: false,
+                    ).changeLanguage(selectedLanguage);
+
+                    // Hiện thông báo
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          selectedLanguage == 'vi'
+                              ? 'Đã chuyển sang Tiếng Việt'
+                              : 'Switched to English',
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+
+                    // Quay lại màn hình trước
                     Navigator.of(context).pop();
                   },
                 ),
@@ -53,7 +77,7 @@ class LanguageScreen extends StatelessWidget {
                       children: [
                         // Tiếng Việt
                         CustomChoiceItem(
-                          title: 'Tiếng Việt',
+                          title: localizations.translate('vietnamese'),
                           isSelected: selectedLanguage == 'vi',
                           onTap: () {
                             BlocProvider.of<LanguageScreenBloc>(
@@ -63,7 +87,7 @@ class LanguageScreen extends StatelessWidget {
                         ),
                         // English
                         CustomChoiceItem(
-                          title: 'English',
+                          title: localizations.translate('english'),
                           isSelected: selectedLanguage == 'en',
                           onTap: () {
                             BlocProvider.of<LanguageScreenBloc>(

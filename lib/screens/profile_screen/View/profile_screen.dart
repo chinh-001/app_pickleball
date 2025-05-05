@@ -4,6 +4,7 @@ import 'package:app_pickleball/screens/widgets/custom_bottom_navigation_bar.dart
 import 'package:app_pickleball/screens/profile_screen/bloc/profile_screen_bloc.dart';
 import 'package:app_pickleball/screens/login_screen/View/login_screen.dart';
 import 'package:app_pickleball/screens/widgets/custom_confirm_logout_dialog.dart';
+import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'dart:developer' as log;
 
 class ProfileScreen extends StatelessWidget {
@@ -33,7 +34,7 @@ class ProfileScreen extends StatelessWidget {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Thông Tin Cá Nhân'),
+            title: Text(AppLocalizations.of(context).translate('personalInfo')),
             centerTitle: true,
             automaticallyImplyLeading: false,
           ),
@@ -69,7 +70,8 @@ class ProfileScreen extends StatelessWidget {
                       children: [
                         // Trường Tên
                         buildInfoField(
-                          title: 'Tên',
+                          context: context,
+                          title: AppLocalizations.of(context).translate('name'),
                           controller: TextEditingController(text: name),
                           isEditable: isEditable,
                         ),
@@ -77,7 +79,10 @@ class ProfileScreen extends StatelessWidget {
 
                         // Trường Email
                         buildInfoField(
-                          title: 'Email',
+                          context: context,
+                          title: AppLocalizations.of(
+                            context,
+                          ).translate('email'),
                           controller: TextEditingController(text: email),
                           isEditable: isEditable,
                         ),
@@ -105,9 +110,11 @@ class ProfileScreen extends StatelessWidget {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
-                                            const SnackBar(
+                                            SnackBar(
                                               content: Text(
-                                                'Thông tin đã được lưu!',
+                                                AppLocalizations.of(
+                                                  context,
+                                                ).translate('infoSaved'),
                                               ),
                                             ),
                                           );
@@ -123,9 +130,11 @@ class ProfileScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Lưu',
-                                  style: TextStyle(
+                                child: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('save'),
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -142,8 +151,12 @@ class ProfileScreen extends StatelessWidget {
                                   log.log('ProfileScreen: Edit button pressed');
                                   bloc.add(EnableEditEvent());
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Chế độ chỉnh sửa đã bật!'),
+                                    SnackBar(
+                                      content: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        ).translate('editModeEnabled'),
+                                      ),
                                     ),
                                   );
                                 },
@@ -156,9 +169,11 @@ class ProfileScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Sửa',
-                                  style: TextStyle(
+                                child: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('edit'),
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -181,9 +196,12 @@ class ProfileScreen extends StatelessWidget {
                                 context: context,
                                 builder: (BuildContext dialogContext) {
                                   return CustomConfirmLogoutDialog(
-                                    title: 'Đăng xuất',
-                                    content:
-                                        'Bạn có chắc chắn muốn đăng xuất không?',
+                                    title: AppLocalizations.of(
+                                      context,
+                                    ).translate('logoutConfirmTitle'),
+                                    content: AppLocalizations.of(
+                                      context,
+                                    ).translate('logoutConfirmMessage'),
                                     onConfirm: () {
                                       context.read<ProfileScreenBloc>().add(
                                         const LogoutEvent(),
@@ -200,9 +218,9 @@ class ProfileScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
-                              'Đăng xuất',
-                              style: TextStyle(
+                            child: Text(
+                              AppLocalizations.of(context).translate('logout'),
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -227,6 +245,7 @@ class ProfileScreen extends StatelessWidget {
 
   // Hàm xây dựng trường thông tin
   Widget buildInfoField({
+    required BuildContext context,
     required String title,
     required TextEditingController controller,
     required bool isEditable,
@@ -243,7 +262,9 @@ class ProfileScreen extends StatelessWidget {
           controller: controller,
           readOnly: !isEditable,
           decoration: InputDecoration(
-            hintText: 'Nhập $title của bạn',
+            hintText: AppLocalizations.of(
+              context,
+            ).translate('enterYour').replaceAll('{field}', title.toLowerCase()),
             filled: true,
             fillColor:
                 isEditable

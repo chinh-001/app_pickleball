@@ -4,12 +4,15 @@ import '../../../screens/widgets/custom_setting_item.dart';
 import '../../../screens/widgets/custom_bottom_navigation_bar.dart';
 import '../../../screens/language_screen/View/language_screen.dart';
 import '../bloc/setting_screen_bloc.dart';
+import '../../../services/localization/app_localizations.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return BlocProvider(
       create: (context) => SettingScreenBloc(),
       child: BlocBuilder<SettingScreenBloc, SettingScreenState>(
@@ -21,9 +24,9 @@ class SettingScreen extends StatelessWidget {
               elevation: 0,
               automaticallyImplyLeading: false,
               centerTitle: true,
-              title: const Text(
-                'Thiết lập tài khoản',
-                style: TextStyle(
+              title: Text(
+                localizations.translate('accountSettings'),
+                style: const TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
@@ -48,7 +51,7 @@ class SettingScreen extends StatelessWidget {
                             bottom: 8,
                           ),
                           child: Text(
-                            'Tài khoản',
+                            localizations.translate('account'),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -58,7 +61,7 @@ class SettingScreen extends StatelessWidget {
                         ),
                         // Mục ngôn ngữ
                         CustomSettingItem(
-                          title: 'Ngôn ngữ',
+                          title: localizations.translate('language'),
                           onTap: () {
                             Navigator.push(
                               context,

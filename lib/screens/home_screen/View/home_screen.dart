@@ -10,6 +10,7 @@ import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'package:app_pickleball/utils/number_format.dart';
 import 'package:app_pickleball/utils/auth_helper.dart';
+import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'dart:developer' as log;
 
 class HomeScreen extends StatefulWidget {
@@ -75,7 +76,9 @@ class _HomeScreenState extends State<HomeScreen>
                   children: [
                     Expanded(
                       child: CustomSearchTextField(
-                        hintText: 'Tìm kiếm',
+                        hintText: AppLocalizations.of(
+                          context,
+                        ).translate('searchHint'),
                         prefixIcon: const Icon(
                           Icons.search,
                           size: 20,
@@ -116,7 +119,9 @@ class _HomeScreenState extends State<HomeScreen>
                 child: BlocBuilder<HomeScreenBloc, HomeScreenState>(
                   builder: (context, state) {
                     return CustomDropdown(
-                      title: 'Chọn kênh :',
+                      title: AppLocalizations.of(
+                        context,
+                      ).translate('selectChannel'),
                       options: state.availableChannels,
                       dropdownHeight: 40,
                       dropdownWidth: 400,
@@ -184,7 +189,14 @@ class _HomeScreenState extends State<HomeScreen>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Tổng đặt chỗ: ${state is HomeScreenLoaded ? state.totalOrders : 0}',
+                                    AppLocalizations.of(context)
+                                        .translate('totalBookings')
+                                        .replaceAll(
+                                          '{count}',
+                                          state is HomeScreenLoaded
+                                              ? state.totalOrders.toString()
+                                              : '0',
+                                        ),
                                     style: const TextStyle(
                                       color: Colors.yellow,
                                       fontSize: 16,
@@ -193,7 +205,16 @@ class _HomeScreenState extends State<HomeScreen>
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Doanh số kì vọng: ${state is HomeScreenLoaded ? state.totalSales.toInt().toCommaSeparated() : 0} VNĐ',
+                                    AppLocalizations.of(context)
+                                        .translate('expectedRevenue')
+                                        .replaceAll(
+                                          '{amount}',
+                                          state is HomeScreenLoaded
+                                              ? state.totalSales
+                                                  .toInt()
+                                                  .toCommaSeparated()
+                                              : '0',
+                                        ),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -229,9 +250,12 @@ class _HomeScreenState extends State<HomeScreen>
               Container(
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: const Text(
-                  'Các sân có sẵn:',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                child: Text(
+                  AppLocalizations.of(context).translate('availableCourts'),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
