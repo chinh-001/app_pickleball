@@ -16,6 +16,7 @@
   "notifications": "Thông báo",
   "personalInfo": "Thông Tin Cá Nhân",
   "bookingList": "Danh sách đặt Sân :",
+  "bookingList_bottom_navi": "Đặt Sân",
   "name": "Tên",
   "email": "Email",
   "enterYour": "Nhập {field} của bạn",

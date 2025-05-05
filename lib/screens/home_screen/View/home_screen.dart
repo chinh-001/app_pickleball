@@ -80,9 +80,9 @@ class _HomeScreenState extends State<HomeScreen>
                           context,
                         ).translate('searchHint'),
                         prefixIcon: const Icon(
-                          Icons.search,
+                          Icons.menu,
                           size: 20,
-                          color: Colors.grey,
+                          color: Color.fromARGB(255, 0, 0, 0),
                         ),
                         height: 40,
                         width: double.infinity,

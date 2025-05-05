@@ -29,7 +29,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.sports_soccer),
-            label: AppLocalizations.of(context).translate('bookingList'),
+            label: AppLocalizations.of(
+              context,
+            ).translate('bookingList_bottom_navi'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.person),
