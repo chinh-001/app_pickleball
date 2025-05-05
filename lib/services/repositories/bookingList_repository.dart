@@ -66,10 +66,10 @@ class BookingListRepository implements IBookingListService {
         }
       ''';
 
-      log.log('\n***** BOOKING LIST REPOSITORY: getAllBookingsRaw *****');
-      log.log('Channel Token: $channelToken');
-      log.log('Date: $date');
-      log.log('Query: $query');
+      // Only log the channel being requested, not the query itself
+      log.log(
+        '\n***** BOOKING LIST REPOSITORY: Getting data for channel: $channelToken *****',
+      );
 
       final response = await _apiClient.query<Map<String, dynamic>>(
         query,
@@ -82,49 +82,45 @@ class BookingListRepository implements IBookingListService {
         throw Exception('Failed to get booking list');
       }
 
-      // Log detailed response specifically focusing on code and noteCustomer fields
-      log.log('\n=== API RESPONSE DETAILS FOR code AND noteCustomer ===');
+      // Log the complete API response
+      log.log('\n===== COMPLETE API RESPONSE FOR CHANNEL: $channelToken =====');
+      log.log(json.encode(response));
+      log.log('===== END COMPLETE API RESPONSE =====\n');
 
-      if (response['data'] != null) {
-        final data = response['data'];
-        log.log('\nTotal Items: ${data['getAllBooking']?['totalItems']}');
-
-        final items = data['getAllBooking']?['items'] as List?;
-        if (items != null) {
-          log.log('\nBooking Items: found ${items.length} items');
-
-          // Create a simple table format for better visualization
-          log.log('\nIndex | Type       | Code               | NoteCustomer');
-          log.log('--------------------------------------------------');
-
-          for (var i = 0; i < items.length; i++) {
-            final item = items[i];
-            final type = item['type']?.toString() ?? 'N/A';
-            final code = item['code']?.toString() ?? 'null';
-            final noteCustomer = item['noteCustomer']?.toString() ?? 'null';
-
-            // Format as a table row
-            log.log(
-              '${i + 1}     | ${type.padRight(10)} | ${code.padRight(18)} | $noteCustomer',
-            );
-          }
-        }
-      }
-
-      // Dump the first item completely for thorough inspection (if available)
+      // Also log a more user-friendly summary of the items
       if (response['data'] != null &&
           response['data']['getAllBooking'] != null &&
           response['data']['getAllBooking']['items'] != null) {
-        final items = response['data']['getAllBooking']['items'] as List?;
-        if (items != null && items.isNotEmpty) {
-          log.log('\n=== FIRST ITEM COMPLETE DATA ===');
-          log.log(json.encode(items[0]));
-          log.log('=== END FIRST ITEM DATA ===');
+        final data = response['data'];
+        final totalItems = data['getAllBooking']['totalItems'];
+        final items = data['getAllBooking']['items'] as List;
+
+        log.log('\n===== BOOKING ITEMS SUMMARY =====');
+        log.log('Total items found: $totalItems');
+        log.log('Number of items retrieved: ${items.length}\n');
+
+        for (var i = 0; i < items.length; i++) {
+          final item = items[i];
+          final customer = item['customer'] as Map<String, dynamic>;
+          final court = item['court'] as Map<String, dynamic>;
+          final status = item['status'] as Map<String, dynamic>;
+          final paymentStatus = item['paymentstatus'] as Map<String, dynamic>;
+
+          log.log('BOOKING #${i + 1}:');
+          log.log('ID: ${item['id']}');
+          log.log('Code: ${item['code']}');
+          log.log('Customer: ${customer['firstName']} ${customer['lastName']}');
+          log.log('Phone: ${customer['phoneNumber']}');
+          log.log('Court: ${court['name']}');
+          log.log('Time: ${item['start_time']} - ${item['end_time']}');
+          log.log('Type: ${item['type']}');
+          log.log('Status: ${status['name']}');
+          log.log('Payment Status: ${paymentStatus['name']}');
+          log.log('Total Price: ${item['total_price']}');
+          log.log('Note: ${item['noteCustomer']}');
+          log.log('-----------------------------------\n');
         }
       }
-
-      log.log('\n=== END API RESPONSE DETAILS ===');
-      log.log('***** END BOOKING LIST REPOSITORY *****\n');
 
       return response;
     } catch (e) {

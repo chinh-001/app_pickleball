@@ -175,6 +175,9 @@ class OrderListScreenBloc
     ChangeChannelEvent event,
     Emitter<OrderListScreenState> emit,
   ) {
+    // Log the channel selection
+    log.log('\n===== CHANNEL SELECTED: "${event.channelName}" =====');
+
     emit(
       OrderListScreenLoading(
         selectedChannel: event.channelName,
@@ -183,13 +186,22 @@ class OrderListScreenBloc
     );
 
     if (event.channelName == 'Pikachu Pickleball Xuân Hoà') {
+      log.log(
+        'Using special "pikachu" token for Pikachu Pickleball Xuân Hoà channel',
+      );
       add(FetchBookingsEvent(channelToken: 'pikachu', date: DateTime.now()));
     } else {
       // Lấy token từ UserPermissionsRepository
       _permissionsRepository.getChannelToken(event.channelName).then((token) {
         if (token.isNotEmpty) {
+          log.log(
+            'Got channel token: "$token" for channel: "${event.channelName}"',
+          );
           add(FetchBookingsEvent(channelToken: token, date: DateTime.now()));
         } else {
+          log.log(
+            'No channel token found for channel: "${event.channelName}", returning empty result',
+          );
           // Nếu không tìm thấy token, emit state loaded với danh sách trống
           emit(
             OrderListScreenLoaded(
@@ -209,7 +221,9 @@ class OrderListScreenBloc
     Emitter<OrderListScreenState> emit,
   ) async {
     try {
-      log.log('Fetching bookings for channel: ${event.channelToken}');
+      log.log(
+        'Fetching bookings with token: "${event.channelToken}" for date: ${event.date.toIso8601String()}',
+      );
 
       emit(
         OrderListScreenLoading(
@@ -218,7 +232,13 @@ class OrderListScreenBloc
         ),
       );
 
-      // Sử dụng model để lấy dữ liệu
+      // First get the raw API response to log the complete data
+      await _bookingListRepository.getAllBookingsRaw(
+        channelToken: event.channelToken,
+        date: event.date,
+      );
+
+      // Then use the model to get the structured data
       final bookingOrderList = await _bookingListRepository.getAllBookings(
         channelToken: event.channelToken,
         date: event.date,
@@ -239,6 +259,13 @@ class OrderListScreenBloc
       }
 
       log.log('Tìm thấy ${bookingOrderList.orders.length} đơn đặt sân');
+
+      // Check if code and noteCustomer fields are present in the data
+      if (bookingOrderList.orders.isNotEmpty) {
+        final firstOrder = bookingOrderList.orders.first;
+        log.log('First order code: "${firstOrder.code}"');
+        log.log('First order noteCustomer: "${firstOrder.noteCustomer}"');
+      }
 
       // Chuyển đổi dữ liệu sang định dạng cũ để tương thích ngược
       final transformedItems = bookingOrderList.toSimpleMapList();
