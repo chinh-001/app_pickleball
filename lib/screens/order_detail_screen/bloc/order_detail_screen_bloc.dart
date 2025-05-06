@@ -50,6 +50,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       final List<String> statusOptions = [
         AppLocalizations.of(context).translate('new'),
         AppLocalizations.of(context).translate('booked'),
+        AppLocalizations.of(context).translate('customer_canceled'),
       ];
 
       final List<String> paymentStatusOptions = [
@@ -74,6 +75,8 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         selectedStatus = AppLocalizations.of(context).translate('new');
       } else if (originalStatus == 'Đặt sân') {
         selectedStatus = AppLocalizations.of(context).translate('booked');
+      } else if (originalStatus == 'Khách hủy đặt') {
+        selectedStatus = AppLocalizations.of(context).translate('customer_canceled');
       }
 
       if (originalPaymentStatus == 'Đã thanh toán' ||
@@ -198,6 +201,8 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       translatedStatus = AppLocalizations.of(context).translate('new');
     } else if (event.status == 'Đặt sân') {
       translatedStatus = AppLocalizations.of(context).translate('booked');
+    } else if (event.status == 'Khách hủy đặt') {
+      translatedStatus = AppLocalizations.of(context).translate('customer_canceled');
     }
 
     // Ánh xạ payment status
@@ -245,6 +250,9 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     } else if (event.status ==
         AppLocalizations.of(context).translate('booked')) {
       originalStatus = 'Đặt sân';
+    } else if (event.status ==
+        AppLocalizations.of(context).translate('customer_canceled')) {
+      originalStatus = 'Khách hủy đặt';
     }
 
     // Ánh xạ ngược payment status
