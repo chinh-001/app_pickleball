@@ -42,10 +42,17 @@ class BookingOrder {
     final customer = map['customer'] as Map? ?? {};
     final firstName = customer['firstName']?.toString() ?? '';
     final lastName = customer['lastName']?.toString() ?? '';
+
+    // Check both fields and log detailed information
+    log.log('Customer firstName: "$firstName", lastName: "$lastName"');
+
     final customerName =
-        firstName.isNotEmpty && lastName.isNotEmpty
-            ? '$firstName $lastName'
+        firstName.isNotEmpty || lastName.isNotEmpty
+            ? '$firstName $lastName'.trim()
             : 'Không có tên';
+
+    log.log('Constructed customerName: "$customerName"');
+
     final phoneNumber = customer['phoneNumber']?.toString() ?? '';
     final emailAddress = customer['emailAddress']?.toString() ?? '';
 
@@ -132,6 +139,7 @@ class BookingOrder {
     log.log(
       'BookingOrder.toJson() result contains fields: ${map.keys.join(", ")}',
     );
+    log.log('customerName in JSON: "${map['customerName']}"');
 
     return map;
   }
@@ -329,6 +337,25 @@ class BookingOrderList {
     return now.difference(lastUpdated).inMinutes >= 30;
   }
 
+  // Clear cache for a specific channel and date
+  static Future<bool> clearCache({
+    required String channelToken,
+    required DateTime bookingDate,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = _getOrderStorageKey(channelToken, bookingDate);
+      await prefs.remove(key);
+      log.log(
+        'Cache cleared for channel: $channelToken, date: ${bookingDate.toIso8601String()}',
+      );
+      return true;
+    } catch (e) {
+      log.log('Error clearing cache: $e');
+      return false;
+    }
+  }
+
   // Tạo key lưu trữ trong SharedPreferences dựa vào channelToken và ngày
   static String _getOrderStorageKey(String channelToken, DateTime date) {
     final dateString = '${date.year}-${date.month}-${date.day}';
@@ -374,7 +401,8 @@ class BookingList {
     String? channelToken,
   }) {
     return BookingList(
-      courts: maps, // Sử dụng trực tiếp List<Map<String, dynamic>> thay vì chuyển đổi qua Court
+      courts:
+          maps, // Sử dụng trực tiếp List<Map<String, dynamic>> thay vì chuyển đổi qua Court
       lastUpdated: DateTime.now(),
       channelToken: channelToken,
     );
@@ -383,7 +411,8 @@ class BookingList {
   // Convert danh sách thành JSON
   Map<String, dynamic> toJson() {
     return {
-      'courts': courts, // Sử dụng trực tiếp courts vì đã là List<Map<String, dynamic>>
+      'courts':
+          courts, // Sử dụng trực tiếp courts vì đã là List<Map<String, dynamic>>
       'lastUpdated': lastUpdated.toIso8601String(),
       'channelToken': channelToken,
     };
@@ -430,9 +459,8 @@ class BookingList {
 
       // Parse courts list - giữ nguyên Map<String, dynamic> thay vì chuyển đổi qua Court
       final List<dynamic> courtsList = map['courts'] ?? [];
-      final List<Map<String, dynamic>> courts = courtsList
-          .map((item) => item as Map<String, dynamic>)
-          .toList();
+      final List<Map<String, dynamic>> courts =
+          courtsList.map((item) => item as Map<String, dynamic>).toList();
 
       return BookingList(
         courts: courts,

@@ -135,48 +135,41 @@ class BookingListRepository implements IBookingListService {
     required DateTime date,
   }) async {
     try {
-      // log.log('\n***** BOOKING LIST REPOSITORY: getAllBookings *****');
+      log.log('\n***** BOOKING LIST REPOSITORY: getAllBookings *****');
 
-      // Kiểm tra xem có dữ liệu đã lưu trong storage không và có còn hiệu lực
-      final storedData = await BookingOrderList.getFromStorage(
+      // Clear the cache before fetching new data to prevent stale data issues
+      await BookingOrderList.clearCache(
         channelToken: channelToken,
         bookingDate: date,
       );
 
-      // Nếu có dữ liệu đã lưu và chưa hết hạn, trả về dữ liệu đó
-      if (storedData.orders.isNotEmpty && !storedData.isExpired()) {
-        // log.log(
-        //   'Sử dụng dữ liệu đặt sân đã lưu từ storage cho channel: $channelToken, ngày: ${date.toIso8601String()}',
-        // );
-        ('Số lượng đơn đặt sân: ${storedData.orders.length}');
-        return storedData;
-      }
-
-      // Nếu không có dữ liệu hoặc dữ liệu đã hết hạn, gọi API
-      // log.log('Không có dữ liệu trong cache hoặc đã hết hạn, gọi API mới');
+      // Get fresh data from the API
+      log.log('Fetching fresh data from API');
       final response = await getAllBookingsRaw(
         channelToken: channelToken,
         date: date,
       );
 
-      // Chuyển đổi response thành BookingOrderList
+      // Convert response to BookingOrderList
       final bookingOrderList = BookingOrderList.fromApiResponse(
         response,
         channelToken: channelToken,
         bookingDate: date,
       );
 
-      // Lưu dữ liệu vào storage
+      // Save data to storage
       await bookingOrderList.saveOrderListData();
 
-      // log.log('Đã xử lý và lưu ${bookingOrderList.orders.length} đơn đặt sân');
-      // log.log('***** END BOOKING LIST REPOSITORY *****\n');
+      log.log(
+        'Processed and saved ${bookingOrderList.orders.length} booking orders',
+      );
+      log.log('***** END BOOKING LIST REPOSITORY *****\n');
 
       return bookingOrderList;
     } catch (e) {
       log.log('Error in getAllBookings: $e');
 
-      // Nếu có lỗi, thử lấy dữ liệu từ storage (kể cả đã hết hạn)
+      // If error, try to get data from storage (even if expired)
       try {
         final storedData = await BookingOrderList.getFromStorage(
           channelToken: channelToken,
@@ -184,14 +177,14 @@ class BookingListRepository implements IBookingListService {
         );
 
         if (storedData.orders.isNotEmpty) {
-          // log.log('Sử dụng dữ liệu dự phòng từ storage do lỗi API');
+          log.log('Using fallback data from storage due to API error');
           return storedData;
         }
       } catch (storageError) {
-        log.log('Lỗi khi lấy dữ liệu dự phòng: $storageError');
+        log.log('Error fetching fallback data: $storageError');
       }
 
-      // Nếu không có dữ liệu dự phòng, trả về danh sách trống
+      // If no fallback data, return empty list
       return BookingOrderList(
         orders: [],
         channelToken: channelToken,
