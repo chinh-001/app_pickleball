@@ -51,6 +51,7 @@
   "paymentStatus": "Payment Status",
   "paid": "Paid",
   "unpaid": "Unpaid",
+  "deposit": "Deposit",
   "notes": "Notes",
   "customerNotes": "Customer notes",
   "modify": "Modify",

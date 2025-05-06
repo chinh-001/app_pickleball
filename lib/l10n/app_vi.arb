@@ -51,6 +51,7 @@
   "paymentStatus": "Trạng thái thanh toán",
   "paid": "Đã thanh toán",
   "unpaid": "Chưa thanh toán",
+  "deposit": "Đặt cọc",
   "notes": "Ghi chú",
   "customerNotes": "Ghi chú của khách hàng",
   "modify": "Sửa",

@@ -21,11 +21,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   late List<String> statusOptions;
   late List<String> paymentStatusOptions;
 
-  late String selectedStatus;
+  late String selectedType;
   late String selectedPaymentStatus;
   late String selectedTime;
-  late String selectedType;
+  late String selectedStatus;
   final TextEditingController noteController = TextEditingController();
+  bool _initialized = false;
 
   @override
   void initState() {
@@ -37,30 +38,22 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     log.log('Code value: "${widget.item['code']}"');
     log.log('NoteCustomer value: "${widget.item['noteCustomer']}"');
 
-    // Initialize option lists here since context is not available yet
-    typeOptions = ['Loại lẻ', 'Định kì'];
-    statusOptions = ['Mới', 'Đặt sân'];
-    paymentStatusOptions = ['Đã thanh toán', 'Chưa thanh toán'];
+    // Initialize with empty lists - will be populated in didChangeDependencies
+    typeOptions = [];
+    statusOptions = [];
+    paymentStatusOptions = [];
 
-    // Đảm bảo các giá trị khởi tạo nằm trong danh sách options
-    selectedType =
-        typeOptions.contains(widget.item['type'])
-            ? widget.item['type']!
-            : typeOptions.first;
+    // Store the original value to map to localized value later
+    final originalType = widget.item['type'];
+    selectedType = originalType ?? '';
 
-    // Lấy giá trị status từ order list và chỉ chấp nhận 'Mới' hoặc 'Đặt sân'
+    // Lấy giá trị status từ order list
     final originalStatus = widget.item['status'] ?? '';
-    if (originalStatus == 'Mới' || originalStatus == 'Đặt sân') {
-      selectedStatus = originalStatus;
-    } else {
-      // Nếu status không thuộc 2 giá trị trên, mặc định là 'Mới'
-      selectedStatus = 'Mới';
-    }
+    selectedStatus = originalStatus;
 
-    selectedPaymentStatus =
-        paymentStatusOptions.contains(widget.item['paymentStatus'])
-            ? widget.item['paymentStatus']!
-            : paymentStatusOptions.first;
+    final originalPaymentStatus = widget.item['paymentStatus'] ?? '';
+    selectedPaymentStatus = originalPaymentStatus;
+
     selectedTime = widget.item['time'] ?? '';
 
     // Set the note controller with noteCustomer value
@@ -71,7 +64,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Update option lists with localized strings once context is available
+    // Initialize options with localized strings - these are fixed UI elements that should be translated
     typeOptions = [
       AppLocalizations.of(context).translate('singleType'),
       AppLocalizations.of(context).translate('periodicType'),
@@ -85,7 +78,41 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     paymentStatusOptions = [
       AppLocalizations.of(context).translate('paid'),
       AppLocalizations.of(context).translate('unpaid'),
+      AppLocalizations.of(context).translate('deposit'),
     ];
+
+    // Only map the values on first initialization
+    if (!_initialized) {
+      // Map the original type value to localized value for dropdown display
+      if (selectedType == 'Loại lẻ' || selectedType.isEmpty) {
+        selectedType = AppLocalizations.of(context).translate('singleType');
+      } else if (selectedType == 'Định kì') {
+        selectedType = AppLocalizations.of(context).translate('periodicType');
+      }
+
+      // Map status
+      if (selectedStatus == 'Mới' || selectedStatus.isEmpty) {
+        selectedStatus = AppLocalizations.of(context).translate('new');
+      } else if (selectedStatus == 'Đặt sân') {
+        selectedStatus = AppLocalizations.of(context).translate('booked');
+      }
+
+      // Map payment status
+      if (selectedPaymentStatus == 'Đã thanh toán' ||
+          selectedPaymentStatus.isEmpty) {
+        selectedPaymentStatus = AppLocalizations.of(context).translate('paid');
+      } else if (selectedPaymentStatus == 'Chưa thanh toán') {
+        selectedPaymentStatus = AppLocalizations.of(
+          context,
+        ).translate('unpaid');
+      } else if (selectedPaymentStatus == 'Đặt cọc') {
+        selectedPaymentStatus = AppLocalizations.of(
+          context,
+        ).translate('deposit');
+      }
+
+      _initialized = true;
+    }
   }
 
   // Hàm định dạng tổng tiền với dấu phẩy phân cách hàng nghìn
@@ -106,6 +133,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Use the original values directly from widget.item without translation
     final TextEditingController customerNameController = TextEditingController(
       text: widget.item['customerName'],
     );
@@ -152,6 +180,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   },
                 ),
                 title: Text(
+                  // Translate fixed UI elements like headers
                   AppLocalizations.of(context).translate('orderDetails'),
                   style: const TextStyle(
                     color: Colors.black,
@@ -196,6 +225,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               onChanged: (String? newValue) {
                                 if (newValue != null) {
                                   setState(() {
+                                    // Store the selected value as-is without translation
                                     selectedType = newValue;
                                   });
                                 }
@@ -306,6 +336,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               selectedValue: selectedStatus,
                               onChanged: (String? newValue) {
                                 if (newValue != null) {
+                                  // Pass the value directly without translation
                                   context.read<OrderDetailBloc>().add(
                                     UpdateStatusEvent(newValue),
                                   );
@@ -329,6 +360,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               selectedValue: selectedPaymentStatus,
                               onChanged: (String? newValue) {
                                 if (newValue != null) {
+                                  // Pass the value directly without translation
                                   context.read<OrderDetailBloc>().add(
                                     UpdatePaymentStatusEvent(newValue),
                                   );
@@ -387,13 +419,64 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         ) // Loại bỏ dấu phẩy phân cách
                                         .trim(); // Xóa khoảng trắng thừa
 
+                                // Map translated UI values back to original values for submission
+                                String originalStatus = selectedStatus;
+                                String originalPaymentStatus =
+                                    selectedPaymentStatus;
+                                String originalType = selectedType;
+
+                                // Reverse mapping for type
+                                if (selectedType ==
+                                    AppLocalizations.of(
+                                      context,
+                                    ).translate('singleType')) {
+                                  originalType = 'Loại lẻ';
+                                } else if (selectedType ==
+                                    AppLocalizations.of(
+                                      context,
+                                    ).translate('periodicType')) {
+                                  originalType = 'Định kì';
+                                }
+
+                                // Reverse mapping for status
+                                if (selectedStatus ==
+                                    AppLocalizations.of(
+                                      context,
+                                    ).translate('new')) {
+                                  originalStatus = 'Mới';
+                                } else if (selectedStatus ==
+                                    AppLocalizations.of(
+                                      context,
+                                    ).translate('booked')) {
+                                  originalStatus = 'Đặt sân';
+                                }
+
+                                // Reverse mapping for payment status
+                                if (selectedPaymentStatus ==
+                                    AppLocalizations.of(
+                                      context,
+                                    ).translate('paid')) {
+                                  originalPaymentStatus = 'Đã thanh toán';
+                                } else if (selectedPaymentStatus ==
+                                    AppLocalizations.of(
+                                      context,
+                                    ).translate('unpaid')) {
+                                  originalPaymentStatus = 'Chưa thanh toán';
+                                } else if (selectedPaymentStatus ==
+                                    AppLocalizations.of(
+                                      context,
+                                    ).translate('deposit')) {
+                                  originalPaymentStatus = 'Đặt cọc';
+                                }
+
+                                // Submit original, untranslated values
                                 context.read<OrderDetailBloc>().add(
                                   SubmitOrderDetailEvent(
                                     customerName: customerNameController.text,
                                     courtName: courtNameController.text,
                                     time: selectedTime,
-                                    status: selectedStatus,
-                                    paymentStatus: selectedPaymentStatus,
+                                    status: originalStatus,
+                                    paymentStatus: originalPaymentStatus,
                                     note: noteController.text,
                                     phoneNumber: phoneNumberController.text,
                                     emailAddress: emailAddressController.text,
@@ -411,6 +494,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 ),
                               ),
                               child: Text(
+                                // Translate the button text (fixed UI element)
                                 AppLocalizations.of(
                                   context,
                                 ).translate('modify'),
