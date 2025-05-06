@@ -32,6 +32,7 @@
   "totalBookings": "Tổng đặt chỗ: {count}",
   "expectedRevenue": "Doanh số kì vọng: {amount} VNĐ",
   "availableCourts": "Các sân có sẵn:",
+  "noCourts": "Không có sân nào",
   "noBookings": "Không có booking",
   
   "orderDetails": "Chi Tiết Đơn Hàng",

@@ -32,6 +32,7 @@
   "totalBookings": "Total bookings: {count}",
   "expectedRevenue": "Expected revenue: {amount} VND",
   "availableCourts": "Available courts:",
+  "noCourts": "No courts available",
   "noBookings": "No bookings",
   
   "orderDetails": "Order Details",

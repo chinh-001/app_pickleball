@@ -16,31 +16,6 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
   // Kênh dự phòng nếu không có kênh từ quyền hạn
   final List<String> fallbackChannels = ['Default channel', 'Demo-channel'];
 
-  // Mock data for courts
-  final List<Map<String, dynamic>> mockCourts = [
-    {
-      'id': '1',
-      'name': 'Sân 1',
-      'status': 'available',
-      'price': '100000đ/giờ',
-      'star': '4.5',
-    },
-    {
-      'id': '2',
-      'name': 'Sân 2',
-      'status': 'available',
-      'price': '120000đ/giờ',
-      'star': '4.8',
-    },
-    {
-      'id': '3',
-      'name': 'Sân 3',
-      'status': 'booked',
-      'price': '150000đ/giờ',
-      'star': '5.0',
-    },
-  ];
-
   HomeScreenBloc({
     required this.bookingRepository,
     UserPermissionsRepository? permissionsRepository,
@@ -73,7 +48,7 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
         );
         emit(
           HomeScreenLoaded(
-            bookingList: BookingList.fromMapList(mockCourts),
+            bookingList: BookingList.empty(),
             totalOrders: 0,
             totalSales: 0,
             selectedChannel: fallbackChannels.first,
@@ -197,13 +172,13 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
         );
 
         if (bookingList.courts.isEmpty) {
-          // Nếu không có dữ liệu, sử dụng mock data
-          // log.log('No courts available from API, using mock data');
-          bookingList = BookingList.fromMapList(mockCourts);
+          // Nếu không có dữ liệu, sử dụng danh sách rỗng
+          // log.log('No courts available from API, using empty list');
+          bookingList = BookingList.empty(channelToken: event.channelToken);
         }
       } catch (e) {
-        log.log('Error fetching courts, using mock data: $e');
-        bookingList = BookingList.fromMapList(mockCourts);
+        log.log('Error fetching courts, using empty list: $e');
+        bookingList = BookingList.empty(channelToken: event.channelToken);
       }
 
       final newState = HomeScreenLoaded(

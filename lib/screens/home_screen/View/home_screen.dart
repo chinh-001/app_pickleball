@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/widgets/custom_bottom_navigation_bar.dart';
 import 'package:app_pickleball/screens/widgets/custom_floating_action_button.dart';
-import 'package:app_pickleball/screens/widgets/custom_list_view.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
@@ -259,31 +258,21 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
               const SizedBox(height: 10),
-              Expanded(
-                child: BlocBuilder<HomeScreenBloc, HomeScreenState>(
-                  builder: (context, state) {
-                    if (state is HomeScreenLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is HomeScreenLoaded) {
-                      return CustomListView(
-                        items:
-                            state.items.map((item) {
-                              return {
-                                'id': item['id'].toString(),
-                                'name': item['name'].toString(),
-                                'status': item['status'].toString(),
-                                'price': item['price'].toString(),
-                                'star': item['star'].toString(),
-                              };
-                            }).toList(),
-                      );
-                    } else if (state is HomeScreenError) {
-                      return Center(child: Text(state.message));
-                    }
-                    return const Center(child: Text('Không có dữ liệu'));
-                  },
+              // Hiển thị text thông báo không có sân nào thay vì danh sách courts
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Center(
+                  child: Text(
+                    AppLocalizations.of(context).translate('noCourts'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                    ),
+                  ),
                 ),
               ),
+
             ],
           ),
         ),
