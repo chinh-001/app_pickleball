@@ -7,6 +7,28 @@ abstract class OrderDetailEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class InitializeOrderDetailEvent extends OrderDetailEvent {
+  final Map<String, String> orderData;
+  final BuildContext context;
+
+  const InitializeOrderDetailEvent({
+    required this.orderData,
+    required this.context,
+  });
+
+  @override
+  List<Object?> get props => [orderData, context];
+}
+
+class UpdateTypeEvent extends OrderDetailEvent {
+  final String type;
+
+  const UpdateTypeEvent(this.type);
+
+  @override
+  List<Object?> get props => [type];
+}
+
 class UpdateStatusEvent extends OrderDetailEvent {
   final String status;
 
@@ -25,6 +47,15 @@ class UpdatePaymentStatusEvent extends OrderDetailEvent {
   List<Object?> get props => [paymentStatus];
 }
 
+class FormatPriceEvent extends OrderDetailEvent {
+  final String price;
+
+  const FormatPriceEvent(this.price);
+
+  @override
+  List<Object?> get props => [price];
+}
+
 class PickImageEvent extends OrderDetailEvent {}
 
 class SelectTimeEvent extends OrderDetailEvent {
@@ -34,6 +65,48 @@ class SelectTimeEvent extends OrderDetailEvent {
 
   @override
   List<Object?> get props => [context];
+}
+
+class TranslateValuesForUIEvent extends OrderDetailEvent {
+  final BuildContext context;
+  final String type;
+  final String status;
+  final String paymentStatus;
+
+  const TranslateValuesForUIEvent({
+    required this.context,
+    required this.type,
+    required this.status,
+    required this.paymentStatus,
+  });
+
+  @override
+  List<Object?> get props => [context, type, status, paymentStatus];
+}
+
+class TranslateValuesForSubmitEvent extends OrderDetailEvent {
+  final BuildContext context;
+  final String type;
+  final String status;
+  final String paymentStatus;
+  final String? timeToSubmit;
+
+  const TranslateValuesForSubmitEvent({
+    required this.context,
+    required this.type,
+    required this.status,
+    required this.paymentStatus,
+    this.timeToSubmit,
+  });
+
+  @override
+  List<Object?> get props => [
+    context,
+    type,
+    status,
+    paymentStatus,
+    timeToSubmit,
+  ];
 }
 
 class SubmitOrderDetailEvent extends OrderDetailEvent {

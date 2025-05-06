@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/order_detail_screen/bloc/order_detail_screen_bloc.dart';
-import 'package:app_pickleball/utils/number_format.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
-// import 'dart:convert';
 import 'dart:developer' as log;
 
 class OrderDetailScreen extends StatefulWidget {
@@ -13,511 +11,311 @@ class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({super.key, required this.item});
 
   @override
-  _OrderDetailScreenState createState() => _OrderDetailScreenState();
+  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-  late List<String> typeOptions;
-  late List<String> statusOptions;
-  late List<String> paymentStatusOptions;
-
-  late String selectedType;
-  late String selectedPaymentStatus;
-  late String selectedTime;
-  late String selectedStatus;
+  // Khai báo controllers
   final TextEditingController noteController = TextEditingController();
-  bool _initialized = false;
+  final Map<String, TextEditingController> _formControllers = {};
+  late final OrderDetailBloc _bloc;
+
+  // Biến theo dõi trạng thái
+  String _currentPrice = '';
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Debug logging to verify received values
-    log.log('\n=== ORDER DETAIL SCREEN RECEIVED DATA ===');
-    log.log('Available keys: ${widget.item.keys.join(", ")}');
-    log.log('Code value: "${widget.item['code']}"');
-    log.log('NoteCustomer value: "${widget.item['noteCustomer']}"');
+    // Khởi tạo các controllers cho form
+    _formControllers['customerName'] = TextEditingController(
+      text: widget.item['customerName'],
+    );
+    _formControllers['courtName'] = TextEditingController(
+      text: widget.item['courtName'],
+    );
+    _formControllers['phoneNumber'] = TextEditingController(
+      text: widget.item['phoneNumber'] ?? '',
+    );
+    _formControllers['emailAddress'] = TextEditingController(
+      text: widget.item['emailAddress'] ?? '',
+    );
+    _formControllers['price'] = TextEditingController();
 
-    // Initialize with empty lists - will be populated in didChangeDependencies
-    typeOptions = [];
-    statusOptions = [];
-    paymentStatusOptions = [];
-
-    // Store the original value to map to localized value later
-    final originalType = widget.item['type'];
-    selectedType = originalType ?? '';
-
-    // Lấy giá trị status từ order list
-    final originalStatus = widget.item['status'] ?? '';
-    selectedStatus = originalStatus;
-
-    final originalPaymentStatus = widget.item['paymentStatus'] ?? '';
-    selectedPaymentStatus = originalPaymentStatus;
-
-    selectedTime = widget.item['time'] ?? '';
-
-    // Set the note controller with noteCustomer value
     noteController.text = widget.item['noteCustomer'] ?? '';
+
+    // Khởi tạo bloc mới và giữ lại tham chiếu
+    _bloc = OrderDetailBloc();
+
+    // Log để debugging
+    log.log(
+      'OrderDetailScreen - initState - Initializing with item: ${widget.item['code']}',
+    );
+
+    // Chỉ gửi sự kiện khởi tạo 1 lần trong initState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isInitialized) {
+        _bloc.add(
+          InitializeOrderDetailEvent(orderData: widget.item, context: context),
+        );
+        _isInitialized = true;
+        log.log('OrderDetailScreen - Event sent for initialization');
+      }
+    });
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Initialize options with localized strings - these are fixed UI elements that should be translated
-    typeOptions = [
-      AppLocalizations.of(context).translate('singleType'),
-      AppLocalizations.of(context).translate('periodicType'),
-    ];
-
-    statusOptions = [
-      AppLocalizations.of(context).translate('new'),
-      AppLocalizations.of(context).translate('booked'),
-    ];
-
-    paymentStatusOptions = [
-      AppLocalizations.of(context).translate('paid'),
-      AppLocalizations.of(context).translate('unpaid'),
-      AppLocalizations.of(context).translate('deposit'),
-    ];
-
-    // Only map the values on first initialization
-    if (!_initialized) {
-      // Map the original type value to localized value for dropdown display
-      if (selectedType == 'Loại lẻ' || selectedType.isEmpty) {
-        selectedType = AppLocalizations.of(context).translate('singleType');
-      } else if (selectedType == 'Định kì') {
-        selectedType = AppLocalizations.of(context).translate('periodicType');
-      }
-
-      // Map status
-      if (selectedStatus == 'Mới' || selectedStatus.isEmpty) {
-        selectedStatus = AppLocalizations.of(context).translate('new');
-      } else if (selectedStatus == 'Đặt sân') {
-        selectedStatus = AppLocalizations.of(context).translate('booked');
-      }
-
-      // Map payment status
-      if (selectedPaymentStatus == 'Đã thanh toán' ||
-          selectedPaymentStatus.isEmpty) {
-        selectedPaymentStatus = AppLocalizations.of(context).translate('paid');
-      } else if (selectedPaymentStatus == 'Chưa thanh toán') {
-        selectedPaymentStatus = AppLocalizations.of(
-          context,
-        ).translate('unpaid');
-      } else if (selectedPaymentStatus == 'Đặt cọc') {
-        selectedPaymentStatus = AppLocalizations.of(
-          context,
-        ).translate('deposit');
-      }
-
-      _initialized = true;
-    }
-  }
-
-  // Hàm định dạng tổng tiền với dấu phẩy phân cách hàng nghìn
-  String formatTotalPrice(String price) {
-    if (price.isEmpty) return '';
-
-    try {
-      // Chuyển chuỗi thành số và định dạng
-      final priceNumber = int.tryParse(price.replaceAll(RegExp(r'[^\d]'), ''));
-      if (priceNumber == null) return price;
-
-      return priceNumber.toCommaSeparated();
-    } catch (e) {
-      print('Error formatting price: $e');
-      return price;
-    }
+  void dispose() {
+    // Giải phóng tài nguyên khi widget bị hủy
+    _formControllers.forEach((_, controller) => controller.dispose());
+    noteController.dispose();
+    _bloc.close();
+    log.log('OrderDetailScreen - dispose - Resources cleaned up');
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Use the original values directly from widget.item without translation
-    final TextEditingController customerNameController = TextEditingController(
-      text: widget.item['customerName'],
-    );
-    final TextEditingController courtNameController = TextEditingController(
-      text: widget.item['courtName'],
-    );
-    final TextEditingController phoneNumberController = TextEditingController(
-      text: widget.item['phoneNumber'] ?? '',
-    );
-    final TextEditingController emailAddressController = TextEditingController(
-      text: widget.item['emailAddress'] ?? '',
-    );
-    final TextEditingController codeController = TextEditingController(
-      text: widget.item['code'] ?? '',
-    );
+    log.log('OrderDetailScreen - build method called');
 
-    // Lấy giá trị tổng tiền và định dạng
-    final rawTotalPrice = widget.item['total_price'] ?? '';
-    final formattedTotalPrice = formatTotalPrice(rawTotalPrice);
-
-    final TextEditingController totalPriceController = TextEditingController(
-      text: formattedTotalPrice,
-    );
-
-    // Hiển thị thông tin log để debug
-    print('DEBUG - OrderDetailScreen received item: ${widget.item}');
-    print('DEBUG - Raw total price: $rawTotalPrice');
-    print('DEBUG - Formatted total price: $formattedTotalPrice');
-    print('DEBUG - Note: ${widget.item['noteCustomer']}');
-    print('DEBUG - Code: ${widget.item['code']}');
-
-    return BlocProvider(
-      create: (_) => OrderDetailBloc(),
-      child: Builder(
-        builder:
-            (context) => Scaffold(
-              appBar: AppBar(
-                backgroundColor: Colors.white,
-                elevation: 0,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                title: Text(
-                  // Translate fixed UI elements like headers
-                  AppLocalizations.of(context).translate('orderDetails'),
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                centerTitle: true,
-              ),
-              backgroundColor: Colors.white,
-              body: BlocListener<OrderDetailBloc, OrderDetailState>(
-                listener: (context, state) {
-                  if (state is StatusUpdatedState) {
-                    setState(() {
-                      selectedStatus = state.status;
-                    });
-                  } else if (state is PaymentStatusUpdatedState) {
-                    setState(() {
-                      selectedPaymentStatus = state.paymentStatus;
-                    });
-                  } else if (state is TimeSelectedState) {
-                    setState(() {
-                      selectedTime = state.time;
-                    });
-                  }
-                },
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Loại đặt sân dropdown
-                        BlocBuilder<OrderDetailBloc, OrderDetailState>(
-                          builder: (context, state) {
-                            return CustomDropdown(
-                              title: AppLocalizations.of(
-                                context,
-                              ).translate('bookingType'),
-                              options: typeOptions,
-                              selectedValue: selectedType,
-                              onChanged: (String? newValue) {
-                                if (newValue != null) {
-                                  setState(() {
-                                    // Store the selected value as-is without translation
-                                    selectedType = newValue;
-                                  });
-                                }
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Tên khách
-                        buildInfoField(
-                          AppLocalizations.of(
-                            context,
-                          ).translate('customerName'),
-                          customerNameController,
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Số điện thoại
-                        buildInfoField(
-                          AppLocalizations.of(context).translate('phoneNumber'),
-                          phoneNumberController,
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Email
-                        buildInfoField('Email', emailAddressController),
-                        const SizedBox(height: 20),
-
-                        // Tên sân
-                        buildInfoField(
-                          AppLocalizations.of(context).translate('courtName'),
-                          courtNameController,
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Mã đơn hàng (Code)
-                        buildInfoField(
-                          AppLocalizations.of(context).translate('orderCode'),
-                          codeController,
-                          readOnly: true,
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Tổng tiền
-                        buildPriceField(
-                          AppLocalizations.of(context).translate('totalPrice'),
-                          totalPriceController,
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Thời gian
-                        buildInfoField(
-                          AppLocalizations.of(context).translate('time'),
-                          TextEditingController(text: selectedTime),
-                          readOnly: true,
-                        ),
-                        const SizedBox(height: 10),
-
-                        // Nút chọn thời gian
-                        BlocListener<OrderDetailBloc, OrderDetailState>(
-                          listener: (context, state) {
-                            if (state is TimeSelectedState) {
-                              setState(() {
-                                selectedTime = state.time;
-                              });
-                            }
-                          },
-                          child: GestureDetector(
-                            onTap: () {
-                              context.read<OrderDetailBloc>().add(
-                                SelectTimeEvent(context),
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                AppLocalizations.of(
-                                  context,
-                                ).translate('selectTime'),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Trạng thái
-                        BlocBuilder<OrderDetailBloc, OrderDetailState>(
-                          builder: (context, state) {
-                            return CustomDropdown(
-                              title: AppLocalizations.of(
-                                context,
-                              ).translate('status'),
-                              options: statusOptions,
-                              dropdownHeight: 40,
-                              dropdownWidth: 400,
-                              selectedValue: selectedStatus,
-                              onChanged: (String? newValue) {
-                                if (newValue != null) {
-                                  // Pass the value directly without translation
-                                  context.read<OrderDetailBloc>().add(
-                                    UpdateStatusEvent(newValue),
-                                  );
-                                }
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Trạng thái thanh toán
-                        BlocBuilder<OrderDetailBloc, OrderDetailState>(
-                          builder: (context, state) {
-                            return CustomDropdown(
-                              title: AppLocalizations.of(
-                                context,
-                              ).translate('paymentStatus'),
-                              options: paymentStatusOptions,
-                              dropdownHeight: 40,
-                              dropdownWidth: 400,
-                              selectedValue: selectedPaymentStatus,
-                              onChanged: (String? newValue) {
-                                if (newValue != null) {
-                                  // Pass the value directly without translation
-                                  context.read<OrderDetailBloc>().add(
-                                    UpdatePaymentStatusEvent(newValue),
-                                  );
-                                }
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Ghi chú của khách hàng
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context).translate('notes'),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: TextField(
-                                controller: noteController,
-                                maxLines: 3,
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.all(12),
-                                  border: InputBorder.none,
-                                  hintText: AppLocalizations.of(
-                                    context,
-                                  ).translate('customerNotes'),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Nút Sửa
-                        Center(
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                // Xử lý giá trị totalPrice để loại bỏ định dạng trước khi submit
-                                String originalTotalPrice =
-                                    totalPriceController.text
-                                        .replaceAll(
-                                          ',',
-                                          '',
-                                        ) // Loại bỏ dấu phẩy phân cách
-                                        .trim(); // Xóa khoảng trắng thừa
-
-                                // Map translated UI values back to original values for submission
-                                String originalStatus = selectedStatus;
-                                String originalPaymentStatus =
-                                    selectedPaymentStatus;
-                                String originalType = selectedType;
-
-                                // Reverse mapping for type
-                                if (selectedType ==
-                                    AppLocalizations.of(
-                                      context,
-                                    ).translate('singleType')) {
-                                  originalType = 'Loại lẻ';
-                                } else if (selectedType ==
-                                    AppLocalizations.of(
-                                      context,
-                                    ).translate('periodicType')) {
-                                  originalType = 'Định kì';
-                                }
-
-                                // Reverse mapping for status
-                                if (selectedStatus ==
-                                    AppLocalizations.of(
-                                      context,
-                                    ).translate('new')) {
-                                  originalStatus = 'Mới';
-                                } else if (selectedStatus ==
-                                    AppLocalizations.of(
-                                      context,
-                                    ).translate('booked')) {
-                                  originalStatus = 'Đặt sân';
-                                }
-
-                                // Reverse mapping for payment status
-                                if (selectedPaymentStatus ==
-                                    AppLocalizations.of(
-                                      context,
-                                    ).translate('paid')) {
-                                  originalPaymentStatus = 'Đã thanh toán';
-                                } else if (selectedPaymentStatus ==
-                                    AppLocalizations.of(
-                                      context,
-                                    ).translate('unpaid')) {
-                                  originalPaymentStatus = 'Chưa thanh toán';
-                                } else if (selectedPaymentStatus ==
-                                    AppLocalizations.of(
-                                      context,
-                                    ).translate('deposit')) {
-                                  originalPaymentStatus = 'Đặt cọc';
-                                }
-
-                                // Submit original, untranslated values
-                                context.read<OrderDetailBloc>().add(
-                                  SubmitOrderDetailEvent(
-                                    customerName: customerNameController.text,
-                                    courtName: courtNameController.text,
-                                    time: selectedTime,
-                                    status: originalStatus,
-                                    paymentStatus: originalPaymentStatus,
-                                    note: noteController.text,
-                                    phoneNumber: phoneNumberController.text,
-                                    emailAddress: emailAddressController.text,
-                                    totalPrice: originalTotalPrice,
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 15,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: Text(
-                                // Translate the button text (fixed UI element)
-                                AppLocalizations.of(
-                                  context,
-                                ).translate('modify'),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+    return BlocProvider<OrderDetailBloc>.value(
+      value: _bloc,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            AppLocalizations.of(context).translate('orderDetails'),
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
             ),
+          ),
+          centerTitle: true,
+        ),
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: BlocConsumer<OrderDetailBloc, OrderDetailState>(
+            listenWhen: (previous, current) {
+              // Chỉ xử lý listener khi trạng thái thay đổi thực sự
+              return current is PriceFormattedState ||
+                  current is OrderDetailSuccess ||
+                  current is SubmitValuesTranslatedState;
+            },
+            listener: (context, state) {
+              if (state is PriceFormattedState) {
+                _handlePriceFormatting(state);
+              } else if (state is OrderDetailSuccess) {
+                Navigator.pop(context);
+              } else if (state is SubmitValuesTranslatedState) {
+                _handleSubmit(context, state);
+              }
+            },
+            buildWhen: (previous, current) {
+              // Chỉ rebuild UI khi trạng thái dữ liệu thay đổi đáng kể
+              return current is OrderDetailLoading ||
+                  current is OrderDetailDataLoaded ||
+                  current is OrderDetailFailure;
+            },
+            builder: (context, state) {
+              if (state is OrderDetailLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is OrderDetailFailure) {
+                return Center(child: Text(state.error));
+              } else if (state is OrderDetailDataLoaded) {
+                // Cập nhật price controller với giá trị từ state
+                if (_formControllers['price']?.text !=
+                    state.formattedTotalPrice) {
+                  _formControllers['price']?.text = state.formattedTotalPrice;
+                }
+                return _buildFormContent(context, state);
+              }
+              return const Center(child: CircularProgressIndicator());
+            },
+          ),
+        ),
       ),
     );
   }
 
-  Widget buildInfoField(
+  void _handlePriceFormatting(PriceFormattedState state) {
+    final priceController = _formControllers['price'];
+    if (priceController == null) return;
+
+    try {
+      // Lưu vị trí con trỏ hiện tại
+      final selection = priceController.selection;
+      if (selection.baseOffset < 0) return;
+
+      // Đếm số lượng dấu phẩy trước và sau khi định dạng
+      final commasInOldValue = ','.allMatches(_currentPrice).length;
+      final commasInNewValue = ','.allMatches(state.formattedPrice).length;
+
+      // Cập nhật giá trị đã định dạng
+      priceController.value = TextEditingValue(
+        text: state.formattedPrice,
+        selection: TextSelection.collapsed(
+          offset: selection.baseOffset + (commasInNewValue - commasInOldValue),
+        ),
+      );
+    } catch (e) {
+      // Xử lý trường hợp lỗi, chỉ cập nhật text
+      priceController.text = state.formattedPrice;
+      log.log('Error handling price formatting: $e');
+    }
+  }
+
+  void _handleSubmit(BuildContext context, SubmitValuesTranslatedState state) {
+    final String totalPrice =
+        _formControllers['price']?.text.replaceAll(',', '').trim() ?? '';
+
+    context.read<OrderDetailBloc>().add(
+      SubmitOrderDetailEvent(
+        customerName: _formControllers['customerName']?.text ?? '',
+        courtName: _formControllers['courtName']?.text ?? '',
+        time: state.timeToSubmit ?? '',
+        status: state.status,
+        paymentStatus: state.paymentStatus,
+        note: noteController.text,
+        phoneNumber: _formControllers['phoneNumber']?.text ?? '',
+        emailAddress: _formControllers['emailAddress']?.text ?? '',
+        totalPrice: totalPrice,
+      ),
+    );
+  }
+
+  Widget _buildFormContent(BuildContext context, OrderDetailDataLoaded state) {
+    final codeController = TextEditingController(
+      text: widget.item['code'] ?? '',
+    );
+    final timeController = TextEditingController(text: state.selectedTime);
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Loại đặt sân dropdown
+            CustomDropdown(
+              title: AppLocalizations.of(context).translate('bookingType'),
+              options: state.typeOptions,
+              selectedValue: state.selectedType,
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  context.read<OrderDetailBloc>().add(
+                    UpdateTypeEvent(newValue),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 20),
+
+            // Tên khách hàng
+            _buildTextField(
+              AppLocalizations.of(context).translate('customerName'),
+              _formControllers['customerName']!,
+            ),
+            const SizedBox(height: 20),
+
+            // Số điện thoại
+            _buildTextField(
+              AppLocalizations.of(context).translate('phoneNumber'),
+              _formControllers['phoneNumber']!,
+            ),
+            const SizedBox(height: 20),
+
+            // Email
+            _buildTextField('Email', _formControllers['emailAddress']!),
+            const SizedBox(height: 20),
+
+            // Tên sân
+            _buildTextField(
+              AppLocalizations.of(context).translate('courtName'),
+              _formControllers['courtName']!,
+            ),
+            const SizedBox(height: 20),
+
+            // Mã đơn hàng
+            _buildTextField(
+              AppLocalizations.of(context).translate('orderCode'),
+              codeController,
+              readOnly: true,
+            ),
+            const SizedBox(height: 20),
+
+            // Tổng tiền
+            _buildPriceField(
+              AppLocalizations.of(context).translate('totalPrice'),
+              _formControllers['price']!,
+            ),
+            const SizedBox(height: 20),
+
+            // Thời gian
+            _buildTextField(
+              AppLocalizations.of(context).translate('time'),
+              timeController,
+              readOnly: true,
+            ),
+            const SizedBox(height: 10),
+
+            // Nút chọn thời gian
+            _buildTimePickerButton(context),
+            const SizedBox(height: 20),
+
+            // Trạng thái đơn
+            CustomDropdown(
+              title: AppLocalizations.of(context).translate('status'),
+              options: state.statusOptions,
+              dropdownHeight: 40,
+              dropdownWidth: 400,
+              selectedValue: state.selectedStatus,
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  context.read<OrderDetailBloc>().add(
+                    UpdateStatusEvent(newValue),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 20),
+
+            // Trạng thái thanh toán
+            CustomDropdown(
+              title: AppLocalizations.of(context).translate('paymentStatus'),
+              options: state.paymentStatusOptions,
+              dropdownHeight: 40,
+              dropdownWidth: 400,
+              selectedValue: state.selectedPaymentStatus,
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  context.read<OrderDetailBloc>().add(
+                    UpdatePaymentStatusEvent(newValue),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 20),
+
+            // Ghi chú
+            _buildNotesField(context),
+            const SizedBox(height: 20),
+
+            // Nút submit
+            _buildSubmitButton(context, state),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
     String label,
     TextEditingController controller, {
     bool readOnly = false,
@@ -535,13 +333,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           readOnly: readOnly,
           decoration: InputDecoration(
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 16,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget buildPriceField(String label, TextEditingController controller) {
+  Widget _buildPriceField(String label, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -552,7 +354,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         const SizedBox(height: 10),
         TextField(
           controller: controller,
-          readOnly: false,
           keyboardType: TextInputType.number,
           style: const TextStyle(fontSize: 16),
           textAlign: TextAlign.left,
@@ -560,52 +361,105 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             suffixText: 'VNĐ',
             suffixStyle: const TextStyle(fontSize: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 16,
+            ),
           ),
           onChanged: (value) {
-            if (value.isNotEmpty) {
-              controller.removeListener(() {});
+            if (value.isEmpty) return;
 
-              final cursorPos = controller.selection.start;
+            // Lưu giá trị hiện tại để tính toán vị trí con trỏ sau
+            _currentPrice = value;
 
-              final cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
-              int? intValue = int.tryParse(cleanValue);
-
-              if (intValue != null) {
-                final formattedValue = intValue.toCommaSeparated();
-
-                controller.text = formattedValue;
-
-                final newValue = controller.text;
-                final commasBeforeCursor =
-                    ','
-                        .allMatches(
-                          newValue.substring(
-                            0,
-                            cursorPos > newValue.length
-                                ? newValue.length
-                                : cursorPos,
-                          ),
-                        )
-                        .length;
-                final commasInOldValueBeforeCursor =
-                    ','.allMatches(value.substring(0, cursorPos)).length;
-
-                final newCursorPos =
-                    cursorPos +
-                    (commasBeforeCursor - commasInOldValueBeforeCursor);
-
-                if (newCursorPos >= 0 && newCursorPos <= newValue.length) {
-                  controller.selection = TextSelection.fromPosition(
-                    TextPosition(offset: newCursorPos),
-                  );
-                }
-              }
-
-              controller.addListener(() {});
-            }
+            // Chỉ gửi sự kiện định dạng giá nếu có thay đổi
+            context.read<OrderDetailBloc>().add(FormatPriceEvent(value));
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildTimePickerButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        context.read<OrderDetailBloc>().add(SelectTimeEvent(context));
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.green,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          AppLocalizations.of(context).translate('selectTime'),
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotesField(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('notes'),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: TextField(
+            controller: noteController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.all(12),
+              border: InputBorder.none,
+              hintText: AppLocalizations.of(context).translate('customerNotes'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton(BuildContext context, OrderDetailDataLoaded state) {
+    return Center(
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () {
+            context.read<OrderDetailBloc>().add(
+              TranslateValuesForSubmitEvent(
+                context: context,
+                type: state.selectedType,
+                status: state.selectedStatus,
+                paymentStatus: state.selectedPaymentStatus,
+                timeToSubmit: state.selectedTime,
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: Text(
+            AppLocalizations.of(context).translate('modify'),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

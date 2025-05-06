@@ -9,7 +9,7 @@
   "english": "English",
   "save": "Lưu",
   "cancel": "Hủy",
-  "profile": "Hồ sơ",
+  "profile": "Tôi",
   "settings": "Cài đặt",
   "home": "Trang chủ",
   "search": "Tìm kiếm",
@@ -58,5 +58,8 @@
   
   "noNetworkConnection": "Không có kết nối mạng, vui lòng kiểm tra lại",
   "networkRestored": "Kết nối mạng đã được khôi phục",
-  "close": "Đóng"
+  "close": "Đóng",
+  
+  "addNew": "Thêm mới",
+  "scrollUp": "Lướt lên"
 } 

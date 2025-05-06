@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:app_pickleball/screens/add_order_screen/View/add_order_screen.dart';
+import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'dart:developer' as log;
 
 class CustomFloatingActionButton extends StatelessWidget {
@@ -17,7 +18,7 @@ class CustomFloatingActionButton extends StatelessWidget {
         SpeedDialChild(
           child: const Icon(Icons.add, color: Colors.white),
           backgroundColor: Colors.green,
-          label: 'Thêm mới',
+          label: AppLocalizations.of(context).translate('addNew'),
           onTap: () {
             Navigator.push(
               context,
@@ -28,7 +29,7 @@ class CustomFloatingActionButton extends StatelessWidget {
         SpeedDialChild(
           child: const Icon(Icons.keyboard_arrow_up, color: Colors.white),
           backgroundColor: Colors.green,
-          label: 'Lướt lên',
+          label: AppLocalizations.of(context).translate('scrollUp'),
           onTap: () {
             log.log('Lướt lên được nhấn');
           },

@@ -58,5 +58,8 @@
   
   "noNetworkConnection": "No network connection, please check again",
   "networkRestored": "Network connection has been restored",
-  "close": "Close"
+  "close": "Close",
+  
+  "addNew": "Add New",
+  "scrollUp": "Scroll Up"
 } 
