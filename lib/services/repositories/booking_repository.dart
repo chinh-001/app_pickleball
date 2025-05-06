@@ -24,8 +24,6 @@ class BookingRepository implements IBookingService {
   @override
   Future<BookingList> getCourtItems({String? channelToken}) async {
     try {
-      // log.log('\n===== BOOKING REPOSITORY: getCourtItems =====');
-
       // Thử lấy dữ liệu đã lưu từ storage
       final storedList = await BookingList.getFromStorage(
         channelToken: channelToken,
@@ -33,69 +31,18 @@ class BookingRepository implements IBookingService {
 
       // Nếu có dữ liệu và chưa hết hạn, sử dụng dữ liệu đã lưu
       if (storedList.courts.isNotEmpty && !storedList.isExpired()) {
-        // log.log(
-        //   'Using stored court data for channel: ${channelToken ?? "default"}',
-        // );
+        log.log(
+          'Using stored court data for channel: ${channelToken ?? "default"}',
+        );
         return storedList;
       }
-
-      // Nếu không có dữ liệu hoặc dữ liệu đã hết hạn, gọi API
-      const query = '''
-        query GetCourts {
-          GetCourts {
-            id
-            name
-            status
-            price
-            star
-          }
-        }
-      ''';
-
-      final response = await _apiClient.query<Map<String, dynamic>>(
-        query,
-        channelToken: channelToken ?? 'demo-channel',
-        converter: (json) => json,
-      );
-
-      if (response == null || response['data'] == null) {
-        return BookingList.empty();
-      }
-
-      final courts = response['data']['GetCourts'] as List?;
-      if (courts == null) {
-        return BookingList.empty();
-      }
-
-      final courtsData =
-          courts
-              .map(
-                (court) => {
-                  'id': court['id'].toString(),
-                  'name': court['name'] ?? 'Unknown Court',
-                  'status': court['status'] ?? 'available',
-                  'price': '${court['price'] ?? '0'}đ/giờ',
-                  'star': court['star']?.toString() ?? '0',
-                },
-              )
-              .toList();
-
-      // Tạo BookingList từ dữ liệu API và lưu vào storage
-      final bookingList = BookingList.fromMapList(
-        courtsData,
-        channelToken: channelToken,
-      );
-      await bookingList.saveListData();
-
-      // log.log(
-      //   'Fetched and saved ${courtsData.length} courts for channel: ${channelToken ?? "default"}',
-      // );
-      return bookingList;
+      
+      // Trả về danh sách rỗng khi không có dữ liệu cache và đã loại bỏ GetCourts query
+      log.log('GetCourts query removed, returning empty list');
+      return BookingList.empty(channelToken: channelToken);
     } catch (e) {
-      log.log('Error fetching court items: $e');
-
-      // Nếu có lỗi, thử lấy dữ liệu đã lưu từ storage
-      return await BookingList.getFromStorage(channelToken: channelToken);
+      log.log('Error in getCourtItems: $e');
+      return BookingList.empty(channelToken: channelToken);
     }
   }
 

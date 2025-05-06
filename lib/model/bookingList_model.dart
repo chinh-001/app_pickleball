@@ -2,41 +2,7 @@ import 'dart:developer' as log;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-class Court {
-  final String id;
-  final String name;
-  final String status;
-  final String price;
-  final String star;
-
-  Court({
-    required this.id,
-    required this.name,
-    required this.status,
-    required this.price,
-    required this.star,
-  });
-
-  factory Court.fromMap(Map<String, dynamic> map) {
-    return Court(
-      id: map['id']?.toString() ?? '',
-      name: map['name']?.toString() ?? 'Unknown Court',
-      status: map['status']?.toString() ?? 'available',
-      price: map['price']?.toString() ?? '0đ/giờ',
-      star: map['star']?.toString() ?? '0',
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'status': status,
-      'price': price,
-      'star': star,
-    };
-  }
-}
+// Đã loại bỏ Court class, sử dụng trực tiếp Map<String, dynamic> thay thế
 
 // Mô hình cho một đặt sân cụ thể
 class BookingOrder {
@@ -395,7 +361,7 @@ class BookingOrderList {
 }
 
 class BookingList {
-  final List<Court> courts;
+  final List<Map<String, dynamic>> courts;
   final DateTime lastUpdated;
   final String? channelToken;
 
@@ -408,7 +374,7 @@ class BookingList {
     String? channelToken,
   }) {
     return BookingList(
-      courts: maps.map((map) => Court.fromMap(map)).toList(),
+      courts: maps, // Sử dụng trực tiếp List<Map<String, dynamic>> thay vì chuyển đổi qua Court
       lastUpdated: DateTime.now(),
       channelToken: channelToken,
     );
@@ -417,15 +383,15 @@ class BookingList {
   // Convert danh sách thành JSON
   Map<String, dynamic> toJson() {
     return {
-      'courts': courts.map((court) => court.toJson()).toList(),
+      'courts': courts, // Sử dụng trực tiếp courts vì đã là List<Map<String, dynamic>>
       'lastUpdated': lastUpdated.toIso8601String(),
       'channelToken': channelToken,
     };
   }
 
   // Tạo danh sách rỗng
-  factory BookingList.empty() {
-    return BookingList(courts: []);
+  factory BookingList.empty({String? channelToken}) {
+    return BookingList(courts: [], channelToken: channelToken);
   }
 
   // Lưu danh sách vào SharedPreferences
@@ -462,12 +428,11 @@ class BookingList {
       // Decode JSON
       final Map<String, dynamic> map = json.decode(jsonString);
 
-      // Parse courts list
+      // Parse courts list - giữ nguyên Map<String, dynamic> thay vì chuyển đổi qua Court
       final List<dynamic> courtsList = map['courts'] ?? [];
-      final List<Court> courts =
-          courtsList
-              .map((item) => Court.fromMap(item as Map<String, dynamic>))
-              .toList();
+      final List<Map<String, dynamic>> courts = courtsList
+          .map((item) => item as Map<String, dynamic>)
+          .toList();
 
       return BookingList(
         courts: courts,

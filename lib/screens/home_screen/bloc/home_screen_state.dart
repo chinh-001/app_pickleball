@@ -46,7 +46,7 @@ class HomeScreenLoaded extends HomeScreenState {
        );
 
   List<Map<String, dynamic>> get items {
-    return bookingList.courts.map((court) => court.toJson()).toList();
+    return bookingList.courts;
   }
 
   @override
