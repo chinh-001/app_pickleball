@@ -49,6 +49,8 @@
   "status": "Status",
   "new": "New",
   "booked": "Booked",
+  "customer_canceled": "Customer Canceled",
+  "completed": "Completed",
   "paymentStatus": "Payment Status",
   "paid": "Paid",
   "unpaid": "Unpaid",

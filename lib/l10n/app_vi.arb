@@ -49,6 +49,8 @@
   "status": "Trạng thái",
   "new": "Mới",
   "booked": "Đặt sân",
+  "customer_canceled": "Khách hủy đặt",
+  "completed": "Hoàn thành",
   "paymentStatus": "Trạng thái thanh toán",
   "paid": "Đã thanh toán",
   "unpaid": "Chưa thanh toán",

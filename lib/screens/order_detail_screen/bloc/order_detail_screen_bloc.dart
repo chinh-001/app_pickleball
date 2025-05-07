@@ -51,6 +51,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         AppLocalizations.of(context).translate('new'),
         AppLocalizations.of(context).translate('booked'),
         AppLocalizations.of(context).translate('customer_canceled'),
+        AppLocalizations.of(context).translate('completed'),
       ];
 
       final List<String> paymentStatusOptions = [
@@ -76,7 +77,11 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       } else if (originalStatus == 'Đặt sân') {
         selectedStatus = AppLocalizations.of(context).translate('booked');
       } else if (originalStatus == 'Khách hủy đặt') {
-        selectedStatus = AppLocalizations.of(context).translate('customer_canceled');
+        selectedStatus = AppLocalizations.of(
+          context,
+        ).translate('customer_canceled');
+      } else if (originalStatus == 'Hoàn thành') {
+        selectedStatus = AppLocalizations.of(context).translate('completed');
       }
 
       if (originalPaymentStatus == 'Đã thanh toán' ||
@@ -202,7 +207,11 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     } else if (event.status == 'Đặt sân') {
       translatedStatus = AppLocalizations.of(context).translate('booked');
     } else if (event.status == 'Khách hủy đặt') {
-      translatedStatus = AppLocalizations.of(context).translate('customer_canceled');
+      translatedStatus = AppLocalizations.of(
+        context,
+      ).translate('customer_canceled');
+    } else if (event.status == 'Hoàn thành') {
+      translatedStatus = AppLocalizations.of(context).translate('completed');
     }
 
     // Ánh xạ payment status
@@ -253,6 +262,9 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     } else if (event.status ==
         AppLocalizations.of(context).translate('customer_canceled')) {
       originalStatus = 'Khách hủy đặt';
+    } else if (event.status ==
+        AppLocalizations.of(context).translate('completed')) {
+      originalStatus = 'Hoàn thành';
     }
 
     // Ánh xạ ngược payment status

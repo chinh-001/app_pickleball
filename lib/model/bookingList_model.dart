@@ -11,7 +11,9 @@ class BookingOrder {
   final String time;
   final String type;
   final String status;
+  final String statusId;
   final String paymentStatus;
+  final String paymentStatusId;
   final String phoneNumber;
   final String emailAddress;
   final String totalPrice;
@@ -25,7 +27,9 @@ class BookingOrder {
     required this.time,
     required this.type,
     required this.status,
+    this.statusId = '',
     required this.paymentStatus,
+    this.paymentStatusId = '',
     required this.phoneNumber,
     required this.emailAddress,
     required this.totalPrice,
@@ -82,10 +86,13 @@ class BookingOrder {
     // Extract booking status from API response
     final statusObj = map['status'] as Map?;
     final status = statusObj?['name']?.toString() ?? 'Mới';
+    final statusId = statusObj?['id']?.toString() ?? '';
 
     // Extract payment status
+    final paymentStatusObj = map['paymentstatus'] as Map?;
     final paymentStatus =
-        map['paymentstatus']?['name']?.toString() ?? 'Chưa thanh toán';
+        paymentStatusObj?['name']?.toString() ?? 'Chưa thanh toán';
+    final paymentStatusId = paymentStatusObj?['id']?.toString() ?? '';
 
     // Extract new fields with detailed logging
     log.log('Extracting noteCustomer, code, and id fields:');
@@ -107,7 +114,9 @@ class BookingOrder {
       time: timeRange,
       type: type,
       status: status,
+      statusId: statusId,
       paymentStatus: paymentStatus,
+      paymentStatusId: paymentStatusId,
       phoneNumber: phoneNumber,
       emailAddress: emailAddress,
       totalPrice: totalPrice,
@@ -125,7 +134,9 @@ class BookingOrder {
       'time': time,
       'type': type,
       'status': status,
+      'statusId': statusId,
       'paymentStatus': paymentStatus,
+      'paymentStatusId': paymentStatusId,
       'phoneNumber': phoneNumber,
       'emailAddress': emailAddress,
       'total_price': totalPrice,
@@ -286,7 +297,9 @@ class BookingOrderList {
               time: orderMap['time'] ?? '',
               type: orderMap['type'] ?? '',
               status: orderMap['status'] ?? '',
+              statusId: orderMap['statusId'] ?? '',
               paymentStatus: orderMap['paymentStatus'] ?? '',
+              paymentStatusId: orderMap['paymentStatusId'] ?? '',
               phoneNumber: orderMap['phoneNumber'] ?? '',
               emailAddress: orderMap['emailAddress'] ?? '',
               totalPrice: orderMap['total_price'] ?? '',

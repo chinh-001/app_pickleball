@@ -54,9 +54,11 @@ class BookingListRepository implements IBookingListService {
               }
               paymentstatus {
                 name
+                id
               }
               status {
                 name
+                id
               }
               noteCustomer
               id
@@ -114,8 +116,10 @@ class BookingListRepository implements IBookingListService {
           log.log('Court: ${court['name']}');
           log.log('Time: ${item['start_time']} - ${item['end_time']}');
           log.log('Type: ${item['type']}');
-          log.log('Status: ${status['name']}');
-          log.log('Payment Status: ${paymentStatus['name']}');
+          log.log('Status: ${status['name']} (ID: ${status['id']})');
+          log.log(
+            'Payment Status: ${paymentStatus['name']} (ID: ${paymentStatus['id']})',
+          );
           log.log('Total Price: ${item['total_price']}');
           log.log('Note: ${item['noteCustomer']}');
           log.log('-----------------------------------\n');
