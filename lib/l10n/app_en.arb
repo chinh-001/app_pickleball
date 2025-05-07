@@ -64,5 +64,22 @@
   "close": "Close",
   
   "addNew": "Add New",
-  "scrollUp": "Scroll Up"
+  "scrollUp": "Scroll Up",
+  
+  "status_1": "New",
+  "status_2": "Booked",
+  "status_3": "Time Conflict",
+  "status_4": "Confirmed",
+  "status_5": "Check-in",
+  "status_6": "Check-out",
+  "status_7": "Admin Canceled",
+  "status_8": "Customer Canceled",
+  "status_9": "Completed",
+  
+  "payment_status_1": "Unpaid",
+  "payment_status_2": "Paid",
+  "payment_status_3": "Completed",
+  "payment_status_4": "Deposit",
+  "payment_status_5": "Refunded",
+  "payment_status_6": "Canceled"
 } 

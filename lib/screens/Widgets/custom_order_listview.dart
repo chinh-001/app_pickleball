@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:app_pickleball/screens/order_detail_screen/View/order_detail_screen.dart';
+import 'package:app_pickleball/services/localization/app_localizations.dart';
 
 class BookingItem {
   final String name;
   final String court;
   final String time;
   final String type;
-  final bool isPaid;
-  final String status;
+  final String paymentStatusId;
+  final String statusId;
 
   BookingItem({
     required this.name,
     required this.court,
     required this.time,
     required this.type,
-    required this.isPaid,
-    required this.status,
+    required this.paymentStatusId,
+    required this.statusId,
   });
 
   factory BookingItem.fromMap(Map<String, String> map) {
@@ -24,8 +25,8 @@ class BookingItem {
       court: map['courtName'] ?? '',
       time: map['time'] ?? '',
       type: map['type'] ?? '',
-      isPaid: map['paymentStatus'] == 'Đã thanh toán',
-      status: map['status'] ?? '',
+      paymentStatusId: map['paymentStatusId'] ?? '1', // Default to unpaid (1)
+      statusId: map['statusId'] ?? '1', // Default to new (1)
     );
   }
 }
@@ -43,10 +44,11 @@ class CustomOrderListView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemBuilder: (context, index) {
         final item = items[index];
-        final bool isPaid = item['paymentStatus'] == 'Đã thanh toán';
-        print(item['type']);
+        final String paymentStatusId =
+            item['paymentStatusId'] ?? '1'; // Default to unpaid (1)
+        final String statusId = item['statusId'] ?? '1'; // Default to new (1)
         final bool isRecurring = item['type'] == 'Định kì';
-        print(isRecurring);
+
         return GestureDetector(
           onTap: () {
             if (onItemTap != null) {
@@ -157,16 +159,16 @@ class CustomOrderListView extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(
-                          Icons.info_outline,
+                        Icon(
+                          _getStatusIcon(statusId),
                           size: 16,
-                          color: Colors.blue,
+                          color: _getStatusColor(statusId),
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          item['status'] ?? '',
-                          style: const TextStyle(
-                            color: Colors.blue,
+                          _getLocalizedStatus(context, statusId),
+                          style: TextStyle(
+                            color: _getStatusColor(statusId),
                             fontSize: 14,
                           ),
                         ),
@@ -184,15 +186,15 @@ class CustomOrderListView extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        isPaid ? Icons.check_circle : Icons.error,
+                        _getPaymentStatusIcon(paymentStatusId),
                         size: 16,
-                        color: isPaid ? Colors.green : Colors.red,
+                        color: _getPaymentStatusColor(paymentStatusId),
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        isPaid ? 'Đã thanh toán' : 'Chưa thanh toán',
+                        _getLocalizedPaymentStatus(context, paymentStatusId),
                         style: TextStyle(
-                          color: isPaid ? Colors.green : Colors.red,
+                          color: _getPaymentStatusColor(paymentStatusId),
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -206,5 +208,93 @@ class CustomOrderListView extends StatelessWidget {
         );
       },
     );
+  }
+
+  IconData _getPaymentStatusIcon(String statusId) {
+    switch (statusId) {
+      case '2': // Paid
+        return Icons.check_circle;
+      case '3': // Completed
+        return Icons.done_all;
+      case '4': // Deposit
+        return Icons.account_balance_wallet;
+      case '5': // Refunded
+        return Icons.undo;
+      case '6': // Canceled
+        return Icons.cancel;
+      case '1': // Unpaid
+      default:
+        return Icons.error;
+    }
+  }
+
+  Color _getPaymentStatusColor(String statusId) {
+    switch (statusId) {
+      case '2': // Paid
+      case '3': // Completed
+        return Colors.green;
+      case '4': // Deposit
+        return Colors.orange;
+      case '5': // Refunded
+        return Colors.blue;
+      case '6': // Canceled
+        return Colors.red;
+      case '1': // Unpaid
+      default:
+        return Colors.red;
+    }
+  }
+
+  String _getLocalizedPaymentStatus(BuildContext context, String statusId) {
+    return AppLocalizations.of(context).translate('payment_status_$statusId');
+  }
+
+  IconData _getStatusIcon(String statusId) {
+    switch (statusId) {
+      case '2': // Booked
+        return Icons.event_available;
+      case '3': // Time Conflict
+        return Icons.access_time_filled;
+      case '4': // Confirmed
+        return Icons.thumb_up;
+      case '5': // Check-in
+        return Icons.login;
+      case '6': // Check-out
+        return Icons.logout;
+      case '7': // Admin Canceled
+      case '8': // Customer Canceled
+        return Icons.cancel;
+      case '9': // Completed
+        return Icons.task_alt;
+      case '1': // New
+      default:
+        return Icons.fiber_new;
+    }
+  }
+
+  Color _getStatusColor(String statusId) {
+    switch (statusId) {
+      case '2': // Booked
+      case '4': // Confirmed
+        return Colors.blue;
+      case '3': // Time Conflict
+        return Colors.orange;
+      case '5': // Check-in
+        return Colors.green;
+      case '6': // Check-out
+        return Colors.purple;
+      case '7': // Admin Canceled
+      case '8': // Customer Canceled
+        return Colors.red;
+      case '9': // Completed
+        return Colors.teal;
+      case '1': // New
+      default:
+        return Colors.blue;
+    }
+  }
+
+  String _getLocalizedStatus(BuildContext context, String statusId) {
+    return AppLocalizations.of(context).translate('status_$statusId');
   }
 }

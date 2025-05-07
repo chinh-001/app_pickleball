@@ -64,5 +64,22 @@
   "close": "Đóng",
   
   "addNew": "Thêm mới",
-  "scrollUp": "Lướt lên"
+  "scrollUp": "Lướt lên",
+  
+  "status_1": "Mới",
+  "status_2": "Đặt sân",
+  "status_3": "Trùng giờ",
+  "status_4": "Xác nhận",
+  "status_5": "Check-in",
+  "status_6": "Check-out",
+  "status_7": "Admin hủy đặt",
+  "status_8": "Khách hủy đặt",
+  "status_9": "Hoàn thành",
+  
+  "payment_status_1": "Chưa thanh toán",
+  "payment_status_2": "Đã thanh toán",
+  "payment_status_3": "Hoàn thành",
+  "payment_status_4": "Đặt cọc",
+  "payment_status_5": "Đã hoàn trả",
+  "payment_status_6": "Đã hủy"
 } 
