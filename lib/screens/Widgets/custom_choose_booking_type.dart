@@ -1,33 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/widgets/custom_button.dart';
+import 'package:app_pickleball/screens/add_order_retail_step_1_screen/View/add_order_retail_step_1_screen.dart';
 
-class CustomChooseBookingTypeDialog extends StatelessWidget {
-  final Function()? onRegularBooking;
-  final Function()? onRecurringBooking;
-
-  const CustomChooseBookingTypeDialog({
-    Key? key,
-    this.onRegularBooking,
-    this.onRecurringBooking,
-  }) : super(key: key);
+class CustomChooseBookingTypeDialog extends StatefulWidget {
+  const CustomChooseBookingTypeDialog({Key? key}) : super(key: key);
 
   static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
-        return CustomChooseBookingTypeDialog(
-          onRegularBooking: () {
-            Navigator.of(dialogContext).pop();
-            // Thêm logic chuyển đến trang đặt sân thông thường
-          },
-          onRecurringBooking: () {
-            Navigator.of(dialogContext).pop();
-            // Thêm logic chuyển đến trang đặt sân định kỳ
-          },
-        );
+        return const CustomChooseBookingTypeDialog();
       },
     );
+  }
+
+  @override
+  State<CustomChooseBookingTypeDialog> createState() =>
+      _CustomChooseBookingTypeDialogState();
+}
+
+class _CustomChooseBookingTypeDialogState
+    extends State<CustomChooseBookingTypeDialog> {
+  String? selectedBookingType;
+
+  void _selectBookingType(String type) {
+    setState(() {
+      selectedBookingType = type;
+    });
+  }
+
+  void _confirmSelection() {
+    if (selectedBookingType == null) return;
+
+    Navigator.of(context).pop();
+
+    if (selectedBookingType == 'retail') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const AddOrderRetailStep1Screen(),
+        ),
+      );
+    } else if (selectedBookingType == 'periodic') {
+      // Thêm logic chuyển đến trang đặt sân định kỳ
+    }
   }
 
   @override
@@ -63,7 +80,7 @@ class CustomChooseBookingTypeDialog extends StatelessWidget {
                 Expanded(
                   child: _buildBookingOption(
                     context: context,
-                    icon: Icons.calendar_today,
+                    icon: Icons.calendar_month_outlined,
                     title: AppLocalizations.of(
                       context,
                     ).translate('booking_type_retail'),
@@ -71,8 +88,9 @@ class CustomChooseBookingTypeDialog extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
-                    onTap: onRegularBooking,
+                    onTap: () => _selectBookingType('retail'),
                     height: 120,
+                    isSelected: selectedBookingType == 'retail',
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -87,8 +105,9 @@ class CustomChooseBookingTypeDialog extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
-                    onTap: onRecurringBooking,
+                    onTap: () => _selectBookingType('periodic'),
                     height: 120,
+                    isSelected: selectedBookingType == 'periodic',
                   ),
                 ),
               ],
@@ -108,11 +127,17 @@ class CustomChooseBookingTypeDialog extends StatelessWidget {
                 const SizedBox(width: 16),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor:
+                        selectedBookingType != null
+                            ? Colors.green
+                            : Colors.grey,
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(AppLocalizations.of(context).translate('save')),
+                  onPressed:
+                      selectedBookingType != null ? _confirmSelection : null,
+                  child: Text(
+                    AppLocalizations.of(context).translate('confirm'),
+                  ),
                 ),
               ],
             ),
@@ -127,8 +152,9 @@ class CustomChooseBookingTypeDialog extends StatelessWidget {
     required IconData icon,
     required String title,
     TextStyle? titleStyle,
-    required Function()? onTap,
+    required Function() onTap,
     double height = 100,
+    bool isSelected = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -136,8 +162,12 @@ class CustomChooseBookingTypeDialog extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         height: height,
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.green),
+          border: Border.all(
+            color: isSelected ? Colors.green : Colors.grey,
+            width: isSelected ? 2 : 1,
+          ),
           borderRadius: BorderRadius.circular(8),
+          color: isSelected ? Colors.green.withOpacity(0.1) : null,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

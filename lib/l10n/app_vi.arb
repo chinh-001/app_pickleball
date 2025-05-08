@@ -62,7 +62,7 @@
   "noNetworkConnection": "Không có kết nối mạng, vui lòng kiểm tra lại",
   "networkRestored": "Kết nối mạng đã được khôi phục",
   "close": "Đóng",
-  
+  "confirm":"Xác nhận",
   "addNew": "Thêm mới",
   "scrollUp": "Lướt lên",
   
@@ -84,5 +84,24 @@
   "payment_status_6": "Đã hủy",
   
   "booking_type_periodic": "Định kì",
-  "booking_type_retail": "Loại lẻ"
+  "booking_type_retail": "Loại lẻ",
+  
+  "today": "Hôm nay",
+  "month": "Tháng",
+  "week": "Tuần",
+  "court": "Sân",
+  "courts": "sân",
+  "selectedBookings": "Đặt sân đã chọn",
+  "totalPayment": "Thanh tiền",
+  "serviceName": "Dịch vụ",
+  "courtCount": "Số sân",
+  "selectDateAndTime": "Chọn ngày và giờ",
+  "fromTime": "Từ",
+  "toTime": "Đến",
+  "hours": "Số giờ",
+  "next": "Tiếp theo",
+  "courtInformation": "Thông tin đặt sân",
+  "customerInformation": "Thông tin khách hàng",
+  "completeBooking": "Hoàn tất đặt sân",
+  "selectService": "Chọn dịch vụ"
 } 

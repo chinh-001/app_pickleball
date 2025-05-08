@@ -9,6 +9,7 @@ class CustomDropdown extends StatelessWidget {
   final double? itemFontSize;
   final double? dropdownWidth;
   final double? dropdownHeight;
+  final double? menuMaxHeight;
 
   const CustomDropdown({
     super.key,
@@ -20,6 +21,7 @@ class CustomDropdown extends StatelessWidget {
     this.itemFontSize,
     this.dropdownWidth,
     this.dropdownHeight,
+    this.menuMaxHeight,
   });
 
   @override
@@ -49,6 +51,8 @@ class CustomDropdown extends StatelessWidget {
                 value: selectedValue,
                 isExpanded: true,
                 onChanged: onChanged,
+                menuMaxHeight: menuMaxHeight ?? 200,
+                itemHeight: 50,
                 items:
                     options.map((String value) {
                       return DropdownMenuItem<String>(

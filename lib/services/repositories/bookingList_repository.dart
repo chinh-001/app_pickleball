@@ -101,29 +101,29 @@ class BookingListRepository implements IBookingListService {
         log.log('Total items found: $totalItems');
         log.log('Number of items retrieved: ${items.length}\n');
 
-        for (var i = 0; i < items.length; i++) {
-          final item = items[i];
-          final customer = item['customer'] as Map<String, dynamic>;
-          final court = item['court'] as Map<String, dynamic>;
-          final status = item['status'] as Map<String, dynamic>;
-          final paymentStatus = item['paymentstatus'] as Map<String, dynamic>;
+        // for (var i = 0; i < items.length; i++) {
+        //   final item = items[i];
+        //   final customer = item['customer'] as Map<String, dynamic>;
+        //   final court = item['court'] as Map<String, dynamic>;
+        //   final status = item['status'] as Map<String, dynamic>;
+        //   final paymentStatus = item['paymentstatus'] as Map<String, dynamic>;
 
-          log.log('BOOKING #${i + 1}:');
-          log.log('ID: ${item['id']}');
-          log.log('Code: ${item['code']}');
-          log.log('Customer: ${customer['firstName']} ${customer['lastName']}');
-          log.log('Phone: ${customer['phoneNumber']}');
-          log.log('Court: ${court['name']}');
-          log.log('Time: ${item['start_time']} - ${item['end_time']}');
-          log.log('Type: ${item['type']}');
-          log.log('Status: ${status['name']} (ID: ${status['id']})');
-          log.log(
-            'Payment Status: ${paymentStatus['name']} (ID: ${paymentStatus['id']})',
-          );
-          log.log('Total Price: ${item['total_price']}');
-          log.log('Note: ${item['noteCustomer']}');
-          log.log('-----------------------------------\n');
-        }
+        //   log.log('BOOKING #${i + 1}:');
+        //   log.log('ID: ${item['id']}');
+        //   log.log('Code: ${item['code']}');
+        //   log.log('Customer: ${customer['firstName']} ${customer['lastName']}');
+        //   log.log('Phone: ${customer['phoneNumber']}');
+        //   log.log('Court: ${court['name']}');
+        //   log.log('Time: ${item['start_time']} - ${item['end_time']}');
+        //   log.log('Type: ${item['type']}');
+        //   log.log('Status: ${status['name']} (ID: ${status['id']})');
+        //   log.log(
+        //     'Payment Status: ${paymentStatus['name']} (ID: ${paymentStatus['id']})',
+        //   );
+        //   log.log('Total Price: ${item['total_price']}');
+        //   log.log('Note: ${item['noteCustomer']}');
+        //   log.log('-----------------------------------\n');
+        // }
       }
 
       return response;
