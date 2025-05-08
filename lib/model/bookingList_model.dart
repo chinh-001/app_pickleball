@@ -77,11 +77,8 @@ class BookingOrder {
 
     // Extract and map type
     final rawType = map['type']?.toString().toLowerCase() ?? '';
-    final type = switch (rawType) {
-      'periodic' => 'Định kì',
-      'retail' => 'Loại lẻ',
-      _ => 'Loại lẻ', // default case
-    };
+    final type =
+        rawType.isEmpty ? 'retail' : rawType; // default to retail if empty
 
     // Extract booking status from API response
     final statusObj = map['status'] as Map?;

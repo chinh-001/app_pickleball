@@ -47,7 +47,8 @@ class CustomOrderListView extends StatelessWidget {
         final String paymentStatusId =
             item['paymentStatusId'] ?? '1'; // Default to unpaid (1)
         final String statusId = item['statusId'] ?? '1'; // Default to new (1)
-        final bool isRecurring = item['type'] == 'Định kì';
+        final String bookingType =
+            item['type'] ?? 'retail'; // Default to retail
 
         return GestureDetector(
           onTap: () {
@@ -105,7 +106,10 @@ class CustomOrderListView extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: isRecurring ? Colors.green : Colors.orange,
+                            color:
+                                bookingType == 'periodic'
+                                    ? Colors.green
+                                    : Colors.orange,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
@@ -118,7 +122,7 @@ class CustomOrderListView extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                isRecurring ? 'Định kỳ' : 'Loại lẻ',
+                                _getLocalizedBookingType(context, bookingType),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -296,5 +300,9 @@ class CustomOrderListView extends StatelessWidget {
 
   String _getLocalizedStatus(BuildContext context, String statusId) {
     return AppLocalizations.of(context).translate('status_$statusId');
+  }
+
+  String _getLocalizedBookingType(BuildContext context, String type) {
+    return AppLocalizations.of(context).translate('booking_type_$type');
   }
 }

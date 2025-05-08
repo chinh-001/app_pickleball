@@ -81,5 +81,8 @@
   "payment_status_3": "Completed",
   "payment_status_4": "Deposit",
   "payment_status_5": "Refunded",
-  "payment_status_6": "Canceled"
+  "payment_status_6": "Canceled",
+  
+  "booking_type_periodic": "Periodic",
+  "booking_type_retail": "retail"
 } 

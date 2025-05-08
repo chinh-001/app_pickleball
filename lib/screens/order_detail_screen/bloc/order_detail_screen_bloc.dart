@@ -38,26 +38,43 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       // Lấy thông tin từ dữ liệu đầu vào
       final String originalType = item['type'] ?? '';
       final String originalStatus = item['status'] ?? '';
+      final String originalStatusId = item['statusId'] ?? '';
       final String originalPaymentStatus = item['paymentStatus'] ?? '';
       final String selectedTime = item['time'] ?? '';
 
       // Khởi tạo danh sách các tùy chọn đã được dịch
       final List<String> typeOptions = [
-        AppLocalizations.of(context).translate('singleType'),
-        AppLocalizations.of(context).translate('periodicType'),
+        AppLocalizations.of(context).translate('booking_type_retail'),
+        AppLocalizations.of(context).translate('booking_type_periodic'),
       ];
 
       final List<String> statusOptions = [
-        AppLocalizations.of(context).translate('new'),
-        AppLocalizations.of(context).translate('booked'),
-        AppLocalizations.of(context).translate('customer_canceled'),
-        AppLocalizations.of(context).translate('completed'),
+        AppLocalizations.of(context).translate('status_1'), // Mới
+        AppLocalizations.of(context).translate('status_2'), // Đặt sân
+        AppLocalizations.of(context).translate('status_3'), // Trùng giờ
+        AppLocalizations.of(context).translate('status_4'), // Xác nhận
+        AppLocalizations.of(context).translate('status_5'), // Check-in
+        AppLocalizations.of(context).translate('status_6'), // Check-out
+        AppLocalizations.of(context).translate('status_7'), // Admin hủy đặt
+        AppLocalizations.of(context).translate('status_8'), // Khách hủy đặt
+        AppLocalizations.of(context).translate('status_9'), // Hoàn thành
       ];
 
       final List<String> paymentStatusOptions = [
-        AppLocalizations.of(context).translate('paid'),
-        AppLocalizations.of(context).translate('unpaid'),
-        AppLocalizations.of(context).translate('deposit'),
+        AppLocalizations.of(
+          context,
+        ).translate('payment_status_1'), // Chưa thanh toán
+        AppLocalizations.of(
+          context,
+        ).translate('payment_status_2'), // Đã thanh toán
+        AppLocalizations.of(
+          context,
+        ).translate('payment_status_3'), // Hoàn thành
+        AppLocalizations.of(context).translate('payment_status_4'), // Đặt cọc
+        AppLocalizations.of(
+          context,
+        ).translate('payment_status_5'), // Đã hoàn trả
+        AppLocalizations.of(context).translate('payment_status_6'), // Đã hủy
       ];
 
       // Dịch các giá trị cho UI
@@ -65,36 +82,46 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       String selectedStatus = originalStatus;
       String selectedPaymentStatus = originalPaymentStatus;
 
-      // Ánh xạ giá trị gốc sang giá trị đã dịch
-      if (originalType == 'Loại lẻ' || originalType.isEmpty) {
-        selectedType = AppLocalizations.of(context).translate('singleType');
-      } else if (originalType == 'Định kì') {
-        selectedType = AppLocalizations.of(context).translate('periodicType');
-      }
-
-      if (originalStatus == 'Mới' || originalStatus.isEmpty) {
-        selectedStatus = AppLocalizations.of(context).translate('new');
-      } else if (originalStatus == 'Đặt sân') {
-        selectedStatus = AppLocalizations.of(context).translate('booked');
-      } else if (originalStatus == 'Khách hủy đặt') {
+      // Ánh xạ giá trị gốc sang giá trị đã dịch dựa trên statusId
+      if (originalStatusId.isNotEmpty) {
+        // Nếu có statusId, sử dụng nó để lấy bản dịch
         selectedStatus = AppLocalizations.of(
           context,
-        ).translate('customer_canceled');
-      } else if (originalStatus == 'Hoàn thành') {
-        selectedStatus = AppLocalizations.of(context).translate('completed');
+        ).translate('status_$originalStatusId');
       }
 
-      if (originalPaymentStatus == 'Đã thanh toán' ||
-          originalPaymentStatus.isEmpty) {
-        selectedPaymentStatus = AppLocalizations.of(context).translate('paid');
-      } else if (originalPaymentStatus == 'Chưa thanh toán') {
+      // Ánh xạ giá trị gốc sang giá trị đã dịch
+      if (originalType == 'retail' || originalType.isEmpty) {
+        selectedType = AppLocalizations.of(
+          context,
+        ).translate('booking_type_retail');
+      } else if (originalType == 'periodic') {
+        selectedType = AppLocalizations.of(
+          context,
+        ).translate('booking_type_periodic');
+      }
+
+      // Use paymentStatusId if available
+      if (item['paymentStatusId']?.isNotEmpty == true) {
+        final paymentStatusId = item['paymentStatusId']!;
         selectedPaymentStatus = AppLocalizations.of(
           context,
-        ).translate('unpaid');
-      } else if (originalPaymentStatus == 'Đặt cọc') {
-        selectedPaymentStatus = AppLocalizations.of(
-          context,
-        ).translate('deposit');
+        ).translate('payment_status_$paymentStatusId');
+      } else {
+        // Fallback to name-based mapping
+        if (originalPaymentStatus == 'Đã thanh toán') {
+          selectedPaymentStatus = AppLocalizations.of(
+            context,
+          ).translate('payment_status_2');
+        } else if (originalPaymentStatus == 'Chưa thanh toán') {
+          selectedPaymentStatus = AppLocalizations.of(
+            context,
+          ).translate('payment_status_1');
+        } else if (originalPaymentStatus == 'Đặt cọc') {
+          selectedPaymentStatus = AppLocalizations.of(
+            context,
+          ).translate('payment_status_4');
+        }
       }
 
       // Định dạng tổng tiền
@@ -195,36 +222,31 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     String translatedPaymentStatus = event.paymentStatus;
 
     // Ánh xạ type
-    if (event.type == 'Loại lẻ') {
-      translatedType = AppLocalizations.of(context).translate('singleType');
-    } else if (event.type == 'Định kì') {
-      translatedType = AppLocalizations.of(context).translate('periodicType');
+    if (event.type == 'retail') {
+      translatedType = AppLocalizations.of(
+        context,
+      ).translate('booking_type_retail');
+    } else if (event.type == 'periodic') {
+      translatedType = AppLocalizations.of(
+        context,
+      ).translate('booking_type_periodic');
     }
 
-    // Ánh xạ status
-    if (event.status == 'Mới') {
-      translatedStatus = AppLocalizations.of(context).translate('new');
-    } else if (event.status == 'Đặt sân') {
-      translatedStatus = AppLocalizations.of(context).translate('booked');
-    } else if (event.status == 'Khách hủy đặt') {
+    // Try to determine if status is an ID
+    if (event.status.length <= 2 && int.tryParse(event.status) != null) {
+      // If status is a numeric ID, use the ID-based translation
       translatedStatus = AppLocalizations.of(
         context,
-      ).translate('customer_canceled');
-    } else if (event.status == 'Hoàn thành') {
-      translatedStatus = AppLocalizations.of(context).translate('completed');
+      ).translate('status_${event.status}');
     }
 
-    // Ánh xạ payment status
-    if (event.paymentStatus == 'Đã thanh toán') {
-      translatedPaymentStatus = AppLocalizations.of(context).translate('paid');
-    } else if (event.paymentStatus == 'Chưa thanh toán') {
+    // Try to determine if payment status is an ID
+    if (event.paymentStatus.length <= 2 &&
+        int.tryParse(event.paymentStatus) != null) {
+      // If payment status is a numeric ID, use the ID-based translation
       translatedPaymentStatus = AppLocalizations.of(
         context,
-      ).translate('unpaid');
-    } else if (event.paymentStatus == 'Đặt cọc') {
-      translatedPaymentStatus = AppLocalizations.of(
-        context,
-      ).translate('deposit');
+      ).translate('payment_status_${event.paymentStatus}');
     }
 
     emit(
@@ -247,35 +269,29 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
 
     // Ánh xạ ngược type
     if (event.type == AppLocalizations.of(context).translate('singleType')) {
-      originalType = 'Loại lẻ';
+      originalType = 'retail';
     } else if (event.type ==
         AppLocalizations.of(context).translate('periodicType')) {
-      originalType = 'Định kì';
+      originalType = 'periodic';
     }
 
-    // Ánh xạ ngược status
-    if (event.status == AppLocalizations.of(context).translate('new')) {
-      originalStatus = 'Mới';
-    } else if (event.status ==
-        AppLocalizations.of(context).translate('booked')) {
-      originalStatus = 'Đặt sân';
-    } else if (event.status ==
-        AppLocalizations.of(context).translate('customer_canceled')) {
-      originalStatus = 'Khách hủy đặt';
-    } else if (event.status ==
-        AppLocalizations.of(context).translate('completed')) {
-      originalStatus = 'Hoàn thành';
+    // Ánh xạ ngược status dựa trên ID
+    for (int i = 1; i <= 9; i++) {
+      if (event.status == AppLocalizations.of(context).translate('status_$i')) {
+        // Store the status ID instead of the name
+        originalStatus = i.toString();
+        break;
+      }
     }
 
-    // Ánh xạ ngược payment status
-    if (event.paymentStatus == AppLocalizations.of(context).translate('paid')) {
-      originalPaymentStatus = 'Đã thanh toán';
-    } else if (event.paymentStatus ==
-        AppLocalizations.of(context).translate('unpaid')) {
-      originalPaymentStatus = 'Chưa thanh toán';
-    } else if (event.paymentStatus ==
-        AppLocalizations.of(context).translate('deposit')) {
-      originalPaymentStatus = 'Đặt cọc';
+    // Ánh xạ ngược payment status dựa trên ID
+    for (int i = 1; i <= 6; i++) {
+      if (event.paymentStatus ==
+          AppLocalizations.of(context).translate('payment_status_$i')) {
+        // Store the payment status ID
+        originalPaymentStatus = i.toString();
+        break;
+      }
     }
 
     // Truyền timeToSubmit vào state

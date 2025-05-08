@@ -81,5 +81,8 @@
   "payment_status_3": "Hoàn thành",
   "payment_status_4": "Đặt cọc",
   "payment_status_5": "Đã hoàn trả",
-  "payment_status_6": "Đã hủy"
+  "payment_status_6": "Đã hủy",
+  
+  "booking_type_periodic": "Định kì",
+  "booking_type_retail": "Loại lẻ"
 } 
