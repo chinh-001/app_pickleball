@@ -251,6 +251,19 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
               if (newValue != null) {
                 setState(() {
                   selectedFromTime = newValue;
+
+                  // Check if toTime is before fromTime
+                  final int fromIndex = fullTimeOptions.indexOf(newValue);
+                  final int toIndex = fullTimeOptions.indexOf(selectedToTime);
+
+                  if (toIndex <= fromIndex) {
+                    // If toTime is before or same as fromTime, set it to next 30 min slot
+                    int newToIndex = fromIndex + 1;
+                    if (newToIndex < fullTimeOptions.length) {
+                      selectedToTime = fullTimeOptions[newToIndex];
+                    }
+                  }
+
                   _calculateHours();
                 });
               }
@@ -261,7 +274,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
         Expanded(
           child: CustomDropdown(
             title: AppLocalizations.of(context).translate('toTime'),
-            options: fullTimeOptions,
+            options: _getValidToTimeOptions(),
             selectedValue: selectedToTime,
             dropdownHeight: 50,
             itemFontSize: 14,
@@ -290,7 +303,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
               ),
               const SizedBox(height: 5),
               Container(
-                height: 40,
+                height: 50,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 10,
@@ -312,6 +325,12 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
     );
   }
 
+  // Method to get valid toTime options that are after fromTime
+  List<String> _getValidToTimeOptions() {
+    final int fromIndex = fullTimeOptions.indexOf(selectedFromTime);
+    return fullTimeOptions.sublist(fromIndex + 1);
+  }
+
   void _calculateHours() {
     // Parse the time strings to calculate hours
     final fromParts = selectedFromTime.split(':');
@@ -326,7 +345,8 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
       final fromMinutes = fromHour * 60 + fromMinute;
       final toMinutes = toHour * 60 + toMinute;
 
-      final diffMinutes = toMinutes - fromMinutes;
+      // Ensure we don't have negative values
+      final diffMinutes = toMinutes > fromMinutes ? toMinutes - fromMinutes : 0;
       setState(() {
         numberOfHours = diffMinutes / 60;
       });
@@ -358,7 +378,9 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                 ),
               ),
               const SizedBox(height: 8),
-              ...selectedDates.map((date) {
+              ...selectedDates.asMap().entries.map((entry) {
+                final int index = entry.key;
+                final DateTime date = entry.value;
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(8),
@@ -370,7 +392,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                   child: Row(
                     children: [
                       Text(
-                        '#1',
+                        '#${index + 1}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 16),
@@ -443,6 +465,9 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
   }
 
   Widget _buildBottomBar() {
+    final bool isFormComplete =
+        selectedDates.isNotEmpty && selectedService.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -464,6 +489,9 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
               onPressed: () {
                 Navigator.pop(context);
               },
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              borderColor: Colors.black,
             ),
           ),
           const SizedBox(width: 16),
@@ -471,11 +499,14 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
             child: CustomElevatedButton(
               text: AppLocalizations.of(context).translate('next'),
               onPressed:
-                  selectedDates.isNotEmpty && selectedService.isNotEmpty
+                  isFormComplete
                       ? () {
                         // Navigate to Step 2
                       }
                       : () {},
+              backgroundColor: isFormComplete ? Colors.green : Colors.white,
+              textColor: isFormComplete ? Colors.white : Colors.black,
+              borderColor: isFormComplete ? Colors.green : Colors.black,
             ),
           ),
         ],

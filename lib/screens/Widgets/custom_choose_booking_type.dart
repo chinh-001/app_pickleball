@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
-import 'package:app_pickleball/screens/widgets/custom_button.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_1_screen/View/add_order_retail_step_1_screen.dart';
 
 class CustomChooseBookingTypeDialog extends StatefulWidget {

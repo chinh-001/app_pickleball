@@ -3,11 +3,17 @@ import 'package:flutter/material.dart';
 class CustomElevatedButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color borderColor;
 
   const CustomElevatedButton({
     super.key,
     required this.text,
     required this.onPressed,
+    this.backgroundColor = Colors.white,
+    this.textColor = Colors.black,
+    this.borderColor = Colors.black,
   });
 
   @override
@@ -16,10 +22,10 @@ class CustomElevatedButton extends StatelessWidget {
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         minimumSize: Size(double.infinity, 50),
-        backgroundColor: Colors.white,
-        side: BorderSide(color: Colors.black), // Đường viền màu đen
+        backgroundColor: backgroundColor,
+        side: BorderSide(color: borderColor),
       ),
-      child: Text(text, style: TextStyle(color: Colors.black)),
+      child: Text(text, style: TextStyle(color: textColor)),
     );
   }
 }
