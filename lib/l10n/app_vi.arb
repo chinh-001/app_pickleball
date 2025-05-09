@@ -92,7 +92,7 @@
   "court": "Sân",
   "courts": "sân",
   "selectedBookings": "Đặt sân đã chọn",
-  "totalPayment": "Thanh tiền",
+  "totalPayment": "Thành tiền",
   "serviceName": "Dịch vụ",
   "courtCount": "Số sân",
   "selectDateAndTime": "Chọn ngày và giờ",
@@ -103,5 +103,18 @@
   "courtInformation": "Thông tin đặt sân",
   "customerInformation": "Thông tin khách hàng",
   "completeBooking": "Hoàn tất đặt sân",
-  "selectService": "Chọn dịch vụ"
+  "selectService": "Chọn dịch vụ",
+
+  "customer": "Khách hàng",
+  "addCustomer": "Thêm khách hàng",
+  "salutation": "Danh xưng",
+  "lastName": "Họ",
+  "firstName": "Tên",
+  "paymentMethod": "Phương thức thanh toán",
+  "cash": "Tiền mặt",
+  "eWallet": "Ví điện tử",
+  "bankTransfer": "Chuyển khoản",
+  "mr": "Anh",
+  "ms": "Chị",
+  "confirmed": "Xác nhận"
 } 

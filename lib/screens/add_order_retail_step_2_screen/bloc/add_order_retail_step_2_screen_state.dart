@@ -1,10 +1,57 @@
 part of 'add_order_retail_step_2_screen_bloc.dart';
 
-abstract class AddOrderRetailStep_2ScreenState extends Equatable {
-  const AddOrderRetailStep_2ScreenState();
-  
-  @override
-  List<Object> get props => [];
-}
+class AddOrderRetailStep2ScreenState extends Equatable {
+  final String? selectedSalutation;
+  final String? paymentMethod;
+  final String paymentStatus;
+  final String orderStatus;
+  final String lastName;
+  final String firstName;
+  final String email;
+  final String notes;
 
-class AddOrderRetailStep_2ScreenInitial extends AddOrderRetailStep_2ScreenState {}
+  const AddOrderRetailStep2ScreenState({
+    required this.selectedSalutation,
+    required this.paymentMethod,
+    required this.paymentStatus,
+    required this.orderStatus,
+    required this.lastName,
+    required this.firstName,
+    required this.email,
+    required this.notes,
+  });
+
+  AddOrderRetailStep2ScreenState copyWith({
+    String? selectedSalutation,
+    String? paymentMethod,
+    String? paymentStatus,
+    String? orderStatus,
+    String? lastName,
+    String? firstName,
+    String? email,
+    String? notes,
+  }) {
+    return AddOrderRetailStep2ScreenState(
+      selectedSalutation: selectedSalutation ?? this.selectedSalutation,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      orderStatus: orderStatus ?? this.orderStatus,
+      lastName: lastName ?? this.lastName,
+      firstName: firstName ?? this.firstName,
+      email: email ?? this.email,
+      notes: notes ?? this.notes,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    selectedSalutation,
+    paymentMethod,
+    paymentStatus,
+    orderStatus,
+    lastName,
+    firstName,
+    email,
+    notes,
+  ];
+}

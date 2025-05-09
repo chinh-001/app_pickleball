@@ -103,5 +103,18 @@
   "courtInformation": "Court Information",
   "customerInformation": "Customer Information",
   "completeBooking": "Complete Booking",
-  "selectService": "Select Service"
+  "selectService": "Select Service",
+
+  "customer": "Customer",
+  "addCustomer": "Add Customer",
+  "salutation": "Salutation",
+  "lastName": "Last Name",
+  "firstName": "First Name",
+  "paymentMethod": "Payment Method",
+  "cash": "Cash",
+  "eWallet": "E-Wallet",
+  "bankTransfer": "Bank Transfer",
+  "mr": "Mr",
+  "ms": "Ms",
+  "confirmed": "Confirmed"
 } 

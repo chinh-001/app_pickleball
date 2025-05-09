@@ -6,11 +6,13 @@ import 'package:app_pickleball/services/localization/app_localizations.dart';
 class CustomCalendarAddBooking extends StatefulWidget {
   final Function(List<DateTime>) onDatesSelected;
   final List<DateTime>? initialSelectedDates;
+  final bool allowSelectPastDates;
 
   const CustomCalendarAddBooking({
     Key? key,
     required this.onDatesSelected,
     this.initialSelectedDates,
+    this.allowSelectPastDates = true,
   }) : super(key: key);
 
   @override
@@ -22,22 +24,43 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   Set<DateTime> _selectedDays = {};
-  final DateTime _firstDay = DateTime.now();
+  late final DateTime _firstDay;
   final DateTime _lastDay = DateTime.now().add(const Duration(days: 365));
 
   @override
   void initState() {
     super.initState();
+    // Set first day based on allowSelectPastDates property
+    _firstDay =
+        widget.allowSelectPastDates
+            ? DateTime.now().subtract(const Duration(days: 365))
+            : DateTime(
+              DateTime.now().year,
+              DateTime.now().month,
+              DateTime.now().day,
+            );
+
     if (widget.initialSelectedDates != null) {
-      _selectedDays = widget.initialSelectedDates!.toSet();
+      // Filter out past dates if not allowed
+      if (!widget.allowSelectPastDates) {
+        _selectedDays =
+            widget.initialSelectedDates!
+                .where(
+                  (date) =>
+                      date.isAtSameMomentAs(_firstDay) ||
+                      date.isAfter(_firstDay),
+                )
+                .toSet();
+      } else {
+        _selectedDays = widget.initialSelectedDates!.toSet();
+      }
     }
   }
 
   bool _isValidFocusedDay(DateTime day) {
     // Kiểm tra xem ngày có nằm trong khoảng hợp lệ không
-    return day.isAtSameMomentAs(_firstDay) ||
-        day.isAfter(_firstDay) &&
-            (day.isAtSameMomentAs(_lastDay) || day.isBefore(_lastDay));
+    return (day.isAtSameMomentAs(_firstDay) || day.isAfter(_firstDay)) &&
+        (day.isAtSameMomentAs(_lastDay) || day.isBefore(_lastDay));
   }
 
   void _safelyUpdateFocusedDay(DateTime newFocusedDay) {
@@ -54,7 +77,10 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
       children: [
         _buildCalendarHeader(),
         TableCalendar(
-          firstDay: _firstDay,
+          firstDay:
+              widget.allowSelectPastDates
+                  ? DateTime.now().subtract(const Duration(days: 365))
+                  : _firstDay,
           lastDay: _lastDay,
           focusedDay: _focusedDay,
           calendarFormat: _calendarFormat,
@@ -75,14 +101,46 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
             ),
             markersMaxCount: 3,
             cellMargin: const EdgeInsets.all(1), // Thu nhỏ margin
+            // Style for disabled (past) dates
+            disabledTextStyle: const TextStyle(
+              color: Colors.grey,
+              decoration: TextDecoration.none,
+            ),
+            disabledDecoration: const BoxDecoration(shape: BoxShape.circle),
           ),
           headerVisible: false,
           selectedDayPredicate: (day) {
             return _selectedDays.contains(_normalizeDate(day));
           },
+          enabledDayPredicate: (day) {
+            // Only allow selecting current and future dates if allowSelectPastDates is false
+            if (!widget.allowSelectPastDates) {
+              final today = DateTime(
+                DateTime.now().year,
+                DateTime.now().month,
+                DateTime.now().day,
+              );
+              return day.isAtSameMomentAs(today) || day.isAfter(today);
+            }
+            return true;
+          },
           onDaySelected: (selectedDay, focusedDay) {
+            final normalizedDay = _normalizeDate(selectedDay);
+
+            // Check if the day is selectable
+            final today = DateTime(
+              DateTime.now().year,
+              DateTime.now().month,
+              DateTime.now().day,
+            );
+            final isPastDay = normalizedDay.isBefore(today);
+
+            if (!widget.allowSelectPastDates && isPastDay) {
+              // Don't allow selecting past days
+              return;
+            }
+
             setState(() {
-              final normalizedDay = _normalizeDate(selectedDay);
               if (_selectedDays.contains(normalizedDay)) {
                 _selectedDays.remove(normalizedDay);
               } else {

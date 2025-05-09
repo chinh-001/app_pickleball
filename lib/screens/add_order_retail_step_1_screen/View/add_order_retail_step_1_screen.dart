@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/widgets/custom_calendar_add_booking.dart';
 import 'package:app_pickleball/screens/widgets/custom_button.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
+import 'package:app_pickleball/screens/add_order_retail_step_1_screen/bloc/add_order_retail_step_1_screen_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:app_pickleball/screens/add_order_retail_step_2_screen/View/add_order_retail_step_2_view.dart';
 
 class AddOrderRetailStep1Screen extends StatefulWidget {
   const AddOrderRetailStep1Screen({Key? key}) : super(key: key);
@@ -14,117 +17,112 @@ class AddOrderRetailStep1Screen extends StatefulWidget {
 }
 
 class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
-  final TextEditingController _searchController = TextEditingController();
-  String selectedService = '';
-  List<String> servicesList = [
-    'Pikachu Pickleball Xuân Hòa',
-    'Bao sân',
-    'Demo',
-    'Pickleball TADA Sport Thanh Đa',
-    'Pickleball TADA Sport Bình Lợi',
-    'Pickleball TADA Sport D2',
-    'Điều hòa',
-    'Mái che',
-  ];
-
-  int courtCount = 1;
-  List<DateTime> selectedDates = [];
-  String selectedFromTime = '19:30';
-  String selectedToTime = '20:00';
-  double? numberOfHours = 0.5;
-
-  // Tạo danh sách đầy đủ thời gian
-  final List<String> fullTimeOptions = [];
+  late final AddOrderRetailStep1ScreenBloc _bloc;
 
   @override
   void initState() {
     super.initState();
-    // Tạo danh sách thời gian từ 6:00 đến 23:30 với bước 30 phút
-    for (int hour = 6; hour < 24; hour++) {
-      for (int minute = 0; minute < 60; minute += 30) {
-        final String hourStr = hour.toString().padLeft(2, '0');
-        final String minuteStr = minute.toString().padLeft(2, '0');
-        fullTimeOptions.add('$hourStr:$minuteStr');
-      }
-    }
+    _bloc = AddOrderRetailStep1ScreenBloc();
+  }
+
+  @override
+  void dispose() {
+    _bloc.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context).translate('addNew'),
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.green,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildStepIndicator(),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+    return BlocProvider(
+      create: (context) => _bloc,
+      child: BlocBuilder<
+        AddOrderRetailStep1ScreenBloc,
+        AddOrderRetailStep1ScreenState
+      >(
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                AppLocalizations.of(context).translate('addNew'),
+                style: const TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.green,
+              iconTheme: const IconThemeData(color: Colors.white),
+            ),
+            body: SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Dịch vụ
-                  _buildServiceDropdown(),
-                  const SizedBox(height: 16),
+                  _buildStepIndicator(context),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Dịch vụ
+                        _buildServiceDropdown(context, state),
+                        const SizedBox(height: 16),
 
-                  // Số sân
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          AppLocalizations.of(context).translate('courtCount'),
+                        // Số sân
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('courtCount'),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            _buildCourtCountSelector(context, state),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Lịch (Calendar)
+                        Text(
+                          AppLocalizations.of(
+                            context,
+                          ).translate('selectDateAndTime'),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                      _buildCourtCountSelector(),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
+                        const SizedBox(height: 8),
+                        CustomCalendarAddBooking(
+                          onDatesSelected: (dates) {
+                            context.read<AddOrderRetailStep1ScreenBloc>().add(
+                              DatesSelected(dates),
+                            );
+                          },
+                          allowSelectPastDates:
+                              false, // Chỉ cho phép chọn ngày hiện tại và tương lai
+                        ),
+                        const SizedBox(height: 16),
 
-                  // Lịch (Calendar)
-                  Text(
-                    AppLocalizations.of(context).translate('selectDateAndTime'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                        // Thời gian bắt đầu và kết thúc
+                        _buildTimeSelectors(context, state),
+                        const SizedBox(height: 16),
+
+                        // Hiển thị đặt sân đã chọn
+                        _buildSelectedBookings(context, state),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  CustomCalendarAddBooking(
-                    onDatesSelected: (dates) {
-                      setState(() {
-                        selectedDates = dates;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Thời gian bắt đầu và kết thúc
-                  _buildTimeSelectors(),
-                  const SizedBox(height: 16),
-
-                  // Hiển thị đặt sân đã chọn
-                  _buildSelectedBookings(),
                 ],
               ),
             ),
-          ],
-        ),
+            bottomNavigationBar: _buildBottomBar(context, state),
+          );
+        },
       ),
-      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
-  Widget _buildStepIndicator() {
+  Widget _buildStepIndicator(BuildContext context) {
     return Container(
       color: Colors.green,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -184,35 +182,43 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
         );
   }
 
-  Widget _buildServiceDropdown() {
+  Widget _buildServiceDropdown(
+    BuildContext context,
+    AddOrderRetailStep1ScreenState state,
+  ) {
     return CustomDropdown(
       title: AppLocalizations.of(context).translate('serviceName'),
-      options: servicesList,
+      options: state.servicesList,
       selectedValue:
-          selectedService.isEmpty ? servicesList.first : selectedService,
+          state.selectedService.isEmpty
+              ? state.servicesList.first
+              : state.selectedService,
       menuMaxHeight: 200,
       onChanged: (String? newValue) {
         if (newValue != null) {
-          setState(() {
-            selectedService = newValue;
-          });
+          context.read<AddOrderRetailStep1ScreenBloc>().add(
+            ServiceSelected(newValue),
+          );
         }
       },
     );
   }
 
-  Widget _buildCourtCountSelector() {
+  Widget _buildCourtCountSelector(
+    BuildContext context,
+    AddOrderRetailStep1ScreenState state,
+  ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
           icon: const Icon(Icons.remove),
           onPressed:
-              courtCount > 1
+              state.courtCount > 1
                   ? () {
-                    setState(() {
-                      courtCount--;
-                    });
+                    context.read<AddOrderRetailStep1ScreenBloc>().add(
+                      CourtCountChanged(state.courtCount - 1),
+                    );
                   }
                   : null,
         ),
@@ -222,50 +228,44 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
             border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text('$courtCount', style: const TextStyle(fontSize: 16)),
+          child: Text(
+            '${state.courtCount}',
+            style: const TextStyle(fontSize: 16),
+          ),
         ),
         IconButton(
           icon: const Icon(Icons.add),
           onPressed: () {
-            setState(() {
-              courtCount++;
-            });
+            context.read<AddOrderRetailStep1ScreenBloc>().add(
+              CourtCountChanged(state.courtCount + 1),
+            );
           },
         ),
       ],
     );
   }
 
-  Widget _buildTimeSelectors() {
+  Widget _buildTimeSelectors(
+    BuildContext context,
+    AddOrderRetailStep1ScreenState state,
+  ) {
+    final bloc = context.read<AddOrderRetailStep1ScreenBloc>();
+
     return Row(
       children: [
         Expanded(
           child: CustomDropdown(
             title: AppLocalizations.of(context).translate('fromTime'),
-            options: fullTimeOptions,
-            selectedValue: selectedFromTime,
+            options: bloc.fullTimeOptions,
+            selectedValue: state.selectedFromTime,
             dropdownHeight: 50,
             itemFontSize: 14,
             menuMaxHeight: 200,
             onChanged: (String? newValue) {
               if (newValue != null) {
-                setState(() {
-                  selectedFromTime = newValue;
-
-                  // Check if toTime is before fromTime
-                  final int fromIndex = fullTimeOptions.indexOf(newValue);
-                  final int toIndex = fullTimeOptions.indexOf(selectedToTime);
-
-                  if (toIndex <= fromIndex) {
-                    // If toTime is before or same as fromTime, set it to next 30 min slot
-                    int newToIndex = fromIndex + 1;
-                    if (newToIndex < fullTimeOptions.length) {
-                      selectedToTime = fullTimeOptions[newToIndex];
-                    }
-                  }
-
-                  _calculateHours();
-                });
+                context.read<AddOrderRetailStep1ScreenBloc>().add(
+                  FromTimeSelected(newValue),
+                );
               }
             },
           ),
@@ -274,17 +274,16 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
         Expanded(
           child: CustomDropdown(
             title: AppLocalizations.of(context).translate('toTime'),
-            options: _getValidToTimeOptions(),
-            selectedValue: selectedToTime,
+            options: bloc.getValidToTimeOptions(state.selectedFromTime),
+            selectedValue: state.selectedToTime,
             dropdownHeight: 50,
             itemFontSize: 14,
             menuMaxHeight: 200,
             onChanged: (String? newValue) {
               if (newValue != null) {
-                setState(() {
-                  selectedToTime = newValue;
-                  _calculateHours();
-                });
+                context.read<AddOrderRetailStep1ScreenBloc>().add(
+                  ToTimeSelected(newValue),
+                );
               }
             },
           ),
@@ -313,7 +312,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  '${numberOfHours?.toStringAsFixed(1)}',
+                  '${state.numberOfHours.toStringAsFixed(1)}',
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
@@ -325,36 +324,11 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
     );
   }
 
-  // Method to get valid toTime options that are after fromTime
-  List<String> _getValidToTimeOptions() {
-    final int fromIndex = fullTimeOptions.indexOf(selectedFromTime);
-    return fullTimeOptions.sublist(fromIndex + 1);
-  }
-
-  void _calculateHours() {
-    // Parse the time strings to calculate hours
-    final fromParts = selectedFromTime.split(':');
-    final toParts = selectedToTime.split(':');
-
-    if (fromParts.length == 2 && toParts.length == 2) {
-      final fromHour = int.parse(fromParts[0]);
-      final fromMinute = int.parse(fromParts[1]);
-      final toHour = int.parse(toParts[0]);
-      final toMinute = int.parse(toParts[1]);
-
-      final fromMinutes = fromHour * 60 + fromMinute;
-      final toMinutes = toHour * 60 + toMinute;
-
-      // Ensure we don't have negative values
-      final diffMinutes = toMinutes > fromMinutes ? toMinutes - fromMinutes : 0;
-      setState(() {
-        numberOfHours = diffMinutes / 60;
-      });
-    }
-  }
-
-  Widget _buildSelectedBookings() {
-    if (selectedDates.isEmpty) {
+  Widget _buildSelectedBookings(
+    BuildContext context,
+    AddOrderRetailStep1ScreenState state,
+  ) {
+    if (state.selectedDates.isEmpty) {
       return Container();
     }
 
@@ -378,7 +352,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                 ),
               ),
               const SizedBox(height: 8),
-              ...selectedDates.asMap().entries.map((entry) {
+              ...state.selectedDates.asMap().entries.map((entry) {
                 final int index = entry.key;
                 final DateTime date = entry.value;
                 return Container(
@@ -398,12 +372,14 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                       const SizedBox(width: 16),
                       Text('${DateFormat('E, dd/MM/yyyy').format(date)}'),
                       const Spacer(),
-                      Text('$selectedFromTime - $selectedToTime'),
+                      Text(
+                        '${state.selectedFromTime} - ${state.selectedToTime}',
+                      ),
                     ],
                   ),
                 );
               }).toList(),
-              if (selectedService.isNotEmpty)
+              if (state.selectedService.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(8),
@@ -425,12 +401,12 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text('$selectedService'),
+                            Text('${state.selectedService}'),
                           ],
                         ),
                       ),
                       Text(
-                        '$courtCount ${AppLocalizations.of(context).translate('courts')}',
+                        '${state.courtCount} ${AppLocalizations.of(context).translate('courts')}',
                       ),
                     ],
                   ),
@@ -464,10 +440,10 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
     );
   }
 
-  Widget _buildBottomBar() {
-    final bool isFormComplete =
-        selectedDates.isNotEmpty && selectedService.isNotEmpty;
-
+  Widget _buildBottomBar(
+    BuildContext context,
+    AddOrderRetailStep1ScreenState state,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -499,14 +475,21 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
             child: CustomElevatedButton(
               text: AppLocalizations.of(context).translate('next'),
               onPressed:
-                  isFormComplete
+                  state.isFormComplete
                       ? () {
-                        // Navigate to Step 2
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => const AddOrderRetailStep2View(),
+                          ),
+                        );
                       }
                       : () {},
-              backgroundColor: isFormComplete ? Colors.green : Colors.white,
-              textColor: isFormComplete ? Colors.white : Colors.black,
-              borderColor: isFormComplete ? Colors.green : Colors.black,
+              backgroundColor:
+                  state.isFormComplete ? Colors.green : Colors.white,
+              textColor: state.isFormComplete ? Colors.white : Colors.black,
+              borderColor: state.isFormComplete ? Colors.green : Colors.black,
             ),
           ),
         ],
