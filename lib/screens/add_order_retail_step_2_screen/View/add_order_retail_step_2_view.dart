@@ -4,6 +4,9 @@ import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/widgets/custom_multiline_text_field.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/bloc/add_order_retail_step_2_screen_bloc.dart';
+import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
+import 'package:app_pickleball/screens/complete_booking_screen/View/complete_booking_screen.dart';
+import 'package:app_pickleball/screens/widgets/custom_textField.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
   const AddOrderRetailStep2View({super.key});
@@ -20,11 +23,16 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
   late final AddOrderRetailStep2ScreenBloc _bloc;
+  final ScrollController _scrollController = ScrollController();
+  bool _showStepper = true;
+  double _lastScrollOffset = 0;
 
   @override
   void initState() {
     super.initState();
     _bloc = AddOrderRetailStep2ScreenBloc();
+
+    _scrollController.addListener(_scrollListener);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _bloc.add(
@@ -56,8 +64,28 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     });
   }
 
+  void _scrollListener() {
+    if (_scrollController.position.pixels > _lastScrollOffset &&
+        _scrollController.position.pixels > 10 &&
+        _showStepper) {
+      // Lướt xuống - ẩn thanh tiến trình
+      setState(() {
+        _showStepper = false;
+      });
+    } else if (_scrollController.position.pixels < _lastScrollOffset &&
+        !_showStepper) {
+      // Lướt lên - hiện thanh tiến trình
+      setState(() {
+        _showStepper = true;
+      });
+    }
+    _lastScrollOffset = _scrollController.position.pixels;
+  }
+
   @override
   void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
     _lastNameController.dispose();
     _firstNameController.dispose();
     _emailController.dispose();
@@ -88,22 +116,34 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
               ),
               elevation: 1,
             ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildStepper(context),
-                  const SizedBox(height: 24),
-                  _buildCustomerSection(context, state),
-                  const SizedBox(height: 24),
-                  _buildPaymentMethodSection(context, state),
-                  const SizedBox(height: 24),
-                  _buildPaymentStatusSection(context, state),
-                  const SizedBox(height: 24),
-                  _buildOrderStatusSection(context, state),
-                ],
-              ),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: _showStepper ? null : 0,
+                  child:
+                      _showStepper ? _buildStepper(context) : const SizedBox(),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCustomerSection(context, state),
+                        const SizedBox(height: 24),
+                        _buildPaymentMethodSection(context, state),
+                        const SizedBox(height: 24),
+                        _buildPaymentStatusSection(context, state),
+                        const SizedBox(height: 24),
+                        _buildOrderStatusSection(context, state),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
             bottomNavigationBar: _buildBottomBar(context),
           );
@@ -115,11 +155,14 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
   Widget _buildStepper(BuildContext context) {
     return Container(
       color: Colors.green,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      width: MediaQuery.of(context).size.width,
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
+            const SizedBox(width: 16),
             _buildStepCircle('1', false, true),
             const SizedBox(width: 8),
             Text(
@@ -140,6 +183,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
               AppLocalizations.of(context).translate('completeBooking'),
               style: const TextStyle(color: Colors.white),
             ),
+            const SizedBox(width: 16),
           ],
         ),
       ),
@@ -195,27 +239,40 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
       AppLocalizations.of(context).translate('ms'),
     ];
 
+    // Set initial values if available
+    if (state.lastName.isNotEmpty && _lastNameController.text.isEmpty) {
+      _lastNameController.text = state.lastName;
+    }
+
+    if (state.firstName.isNotEmpty && _firstNameController.text.isEmpty) {
+      _firstNameController.text = state.firstName;
+    }
+
+    if (state.email.isNotEmpty && _emailController.text.isEmpty) {
+      _emailController.text = state.email;
+    }
+
+    if (state.phone.isNotEmpty && _phoneController.text.isEmpty) {
+      _phoneController.text = state.phone;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '${AppLocalizations.of(context).translate('customer')} *',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            TextButton.icon(
-              icon: const Icon(Icons.add_circle_outline, color: Colors.green),
-              label: Text(
-                AppLocalizations.of(context).translate('addCustomer'),
-                style: const TextStyle(color: Colors.green),
-              ),
-              onPressed: () {
-                // Handle add new customer
-              },
-            ),
-          ],
+        Text(
+          '${AppLocalizations.of(context).translate('customer')} *',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        CustomSearchTextField(
+          hintText: AppLocalizations.of(context).translate('searchCustomer'),
+          prefixIcon: const Icon(Icons.search),
+          height: 40,
+          width: double.infinity,
+          margin: EdgeInsets.zero,
+          onChanged: (value) {
+            // Xử lý tìm kiếm khách hàng
+          },
         ),
         const SizedBox(height: 16),
         CustomDropdown(
@@ -234,37 +291,31 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         Row(
           children: [
             Expanded(
-              child: _buildTextFormField(
-                controller: _lastNameController,
-                label:
+              child: CustomTextField(
+                labelText:
                     '${AppLocalizations.of(context).translate('lastName')} *',
-                initialValue: state.lastName,
+                controller: _lastNameController,
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildTextFormField(
-                controller: _firstNameController,
-                label:
+              child: CustomTextField(
+                labelText:
                     '${AppLocalizations.of(context).translate('firstName')} *',
-                initialValue: state.firstName,
+                controller: _firstNameController,
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
-        _buildTextFormField(
+        CustomTextField(
+          labelText: AppLocalizations.of(context).translate('email'),
           controller: _emailController,
-          label: AppLocalizations.of(context).translate('email'),
-          keyboardType: TextInputType.emailAddress,
-          initialValue: state.email,
         ),
         const SizedBox(height: 16),
-        _buildTextFormField(
+        CustomTextField(
+          labelText: AppLocalizations.of(context).translate('phoneNumber'),
           controller: _phoneController,
-          label: AppLocalizations.of(context).translate('phoneNumber'),
-          keyboardType: TextInputType.phone,
-          initialValue: state.phone,
         ),
         const SizedBox(height: 16),
         Column(
@@ -282,35 +333,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildTextFormField({
-    required TextEditingController controller,
-    required String label,
-    String? initialValue,
-    int maxLines = 1,
-    TextInputType? keyboardType,
-  }) {
-    // If initialValue is provided and controller is empty, set the text
-    if (initialValue != null &&
-        initialValue.isNotEmpty &&
-        controller.text.isEmpty) {
-      controller.text = initialValue;
-    }
-
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 16,
-        ),
-      ),
     );
   }
 
@@ -695,68 +717,72 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             ),
           ),
           const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: () {
-              // Handle Confirm
+          BlocBuilder<
+            AddOrderRetailStep2ScreenBloc,
+            AddOrderRetailStep2ScreenState
+          >(
+            builder: (context, state) {
+              bool areRequiredFieldsFilled = _areRequiredFieldsFilled(state);
+
+              return ElevatedButton(
+                onPressed:
+                    areRequiredFieldsFilled
+                        ? () => _navigateToCompleteBooking(context, state)
+                        : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  disabledBackgroundColor: Colors.grey.shade400,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  AppLocalizations.of(context).translate('confirm'),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green, // Or other primary color
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              AppLocalizations.of(context).translate('confirm'),
-              style: const TextStyle(color: Colors.white),
-            ),
           ),
         ],
       ),
     );
   }
-}
 
-// Helper widget for text form fields - consider moving to a common widgets file
-class CustomTextFormField extends StatelessWidget {
-  final TextEditingController controller;
-  final String labelText;
-  final String? hintText;
-  final bool isRequired;
-  final TextInputType keyboardType;
-  final int maxLines;
+  bool _areRequiredFieldsFilled(AddOrderRetailStep2ScreenState state) {
+    return state.lastName.isNotEmpty && state.firstName.isNotEmpty;
+  }
 
-  const CustomTextFormField({
-    super.key,
-    required this.controller,
-    required this.labelText,
-    this.hintText,
-    this.isRequired = false,
-    this.keyboardType = TextInputType.text,
-    this.maxLines = 1,
-  });
+  void _navigateToCompleteBooking(
+    BuildContext context,
+    AddOrderRetailStep2ScreenState state,
+  ) {
+    // Khởi tạo các giá trị
+    final String name = '${state.firstName} ${state.lastName}'.trim();
+    final String displayName = name.isEmpty ? 'Khách hàng' : name;
+    final String email =
+        state.email.isEmpty ? '0123456789@gmail.com' : state.email;
+    final String phone = state.phone.isEmpty ? '0123456789' : state.phone;
 
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: isRequired ? '$labelText *' : labelText,
-        hintText: hintText,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12.0,
-          vertical: 16.0,
-        ),
+    // Chuyển đến màn hình hoàn tất đặt sân
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => CompleteBookingScreen(
+              customerName: displayName,
+              customerEmail: email,
+              customerPhone: phone,
+              bookingCode: 'TD/TD/D25050059',
+              court: 'Demo 1',
+              bookingTime: '08:00 - 09:30 (1.5h)',
+              bookingDate: 'T7, 10/05/2025',
+              price: '90,000VND',
+            ),
       ),
-      validator: (value) {
-        if (isRequired && (value == null || value.isEmpty)) {
-          return '$labelText không được để trống';
-        }
-        return null;
-      },
     );
   }
 }

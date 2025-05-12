@@ -1,7 +1,7 @@
 import 'package:app_pickleball/services/interfaces/i_bookingList_service.dart';
 import 'package:app_pickleball/services/api/api_client.dart';
 import 'dart:developer' as log;
-import 'dart:convert';
+// import 'dart:convert';
 import 'package:app_pickleball/model/bookingList_model.dart';
 
 class BookingListRepository implements IBookingListService {
@@ -86,7 +86,7 @@ class BookingListRepository implements IBookingListService {
 
       // Log the complete API response
       log.log('\n===== COMPLETE API RESPONSE FOR CHANNEL: $channelToken =====');
-      log.log(json.encode(response));
+      // log.log(json.encode(response));
       log.log('===== END COMPLETE API RESPONSE =====\n');
 
       // Also log a more user-friendly summary of the items
@@ -164,9 +164,9 @@ class BookingListRepository implements IBookingListService {
       // Save data to storage
       await bookingOrderList.saveOrderListData();
 
-      log.log(
-        'Processed and saved ${bookingOrderList.orders.length} booking orders',
-      );
+      // log.log(
+      //   'Processed and saved ${bookingOrderList.orders.length} booking orders',
+      // );
       log.log('***** END BOOKING LIST REPOSITORY *****\n');
 
       return bookingOrderList;

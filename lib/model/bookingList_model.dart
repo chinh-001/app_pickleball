@@ -375,22 +375,22 @@ class BookingOrderList {
   // Chuyển đổi sang định dạng mà bloc hiện tại đang sử dụng
   List<Map<String, String>> toSimpleMapList() {
     log.log('\n=== CONVERTING BOOKING ORDER LIST TO SIMPLE MAP LIST ===');
-    log.log('Number of orders to convert: ${orders.length}');
+    // log.log('Number of orders to convert: ${orders.length}');
 
     if (orders.isNotEmpty) {
       log.log('First order before conversion:');
-      log.log('  noteCustomer: "${orders[0].noteCustomer}"');
-      log.log('  code: "${orders[0].code}"');
-      log.log('  id: "${orders[0].id}"');
+      // log.log('  noteCustomer: "${orders[0].noteCustomer}"');
+      // log.log('  code: "${orders[0].code}"');
+      // log.log('  id: "${orders[0].id}"');
     }
 
     final result = orders.map((order) => order.toJson()).toList();
 
     if (result.isNotEmpty) {
       log.log('First order after conversion:');
-      log.log('  noteCustomer: "${result[0]['noteCustomer']}"');
-      log.log('  code: "${result[0]['code']}"');
-      log.log('  id: "${result[0]['id']}"');
+      // log.log('  noteCustomer: "${result[0]['noteCustomer']}"');
+      // log.log('  code: "${result[0]['code']}"');
+      // log.log('  id: "${result[0]['id']}"');
     }
 
     return result;

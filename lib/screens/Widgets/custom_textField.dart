@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
   final String labelText;
-  final IconData prefixIcon;
+  final IconData? prefixIcon;
   final bool obscureText;
   final TextEditingController controller;
 
   const CustomTextField({
     super.key,
     required this.labelText,
-    required this.prefixIcon,
+    this.prefixIcon,
     this.obscureText = false,
     required this.controller,
   });
@@ -22,12 +22,14 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: labelText,
         border: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black), // Đường viền màu đen
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: Colors.black),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black), // Đường viền màu đen khi focus
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: Colors.black),
         ),
-        prefixIcon: Icon(prefixIcon),
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
       ),
     );
   }

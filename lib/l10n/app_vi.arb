@@ -131,5 +131,13 @@
   "bookingPrice": "Tiền sân",
   "serviceFee": "Phí dịch vụ",
   "discount": "Giảm giá",
-  "bookingTerms": "Khi nhấn 'Xác nhận', bạn đồng ý với điều khoản đặt sân"
+  "bookingTerms": "Khi nhấn 'Xác nhận', bạn đồng ý với điều khoản đặt sân",
+
+  "bookingSuccessful": "Đặt sân thành công!",
+  "bookingCode": "Mã đặt sân",
+  "bookingDate": "Ngày đặt",
+  "payment": "Thanh tiền",
+  "price": "Giá",
+  "total": "Tổng",
+  "searchCustomer": "Tìm kiếm khách hàng"
 } 
