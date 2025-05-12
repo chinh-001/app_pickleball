@@ -5,6 +5,7 @@ import 'package:app_pickleball/screens/widgets/custom_bottom_navigation_bar.dart
 import 'package:app_pickleball/screens/widgets/custom_order_listview.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/widgets/custom_floating_action_button.dart';
+import 'package:app_pickleball/screens/widgets/custom_scroll_to_top_button.dart';
 import 'package:app_pickleball/screens/orderlist_screen/bloc/orderlist_screen_bloc.dart';
 import 'package:app_pickleball/screens/order_detail_screen/View/order_detail_screen.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
@@ -25,6 +26,7 @@ class OrderListScreen extends StatefulWidget {
 class _OrderListScreenState extends State<OrderListScreen>
     with AutomaticKeepAliveClientMixin {
   OrderListScreenBloc? _bloc;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -47,6 +49,7 @@ class _OrderListScreenState extends State<OrderListScreen>
   void dispose() {
     // Close the bloc when the widget is disposed
     _bloc?.close();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -200,6 +203,7 @@ class _OrderListScreenState extends State<OrderListScreen>
                       }
 
                       return CustomOrderListView(
+                        scrollController: _scrollController,
                         items: state.items,
                         onItemTap: (item) {
                           // Log the exact data being passed to OrderDetailScreen
@@ -228,7 +232,22 @@ class _OrderListScreenState extends State<OrderListScreen>
             ],
           ),
         ),
-        floatingActionButton: const CustomFloatingActionButton(),
+        floatingActionButton: Stack(
+          children: [
+            Positioned(
+              bottom: 80,
+              right: 0,
+              child: CustomScrollToTopButton(
+                scrollController: _scrollController,
+              ),
+            ),
+            const Positioned(
+              bottom: 0,
+              right: 0,
+              child: CustomFloatingActionButton(),
+            ),
+          ],
+        ),
         bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 1),
       ),
     );

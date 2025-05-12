@@ -34,12 +34,19 @@ class BookingItem {
 class CustomOrderListView extends StatelessWidget {
   final List<Map<String, String>> items;
   final void Function(Map<String, String>)? onItemTap;
+  final ScrollController? scrollController;
 
-  const CustomOrderListView({super.key, required this.items, this.onItemTap});
+  const CustomOrderListView({
+    super.key,
+    required this.items,
+    this.onItemTap,
+    this.scrollController,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      controller: scrollController,
       itemCount: items.length,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemBuilder: (context, index) {
