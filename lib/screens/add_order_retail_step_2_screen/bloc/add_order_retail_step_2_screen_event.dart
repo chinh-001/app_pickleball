@@ -70,6 +70,15 @@ class EmailChanged extends AddOrderRetailStep2ScreenEvent {
   List<Object> get props => [email];
 }
 
+class PhoneChanged extends AddOrderRetailStep2ScreenEvent {
+  final String phone;
+
+  const PhoneChanged(this.phone);
+
+  @override
+  List<Object> get props => [phone];
+}
+
 class NotesChanged extends AddOrderRetailStep2ScreenEvent {
   final String notes;
 

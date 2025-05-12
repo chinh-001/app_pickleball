@@ -17,6 +17,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
   final _lastNameController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
   late final AddOrderRetailStep2ScreenBloc _bloc;
 
@@ -45,6 +46,10 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         _bloc.add(EmailChanged(_emailController.text));
       });
 
+      _phoneController.addListener(() {
+        _bloc.add(PhoneChanged(_phoneController.text));
+      });
+
       _notesController.addListener(() {
         _bloc.add(NotesChanged(_notesController.text));
       });
@@ -56,6 +61,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     _lastNameController.dispose();
     _firstNameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _notesController.dispose();
     _bloc.close();
     super.dispose();
@@ -107,7 +113,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
   }
 
   Widget _buildStepper(BuildContext context) {
-    // Use the same style as in add_order_retail_step_1_screen.dart
     return Container(
       color: Colors.green,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -146,17 +151,22 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         ? CircleAvatar(
           radius: 12,
           backgroundColor: Colors.white,
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
+          child: Center(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         )
         : Container(
           width: 24,
           height: 24,
+          padding: EdgeInsets.zero,
           decoration: BoxDecoration(
             border: Border.all(color: Colors.white),
             shape: BoxShape.circle,
@@ -168,7 +178,9 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
               style: TextStyle(
                 color: isDone ? Colors.green : Colors.white,
                 fontWeight: isDone ? FontWeight.bold : FontWeight.normal,
+                fontSize: 12,
               ),
+              textAlign: TextAlign.center,
             ),
           ),
         );
@@ -246,6 +258,13 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           label: AppLocalizations.of(context).translate('email'),
           keyboardType: TextInputType.emailAddress,
           initialValue: state.email,
+        ),
+        const SizedBox(height: 16),
+        _buildTextFormField(
+          controller: _phoneController,
+          label: AppLocalizations.of(context).translate('phoneNumber'),
+          keyboardType: TextInputType.phone,
+          initialValue: state.phone,
         ),
         const SizedBox(height: 16),
         Column(
@@ -349,23 +368,215 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
   ) {
-    final paymentOptions = [
-      AppLocalizations.of(context).translate('cash'),
-      AppLocalizations.of(context).translate('eWallet'),
-      AppLocalizations.of(context).translate('bankTransfer'),
-    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('paymentMethod'),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        _buildOptionsContainer([
+          _buildOption(
+            icon: Icons.money,
+            title: AppLocalizations.of(context).translate('cash'),
+            isSelected:
+                state.paymentMethod ==
+                AppLocalizations.of(context).translate('cash'),
+            iconColor: Colors.green,
+            onTap:
+                () => _bloc.add(
+                  PaymentMethodChanged(
+                    AppLocalizations.of(context).translate('cash'),
+                  ),
+                ),
+          ),
+          _buildOption(
+            icon: Icons.account_balance_wallet,
+            title: AppLocalizations.of(context).translate('eWallet'),
+            isSelected:
+                state.paymentMethod ==
+                AppLocalizations.of(context).translate('eWallet'),
+            iconColor: const Color(0xFF0068FF),
+            onTap:
+                () => _bloc.add(
+                  PaymentMethodChanged(
+                    AppLocalizations.of(context).translate('eWallet'),
+                  ),
+                ),
+          ),
+          _buildOption(
+            icon: Icons.account_balance,
+            title: AppLocalizations.of(context).translate('bankTransfer'),
+            isSelected:
+                state.paymentMethod ==
+                AppLocalizations.of(context).translate('bankTransfer'),
+            iconColor: const Color(0xFF1B7146),
+            onTap:
+                () => _bloc.add(
+                  PaymentMethodChanged(
+                    AppLocalizations.of(context).translate('bankTransfer'),
+                  ),
+                ),
+          ),
+        ]),
+        const SizedBox(height: 20),
+        _buildPaymentSummary(context),
+      ],
+    );
+  }
 
-    return _buildRadioGroupSection(
-      title: '${AppLocalizations.of(context).translate('paymentMethod')}:',
-      currentValue: state.paymentMethod ?? paymentOptions.first,
-      options: paymentOptions,
-      onChanged: (value) {
-        if (value != null) {
-          context.read<AddOrderRetailStep2ScreenBloc>().add(
-            PaymentMethodChanged(value),
-          );
-        }
-      },
+  Widget _buildOptionsContainer(List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _buildOption({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required bool isSelected,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: Colors.green, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentSummary(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppLocalizations.of(context).translate('paymentDetails'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          _buildSummaryRow(
+            context,
+            AppLocalizations.of(context).translate('bookingPrice'),
+            '477,000đ',
+          ),
+          const SizedBox(height: 8),
+          _buildSummaryRow(
+            context,
+            AppLocalizations.of(context).translate('serviceFee'),
+            '37,700đ',
+          ),
+          const SizedBox(height: 8),
+          _buildSummaryRow(
+            context,
+            AppLocalizations.of(context).translate('discount'),
+            '-29,700đ',
+            valueColor: Colors.red,
+          ),
+          const Divider(height: 24),
+          _buildSummaryRow(
+            context,
+            AppLocalizations.of(context).translate('totalPayment'),
+            '485,000đ',
+            isTotal: true,
+            valueColor: Colors.green,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool isTotal = false,
+    Color? valueColor,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: isTotal ? 16 : 14,
+            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: isTotal ? 16 : 14,
+            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            color: valueColor,
+          ),
+        ),
+      ],
     );
   }
 
@@ -373,23 +584,59 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
   ) {
-    final statusOptions = [
-      AppLocalizations.of(context).translate('unpaid'),
-      AppLocalizations.of(context).translate('paid'),
-      AppLocalizations.of(context).translate('deposit'),
-    ];
-
-    return _buildRadioGroupSection(
-      title: '${AppLocalizations.of(context).translate('paymentStatus')}:',
-      currentValue: state.paymentStatus,
-      options: statusOptions,
-      onChanged: (value) {
-        if (value != null) {
-          context.read<AddOrderRetailStep2ScreenBloc>().add(
-            PaymentStatusChanged(value),
-          );
-        }
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('paymentStatus'),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        _buildOptionsContainer([
+          _buildOption(
+            icon: Icons.error_outline,
+            title: AppLocalizations.of(context).translate('unpaid'),
+            isSelected:
+                state.paymentStatus ==
+                AppLocalizations.of(context).translate('unpaid'),
+            iconColor: Colors.red,
+            onTap:
+                () => _bloc.add(
+                  PaymentStatusChanged(
+                    AppLocalizations.of(context).translate('unpaid'),
+                  ),
+                ),
+          ),
+          _buildOption(
+            icon: Icons.check_circle_outline,
+            title: AppLocalizations.of(context).translate('paid'),
+            isSelected:
+                state.paymentStatus ==
+                AppLocalizations.of(context).translate('paid'),
+            iconColor: Colors.green,
+            onTap:
+                () => _bloc.add(
+                  PaymentStatusChanged(
+                    AppLocalizations.of(context).translate('paid'),
+                  ),
+                ),
+          ),
+          _buildOption(
+            icon: Icons.account_balance_wallet_outlined,
+            title: AppLocalizations.of(context).translate('deposit'),
+            isSelected:
+                state.paymentStatus ==
+                AppLocalizations.of(context).translate('deposit'),
+            iconColor: Colors.orange,
+            onTap:
+                () => _bloc.add(
+                  PaymentStatusChanged(
+                    AppLocalizations.of(context).translate('deposit'),
+                  ),
+                ),
+          ),
+        ]),
+      ],
     );
   }
 
@@ -397,10 +644,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
   ) {
-    final orderStatusOptions = [
-      AppLocalizations.of(context).translate('new'),
-      AppLocalizations.of(context).translate('confirmed'),
-    ];
+    final orderStatusOptions = [AppLocalizations.of(context).translate('new')];
 
     return _buildRadioGroupSection(
       title: '${AppLocalizations.of(context).translate('status')}:',
@@ -426,74 +670,46 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             color: Colors.grey.withOpacity(0.3),
             spreadRadius: 1,
             blurRadius: 3,
-            offset: const Offset(0, -1), // changes position of shadow
+            offset: const Offset(0, -1),
           ),
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.of(context).translate('totalPayment'),
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+          OutlinedButton(
+            onPressed: () {
+              // Handle Cancel
+              Navigator.of(context).pop();
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: Colors.grey.shade400),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-              Text(
-                '0 VND',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-            ],
+            ),
+            child: Text(
+              AppLocalizations.of(context).translate('cancel'),
+              style: const TextStyle(color: Colors.black87),
+            ),
           ),
-          Row(
-            children: [
-              OutlinedButton(
-                onPressed: () {
-                  // Handle Cancel
-                  Navigator.of(context).pop();
-                },
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.grey.shade400),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  AppLocalizations.of(context).translate('cancel'),
-                  style: const TextStyle(color: Colors.black87),
-                ),
+          const SizedBox(width: 12),
+          ElevatedButton(
+            onPressed: () {
+              // Handle Confirm
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green, // Or other primary color
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: () {
-                  // Handle Confirm
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green, // Or other primary color
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  AppLocalizations.of(context).translate('confirm'),
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+            ),
+            child: Text(
+              AppLocalizations.of(context).translate('confirm'),
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),

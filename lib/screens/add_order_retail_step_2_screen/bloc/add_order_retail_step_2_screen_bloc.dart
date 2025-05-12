@@ -17,6 +17,7 @@ class AddOrderRetailStep2ScreenBloc
           lastName: '',
           firstName: '',
           email: '',
+          phone: '',
           notes: '',
         ),
       ) {
@@ -27,6 +28,7 @@ class AddOrderRetailStep2ScreenBloc
     on<LastNameChanged>(_onLastNameChanged);
     on<FirstNameChanged>(_onFirstNameChanged);
     on<EmailChanged>(_onEmailChanged);
+    on<PhoneChanged>(_onPhoneChanged);
     on<NotesChanged>(_onNotesChanged);
     on<InitializeForm>(_onInitializeForm);
   }
@@ -78,6 +80,13 @@ class AddOrderRetailStep2ScreenBloc
     Emitter<AddOrderRetailStep2ScreenState> emit,
   ) {
     emit(state.copyWith(email: event.email));
+  }
+
+  void _onPhoneChanged(
+    PhoneChanged event,
+    Emitter<AddOrderRetailStep2ScreenState> emit,
+  ) {
+    emit(state.copyWith(phone: event.phone));
   }
 
   void _onNotesChanged(

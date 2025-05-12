@@ -8,6 +8,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
   final String lastName;
   final String firstName;
   final String email;
+  final String phone;
   final String notes;
 
   const AddOrderRetailStep2ScreenState({
@@ -18,6 +19,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     required this.lastName,
     required this.firstName,
     required this.email,
+    required this.phone,
     required this.notes,
   });
 
@@ -29,6 +31,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     String? lastName,
     String? firstName,
     String? email,
+    String? phone,
     String? notes,
   }) {
     return AddOrderRetailStep2ScreenState(
@@ -39,6 +42,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
       lastName: lastName ?? this.lastName,
       firstName: firstName ?? this.firstName,
       email: email ?? this.email,
+      phone: phone ?? this.phone,
       notes: notes ?? this.notes,
     );
   }
@@ -52,6 +56,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     lastName,
     firstName,
     email,
+    phone,
     notes,
   ];
 }

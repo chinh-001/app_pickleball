@@ -116,5 +116,20 @@
   "bankTransfer": "Bank Transfer",
   "mr": "Mr",
   "ms": "Ms",
-  "confirmed": "Confirmed"
+  "confirmed": "Confirmed",
+  
+  "selectBookingType": "Select booking type",
+  "periodicBookingSelected": "You have selected periodic booking",
+  "functions": "Functions",
+  
+  "payLater": "Pay Later",
+  "payIn30Days": "Pay in up to 30 days",
+  "registerNow": "Register now",
+  "balance": "Account Balance",
+  "topUp": "Top up",
+  "paymentDetails": "Payment Details",
+  "bookingPrice": "Court Fee",
+  "serviceFee": "Service Fee",
+  "discount": "Discount",
+  "bookingTerms": "By tapping 'Confirm', you agree to the booking terms"
 } 

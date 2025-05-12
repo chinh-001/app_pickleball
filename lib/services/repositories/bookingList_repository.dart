@@ -69,9 +69,9 @@ class BookingListRepository implements IBookingListService {
       ''';
 
       // Only log the channel being requested, not the query itself
-      log.log(
-        '\n***** BOOKING LIST REPOSITORY: Getting data for channel: $channelToken *****',
-      );
+      // log.log(
+      //   '\n***** BOOKING LIST REPOSITORY: Getting data for channel: $channelToken *****',
+      // );
 
       final response = await _apiClient.query<Map<String, dynamic>>(
         query,
@@ -93,13 +93,13 @@ class BookingListRepository implements IBookingListService {
       if (response['data'] != null &&
           response['data']['getAllBooking'] != null &&
           response['data']['getAllBooking']['items'] != null) {
-        final data = response['data'];
-        final totalItems = data['getAllBooking']['totalItems'];
-        final items = data['getAllBooking']['items'] as List;
+        // final data = response['data'];
+        // final totalItems = data['getAllBooking']['totalItems'];
+        // final items = data['getAllBooking']['items'] as List;
 
-        log.log('\n===== BOOKING ITEMS SUMMARY =====');
-        log.log('Total items found: $totalItems');
-        log.log('Number of items retrieved: ${items.length}\n');
+        // log.log('\n===== BOOKING ITEMS SUMMARY =====');
+        // log.log('Total items found: $totalItems');
+        // log.log('Number of items retrieved: ${items.length}\n');
 
         // for (var i = 0; i < items.length; i++) {
         //   final item = items[i];

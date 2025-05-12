@@ -1,15 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:app_pickleball/services/localization/app_localizations.dart';
-import 'package:app_pickleball/screens/widgets/custom_choose_booking_type.dart';
+import 'package:app_pickleball/screens/menu_function_screen/View/menu_function_screen.dart';
 
 class CustomFloatingActionButton extends StatelessWidget {
-  const CustomFloatingActionButton({super.key});
+  final String? heroTag;
+
+  const CustomFloatingActionButton({super.key, this.heroTag = 'mainFab'});
 
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
+      heroTag: heroTag,
       onPressed: () {
-        CustomChooseBookingTypeDialog.show(context);
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) =>
+                    const MenuFunctionScreen(),
+            transitionsBuilder: (
+              context,
+              animation,
+              secondaryAnimation,
+              child,
+            ) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            maintainState: false,
+          ),
+        );
       },
       backgroundColor: Colors.green,
       child: const Icon(Icons.add_circle, color: Colors.white),

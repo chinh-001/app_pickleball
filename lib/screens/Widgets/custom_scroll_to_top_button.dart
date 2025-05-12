@@ -87,6 +87,7 @@ class _CustomScrollToTopButtonState extends State<CustomScrollToTopButton>
     return ScaleTransition(
       scale: _animation,
       child: FloatingActionButton(
+        heroTag: 'scrollToTopFab',
         onPressed: _scrollToTop,
         backgroundColor: widget.backgroundColor ?? Colors.green,
         mini: true,

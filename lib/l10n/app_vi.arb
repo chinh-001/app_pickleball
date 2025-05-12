@@ -116,5 +116,20 @@
   "bankTransfer": "Chuyển khoản",
   "mr": "Anh",
   "ms": "Chị",
-  "confirmed": "Xác nhận"
+  "confirmed": "Xác nhận",
+  
+  "selectBookingType": "Chọn loại đặt sân",
+  "periodicBookingSelected": "Bạn đã chọn đặt sân định kỳ",
+  "functions": "Chức năng",
+  
+  "payLater": "Trả sau",
+  "payIn30Days": "Trả sau tối đa 30 ngày",
+  "registerNow": "Đăng ký ngay",
+  "balance": "Số dư tài khoản",
+  "topUp": "Nạp tiền",
+  "paymentDetails": "Chi tiết thanh toán",
+  "bookingPrice": "Tiền sân",
+  "serviceFee": "Phí dịch vụ",
+  "discount": "Giảm giá",
+  "bookingTerms": "Khi nhấn 'Xác nhận', bạn đồng ý với điều khoản đặt sân"
 } 
