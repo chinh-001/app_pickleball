@@ -1,18 +1,27 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
 part 'menu_function_screen_event.dart';
 part 'menu_function_screen_state.dart';
 
-class MenuFunctionScreenBloc extends Bloc<MenuFunctionScreenEvent, MenuFunctionScreenState> {
-  MenuFunctionScreenBloc() : super(MenuFunctionScreenInitial());
+class MenuFunctionScreenBloc
+    extends Bloc<MenuFunctionScreenEvent, MenuFunctionScreenState> {
+  MenuFunctionScreenBloc() : super(MenuFunctionScreenInitial()) {
+    on<SelectPeriodicBookingEvent>(_onSelectPeriodicBooking);
+    on<SelectRetailBookingEvent>(_onSelectRetailBooking);
+  }
 
-  @override
-  Stream<MenuFunctionScreenState> mapEventToState(
-    MenuFunctionScreenEvent event,
-  ) async* {
-    // TODO: implement mapEventToState
+  void _onSelectPeriodicBooking(
+    SelectPeriodicBookingEvent event,
+    Emitter<MenuFunctionScreenState> emit,
+  ) {
+    emit(PeriodicBookingSelectedState());
+  }
+
+  void _onSelectRetailBooking(
+    SelectRetailBookingEvent event,
+    Emitter<MenuFunctionScreenState> emit,
+  ) {
+    emit(RetailBookingSelectedState());
   }
 }

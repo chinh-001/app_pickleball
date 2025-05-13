@@ -1,101 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/widgets/custom_menu_item.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_1_screen/View/add_order_retail_step_1_screen.dart';
+import 'package:app_pickleball/screens/menu_function_screen/bloc/menu_function_screen_bloc.dart';
 
 class MenuFunctionScreen extends StatelessWidget {
   const MenuFunctionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context).translate('bookingType'),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.green,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.grey.shade100),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Tiêu đề
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Text(
-                AppLocalizations.of(context).translate('selectBookingType'),
+    return BlocProvider(
+      create: (context) => MenuFunctionScreenBloc(),
+      child: BlocConsumer<MenuFunctionScreenBloc, MenuFunctionScreenState>(
+        listener: (context, state) {
+          if (state is PeriodicBookingSelectedState) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocalizations.of(
+                    context,
+                  ).translate('periodicBookingSelected'),
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          } else if (state is RetailBookingSelectedState) {
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AddOrderRetailStep1Screen(),
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                AppLocalizations.of(context).translate('bookingType'),
                 style: const TextStyle(
-                  fontSize: 18,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              backgroundColor: Colors.green,
+              elevation: 0,
+              centerTitle: true,
             ),
-
-            // Danh sách các mục chức năng
-            ListView(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                // Item "định kì"
-                _buildMenuItem(
-                  context: context,
-                  icon: Icons.repeat,
-                  text: AppLocalizations.of(
-                    context,
-                  ).translate('booking_type_periodic'),
-                  onTap: () {
-                    // Xử lý khi nhấn vào mục đặt sân định kì
-                    Navigator.pop(context); // Quay lại màn hình trước
-                    // TODO: Thêm điều hướng đến màn hình đặt sân định kì
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          AppLocalizations.of(
-                            context,
-                          ).translate('periodicBookingSelected'),
-                        ),
-                        duration: const Duration(seconds: 2),
+            body: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.grey.shade100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tiêu đề
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      AppLocalizations.of(
+                        context,
+                      ).translate('selectBookingType'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
 
-                const SizedBox(height: 16),
-
-                // Item "loại lẻ"
-                _buildMenuItem(
-                  context: context,
-                  icon: Icons.calendar_today,
-                  text: AppLocalizations.of(
-                    context,
-                  ).translate('booking_type_retail'),
-                  onTap: () {
-                    // Xử lý khi nhấn vào mục đặt sân lẻ
-                    Navigator.pop(context); // Quay lại màn hình trước
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AddOrderRetailStep1Screen(),
+                  // Danh sách các mục chức năng
+                  ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      // Item "định kì"
+                      _buildMenuItem(
+                        context: context,
+                        icon: Icons.repeat,
+                        text: AppLocalizations.of(
+                          context,
+                        ).translate('booking_type_periodic'),
+                        onTap: () {
+                          context.read<MenuFunctionScreenBloc>().add(
+                            SelectPeriodicBookingEvent(),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-              ],
+
+                      const SizedBox(height: 16),
+
+                      // Item "loại lẻ"
+                      _buildMenuItem(
+                        context: context,
+                        icon: Icons.calendar_today,
+                        text: AppLocalizations.of(
+                          context,
+                        ).translate('booking_type_retail'),
+                        onTap: () {
+                          context.read<MenuFunctionScreenBloc>().add(
+                            SelectRetailBookingEvent(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const Spacer(),
+                ],
+              ),
             ),
-
-            const Spacer(),
-
-            // Nút hủy bỏ
-          ],
-        ),
+          );
+        },
       ),
     );
   }

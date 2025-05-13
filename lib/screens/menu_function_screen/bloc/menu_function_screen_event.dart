@@ -6,3 +6,7 @@ abstract class MenuFunctionScreenEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
+
+class SelectPeriodicBookingEvent extends MenuFunctionScreenEvent {}
+
+class SelectRetailBookingEvent extends MenuFunctionScreenEvent {}

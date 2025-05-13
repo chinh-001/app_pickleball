@@ -9,11 +9,11 @@ class CustomCalendarAddBooking extends StatefulWidget {
   final bool allowSelectPastDates;
 
   const CustomCalendarAddBooking({
-    Key? key,
+    super.key,
     required this.onDatesSelected,
     this.initialSelectedDates,
     this.allowSelectPastDates = true,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomCalendarAddBooking> createState() =>
@@ -38,7 +38,9 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
               DateTime.now().year,
               DateTime.now().month,
               DateTime.now().day,
-            );
+            ).subtract(
+              const Duration(days: 365 * 5),
+            ); // Cho phép xem nhiều năm trước đó
 
     if (widget.initialSelectedDates != null) {
       // Filter out past dates if not allowed
@@ -58,7 +60,7 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
   }
 
   bool _isValidFocusedDay(DateTime day) {
-    // Kiểm tra xem ngày có nằm trong khoảng hợp lệ không
+    // Phải đảm bảo ngày tập trung nằm trong khoảng được phép của TableCalendar
     return (day.isAtSameMomentAs(_firstDay) || day.isAfter(_firstDay)) &&
         (day.isAtSameMomentAs(_lastDay) || day.isBefore(_lastDay));
   }
@@ -77,10 +79,7 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
       children: [
         _buildCalendarHeader(),
         TableCalendar(
-          firstDay:
-              widget.allowSelectPastDates
-                  ? DateTime.now().subtract(const Duration(days: 365))
-                  : _firstDay,
+          firstDay: _firstDay,
           lastDay: _lastDay,
           focusedDay: _focusedDay,
           calendarFormat: _calendarFormat,
@@ -199,25 +198,14 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
               IconButton(
                 icon: const Icon(Icons.chevron_left),
                 onPressed: () {
-                  // Tính toán tháng trước
-                  final previousMonth = DateTime(
-                    _focusedDay.year,
-                    _focusedDay.month - 1,
-                    1,
+                  // Sửa: Luôn cho phép xem tháng trước, không phụ thuộc vào _firstDay
+                  _safelyUpdateFocusedDay(
+                    DateTime(
+                      _focusedDay.year,
+                      _focusedDay.month - 1,
+                      _focusedDay.day > 28 ? 28 : _focusedDay.day,
+                    ),
                   );
-
-                  // Kiểm tra xem tháng trước có hợp lệ không
-                  if (previousMonth.isAfter(_firstDay) ||
-                      previousMonth.year == _firstDay.year &&
-                          previousMonth.month == _firstDay.month) {
-                    _safelyUpdateFocusedDay(
-                      DateTime(
-                        _focusedDay.year,
-                        _focusedDay.month - 1,
-                        _focusedDay.day,
-                      ),
-                    );
-                  }
                 },
               ),
               Text(
