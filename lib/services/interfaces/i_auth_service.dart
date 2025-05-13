@@ -1,4 +1,4 @@
-import '../../model/userAccount_model.dart';
+import '../../models/userAccount_model.dart';
 
 abstract class IAuthService {
   Future<UserAccount?> login(String username, String password);

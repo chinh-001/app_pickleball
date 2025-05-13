@@ -2,7 +2,7 @@ import 'package:app_pickleball/services/interfaces/i_bookingList_service.dart';
 import 'package:app_pickleball/services/api/api_client.dart';
 import 'dart:developer' as log;
 // import 'dart:convert';
-import 'package:app_pickleball/model/bookingList_model.dart';
+import 'package:app_pickleball/models/bookingList_model.dart';
 
 class BookingListRepository implements IBookingListService {
   final ApiClient _apiClient;

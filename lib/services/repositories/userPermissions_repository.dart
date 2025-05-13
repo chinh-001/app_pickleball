@@ -2,7 +2,7 @@ import '../interfaces/i_userPermissions_service.dart';
 import '../api/api_client.dart';
 import 'dart:developer' as log;
 import '../../utils/auth_helper.dart';
-import '../../model/userPermissions_model.dart';
+import '../../models/userPermissions_model.dart';
 
 class UserPermissionsRepository implements IUserPermissionsService {
   final ApiClient _apiClient;

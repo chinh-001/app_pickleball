@@ -2,8 +2,8 @@ import '../interfaces/i_booking_service.dart';
 import '../api/api_client.dart';
 // import '../api/api_endpoints.dart';
 import 'dart:developer' as log;
-import '../../model/bookingStatus_model.dart';
-import '../../model/bookingList_model.dart';
+import '../../models/bookingStatus_model.dart';
+import '../../models/bookingList_model.dart';
 // import 'dart:convert';
 
 class BookingRepository implements IBookingService {
@@ -36,7 +36,7 @@ class BookingRepository implements IBookingService {
         );
         return storedList;
       }
-      
+
       // Trả về danh sách rỗng khi không có dữ liệu cache và đã loại bỏ GetCourts query
       log.log('GetCourts query removed, returning empty list');
       return BookingList.empty(channelToken: channelToken);

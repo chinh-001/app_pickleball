@@ -1,4 +1,4 @@
-import '../../model/userPermissions_model.dart';
+import '../../models/userPermissions_model.dart';
 
 abstract class IUserPermissionsService {
   Future<UserPermissions?> getUserPermissions();

@@ -2,7 +2,7 @@ import '../interfaces/i_auth_service.dart';
 import '../api/api_client.dart';
 import 'dart:developer' as log;
 import '../../utils/auth_helper.dart';
-import '../../model/userAccount_model.dart';
+import '../../models/userAccount_model.dart';
 // import '../../model/userPermissions_model.dart';
 import '../repositories/userPermissions_repository.dart';
 

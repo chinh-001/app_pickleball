@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../services/repositories/administrator_repository.dart';
 import '../../../services/repositories/auth_repository.dart';
-import '../../../model/userInfo_model.dart';
+import '../../../models/userInfo_model.dart';
 import 'dart:developer' as log;
 
 part 'profile_screen_event.dart';

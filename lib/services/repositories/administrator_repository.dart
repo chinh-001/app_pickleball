@@ -1,7 +1,7 @@
 import '../interfaces/i_administrator_service.dart';
 import '../api/api_client.dart';
 import 'dart:developer' as log;
-import '../../model/userInfo_model.dart';
+import '../../models/userInfo_model.dart';
 
 class AdministratorRepository implements IAdministratorService {
   final ApiClient _apiClient;

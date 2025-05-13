@@ -1,4 +1,4 @@
-import '../../model/bookingList_model.dart';
+import '../../models/bookingList_model.dart';
 
 abstract class IBookingListService {
   Future<Map<String, dynamic>> getAllBookingsRaw({

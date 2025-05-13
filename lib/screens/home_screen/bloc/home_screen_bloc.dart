@@ -3,8 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'dart:developer' as log;
-import 'package:app_pickleball/model/bookingStatus_model.dart';
-import 'package:app_pickleball/model/bookingList_model.dart';
+import 'package:app_pickleball/models/bookingStatus_model.dart';
+import 'package:app_pickleball/models/bookingList_model.dart';
 
 part 'home_screen_event.dart';
 part 'home_screen_state.dart';
