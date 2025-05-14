@@ -1,7 +1,7 @@
 import '../interfaces/i_choose_service.dart';
 import '../api/api_client.dart';
 import 'dart:developer' as log;
-import '../../models/product_with_courts_model.dart';
+import '../../models/productWithCourts_Model.dart';
 
 class ChooseRepository implements IChooseService {
   final ApiClient _apiClient;

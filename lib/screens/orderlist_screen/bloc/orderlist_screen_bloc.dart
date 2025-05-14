@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:app_pickleball/services/repositories/bookingList_repository.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
+import 'package:app_pickleball/services/channel_sync_service.dart';
 import 'dart:developer' as log;
 import 'package:app_pickleball/models/bookingList_model.dart';
 
@@ -12,6 +13,7 @@ class OrderListScreenBloc
     extends Bloc<OrderListScreenEvent, OrderListScreenState> {
   final BookingListRepository _bookingListRepository;
   final UserPermissionsRepository _permissionsRepository;
+  final ChannelSyncService _channelSyncService = ChannelSyncService.instance;
 
   // Kênh dự phòng nếu không có kênh từ quyền hạn
   final List<String> _fallbackChannels = ['Default channel', 'Demo-channel'];
@@ -34,6 +36,18 @@ class OrderListScreenBloc
     on<ChangeChannelEvent>(_onChangeChannel);
     on<FetchBookingsEvent>(_onFetchBookings);
     on<InitializeOrderListScreenEvent>(_onInitializeOrderListScreen);
+    on<SyncChannelEvent>(_onSyncChannel);
+
+    // Register as a listener for channel changes
+    _channelSyncService.addListener('orderlist_screen_bloc', (newChannel) {
+      log.log(
+        'OrderListScreenBloc received channel change notification: $newChannel',
+      );
+      // Only update if the channel is different from current selected channel
+      if (state.selectedChannel != newChannel) {
+        add(SyncChannelEvent(channelName: newChannel));
+      }
+    });
 
     // Khởi tạo danh sách kênh từ quyền hạn người dùng
     add(InitializeOrderListScreenEvent());
@@ -60,14 +74,48 @@ class OrderListScreenBloc
         log.log(
           'Không tìm thấy kênh từ quyền hạn người dùng, sử dụng kênh dự phòng',
         );
+
+        // Determine which channel to use
+        String selectedChannel = _fallbackChannels.first;
+
+        // Check if there's a synchronized channel
+        if (_channelSyncService.selectedChannel.isNotEmpty &&
+            _fallbackChannels.contains(_channelSyncService.selectedChannel)) {
+          selectedChannel = _channelSyncService.selectedChannel;
+          log.log('Using synchronized channel: $selectedChannel');
+        } else {
+          // Set the default channel to synchronize
+          _channelSyncService.selectedChannel = selectedChannel;
+        }
+
         emit(
           OrderListScreenLoaded(
-            selectedChannel: _fallbackChannels.first,
+            selectedChannel: selectedChannel,
             availableChannels: _fallbackChannels,
             items: const [],
             bookingOrderList: null,
           ),
         );
+
+        // Get data for the selected channel
+        if (selectedChannel == 'Pikachu Pickleball Xuân Hoà') {
+          add(
+            FetchBookingsEvent(channelToken: 'pikachu', date: DateTime.now()),
+          );
+        } else {
+          final channelToken = await _permissionsRepository.getChannelToken(
+            selectedChannel,
+          );
+          if (channelToken.isNotEmpty) {
+            add(
+              FetchBookingsEvent(
+                channelToken: channelToken,
+                date: DateTime.now(),
+              ),
+            );
+          }
+        }
+
         return;
       }
 
@@ -75,8 +123,20 @@ class OrderListScreenBloc
         'Đã tìm thấy ${userChannels.length} kênh từ quyền hạn người dùng',
       );
 
+      // Determine which channel to use (synced or first available)
+      String selectedChannel;
+      if (_channelSyncService.selectedChannel.isNotEmpty &&
+          userChannels.contains(_channelSyncService.selectedChannel)) {
+        selectedChannel = _channelSyncService.selectedChannel;
+        log.log('Using synchronized channel: $selectedChannel');
+      } else {
+        selectedChannel = userChannels.first;
+        // Set the default channel to synchronize
+        _channelSyncService.selectedChannel = selectedChannel;
+        log.log('Setting synchronized channel: $selectedChannel');
+      }
+
       // Emit state mới với kênh từ quyền hạn người dùng
-      final selectedChannel = userChannels.first;
       emit(
         OrderListScreenLoaded(
           selectedChannel: selectedChannel,
@@ -176,7 +236,12 @@ class OrderListScreenBloc
     Emitter<OrderListScreenState> emit,
   ) {
     // Log the channel selection
-    log.log('\n===== CHANNEL SELECTED: "${event.channelName}" =====');
+    log.log(
+      '\n===== ORDERLIST SCREEN: CHANNEL SELECTED: "${event.channelName}" =====',
+    );
+
+    // Update the synchronized channel
+    _channelSyncService.selectedChannel = event.channelName;
 
     emit(
       OrderListScreenLoading(
@@ -198,19 +263,6 @@ class OrderListScreenBloc
             'Got channel token: "$token" for channel: "${event.channelName}"',
           );
           add(FetchBookingsEvent(channelToken: token, date: DateTime.now()));
-        } else {
-          log.log(
-            'No channel token found for channel: "${event.channelName}", returning empty result',
-          );
-          // Nếu không tìm thấy token, emit state loaded với danh sách trống
-          emit(
-            OrderListScreenLoaded(
-              selectedChannel: event.channelName,
-              availableChannels: state.availableChannels,
-              items: const [],
-              bookingOrderList: null,
-            ),
-          );
         }
       });
     }
@@ -258,13 +310,13 @@ class OrderListScreenBloc
         return;
       }
 
-      log.log('Tìm thấy ${bookingOrderList.orders.length} đơn đặt sân');
+      // log.log('Tìm thấy ${bookingOrderList.orders.length} đơn đặt sân');
 
       // Check if code and noteCustomer fields are present in the data
       if (bookingOrderList.orders.isNotEmpty) {
-        final firstOrder = bookingOrderList.orders.first;
-        log.log('First order code: "${firstOrder.code}"');
-        log.log('First order noteCustomer: "${firstOrder.noteCustomer}"');
+        // final firstOrder = bookingOrderList.orders.first;
+        // log.log('First order code: "${firstOrder.code}"');
+        // log.log('First order noteCustomer: "${firstOrder.noteCustomer}"');
       }
 
       // Chuyển đổi dữ liệu sang định dạng cũ để tương thích ngược
@@ -290,5 +342,50 @@ class OrderListScreenBloc
         ),
       );
     }
+  }
+
+  // Handle notification from channel sync service
+  void _onSyncChannel(
+    SyncChannelEvent event,
+    Emitter<OrderListScreenState> emit,
+  ) {
+    log.log('\n***** ORDERLIST SCREEN BLOC: _onSyncChannel *****');
+    log.log('Syncing to channel: ${event.channelName}');
+
+    // Only update if the channel is different and is in available channels
+    if (state.selectedChannel != event.channelName &&
+        (state.availableChannels.contains(event.channelName) ||
+            _fallbackChannels.contains(event.channelName))) {
+      emit(
+        OrderListScreenLoading(
+          selectedChannel: event.channelName,
+          availableChannels: state.availableChannels,
+        ),
+      );
+
+      if (event.channelName == 'Pikachu Pickleball Xuân Hoà') {
+        log.log(
+          'Using special "pikachu" token for Pikachu Pickleball Xuân Hoà channel',
+        );
+        add(FetchBookingsEvent(channelToken: 'pikachu', date: DateTime.now()));
+      } else {
+        // Lấy token từ UserPermissionsRepository
+        _permissionsRepository.getChannelToken(event.channelName).then((token) {
+          if (token.isNotEmpty) {
+            log.log(
+              'Got channel token: "$token" for channel: "${event.channelName}"',
+            );
+            add(FetchBookingsEvent(channelToken: token, date: DateTime.now()));
+          }
+        });
+      }
+    }
+  }
+
+  @override
+  Future<void> close() {
+    // Unregister the listener when the bloc is closed
+    _channelSyncService.removeListener('orderlist_screen_bloc');
+    return super.close();
   }
 }

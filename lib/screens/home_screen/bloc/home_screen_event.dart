@@ -28,3 +28,12 @@ class ChangeChannelEvent extends HomeScreenEvent {
 class InitializeHomeScreenEvent extends HomeScreenEvent {
   const InitializeHomeScreenEvent();
 }
+
+class SyncChannelEvent extends HomeScreenEvent {
+  final String channelName;
+
+  const SyncChannelEvent({required this.channelName});
+
+  @override
+  List<Object?> get props => [channelName];
+}

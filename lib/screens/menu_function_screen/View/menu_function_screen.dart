@@ -27,12 +27,33 @@ class MenuFunctionScreen extends StatelessWidget {
               ),
             );
           } else if (state is RetailBookingSelectedState) {
-            Navigator.pop(context);
+            // Hide loading indicator if shown
+            if (Navigator.of(context).canPop()) {
+              Navigator.pop(context);
+            }
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => const AddOrderRetailStep1Screen(),
               ),
+            );
+          } else if (state is MenuFunctionScreenLoading) {
+            // Show loading dialog
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return const AlertDialog(
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text("Loading data..."),
+                    ],
+                  ),
+                );
+              },
             );
           }
         },

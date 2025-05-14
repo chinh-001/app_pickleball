@@ -1,4 +1,4 @@
-import '../../models/product_with_courts_model.dart';
+import '../../models/productWithCourts_Model.dart';
 
 abstract class IChooseService {
   Future<ProductsWithCourtsResponse> getProductsWithCourts();

@@ -9,6 +9,8 @@ abstract class MenuFunctionScreenState extends Equatable {
 
 class MenuFunctionScreenInitial extends MenuFunctionScreenState {}
 
+class MenuFunctionScreenLoading extends MenuFunctionScreenState {}
+
 class PeriodicBookingSelectedState extends MenuFunctionScreenState {}
 
 class RetailBookingSelectedState extends MenuFunctionScreenState {}

@@ -195,7 +195,7 @@ class UserPermissionsRepository implements IUserPermissionsService {
       // Lấy danh sách channel code
       final channelCodes =
           permissions.channels.map((channel) => channel.code).toList();
-      log.log('Các channel có sẵn cho người dùng: $channelCodes');
+      // log.log('Các channel có sẵn cho người dùng: $channelCodes');
       return channelCodes;
     } catch (e) {
       log.log('Lỗi khi lấy danh sách channel: $e');

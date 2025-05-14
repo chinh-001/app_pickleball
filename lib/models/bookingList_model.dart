@@ -40,7 +40,7 @@ class BookingOrder {
 
   factory BookingOrder.fromMap(Map<String, dynamic> map) {
     // Log the raw map for debugging
-    log.log('BookingOrder.fromMap received: ${json.encode(map)}');
+    // log.log('BookingOrder.fromMap received: ${json.encode(map)}');
 
     // Extract customer info
     final customer = map['customer'] as Map? ?? {};
@@ -48,14 +48,14 @@ class BookingOrder {
     final lastName = customer['lastName']?.toString() ?? '';
 
     // Check both fields and log detailed information
-    log.log('Customer firstName: "$firstName", lastName: "$lastName"');
+    // log.log('Customer firstName: "$firstName", lastName: "$lastName"');
 
     final customerName =
         firstName.isNotEmpty || lastName.isNotEmpty
             ? '$firstName $lastName'.trim()
             : 'Không có tên';
 
-    log.log('Constructed customerName: "$customerName"');
+    // log.log('Constructed customerName: "$customerName"');
 
     final phoneNumber = customer['phoneNumber']?.toString() ?? '';
     final emailAddress = customer['emailAddress']?.toString() ?? '';
@@ -92,18 +92,18 @@ class BookingOrder {
     final paymentStatusId = paymentStatusObj?['id']?.toString() ?? '';
 
     // Extract new fields with detailed logging
-    log.log('Extracting noteCustomer, code, and id fields:');
-    log.log('  Raw noteCustomer: "${map['noteCustomer']}"');
-    log.log('  Raw code: "${map['code']}"');
-    log.log('  Raw id: "${map['id']}"');
+    // log.log('Extracting noteCustomer, code, and id fields:');
+    // log.log('  Raw noteCustomer: "${map['noteCustomer']}"');
+    // log.log('  Raw code: "${map['code']}"');
+    // log.log('  Raw id: "${map['id']}"');
 
     final noteCustomer = map['noteCustomer']?.toString() ?? '';
     final code = map['code']?.toString() ?? '';
     final id = map['id']?.toString() ?? '';
 
-    log.log('  Extracted noteCustomer: "$noteCustomer"');
-    log.log('  Extracted code: "$code"');
-    log.log('  Extracted id: "$id"');
+    // log.log('  Extracted noteCustomer: "$noteCustomer"');
+    // log.log('  Extracted code: "$code"');
+    // log.log('  Extracted id: "$id"');
 
     return BookingOrder(
       customerName: customerName,
@@ -144,10 +144,10 @@ class BookingOrder {
     };
 
     // Log the map for debugging purposes
-    log.log(
-      'BookingOrder.toJson() result contains fields: ${map.keys.join(", ")}',
-    );
-    log.log('customerName in JSON: "${map['customerName']}"');
+    // log.log(
+    //   'BookingOrder.toJson() result contains fields: ${map.keys.join(", ")}',
+    // );
+    // log.log('customerName in JSON: "${map['customerName']}"');
 
     return map;
   }
@@ -222,7 +222,7 @@ class BookingOrderList {
               .whereType<BookingOrder>()
               .toList();
 
-      log.log('Đã xử lý ${orders.length} đơn đặt sân');
+      // log.log('Đã xử lý ${orders.length} đơn đặt sân');
       return BookingOrderList(
         orders: orders,
         channelToken: channelToken,
@@ -249,9 +249,9 @@ class BookingOrderList {
       final jsonString = json.encode(toJson());
       await prefs.setString(key, jsonString);
 
-      log.log(
-        'BookingOrderList đã lưu thành công cho channel: $channelToken, ngày: ${bookingDate.toIso8601String()}',
-      );
+      // log.log(
+      //   'BookingOrderList đã lưu thành công cho channel: $channelToken, ngày: ${bookingDate.toIso8601String()}',
+      // );
       return true;
     } catch (e) {
       log.log('Lỗi khi lưu BookingOrderList: $e');
@@ -356,9 +356,9 @@ class BookingOrderList {
       final prefs = await SharedPreferences.getInstance();
       final key = _getOrderStorageKey(channelToken, bookingDate);
       await prefs.remove(key);
-      log.log(
-        'Cache cleared for channel: $channelToken, date: ${bookingDate.toIso8601String()}',
-      );
+      // log.log(
+      //   'Cache cleared for channel: $channelToken, date: ${bookingDate.toIso8601String()}',
+      // );
       return true;
     } catch (e) {
       log.log('Error clearing cache: $e');
@@ -374,11 +374,11 @@ class BookingOrderList {
 
   // Chuyển đổi sang định dạng mà bloc hiện tại đang sử dụng
   List<Map<String, String>> toSimpleMapList() {
-    log.log('\n=== CONVERTING BOOKING ORDER LIST TO SIMPLE MAP LIST ===');
+    // log.log('\n=== CONVERTING BOOKING ORDER LIST TO SIMPLE MAP LIST ===');
     // log.log('Number of orders to convert: ${orders.length}');
 
     if (orders.isNotEmpty) {
-      log.log('First order before conversion:');
+      // log.log('First order before conversion:');
       // log.log('  noteCustomer: "${orders[0].noteCustomer}"');
       // log.log('  code: "${orders[0].code}"');
       // log.log('  id: "${orders[0].id}"');
@@ -387,7 +387,7 @@ class BookingOrderList {
     final result = orders.map((order) => order.toJson()).toList();
 
     if (result.isNotEmpty) {
-      log.log('First order after conversion:');
+      // log.log('First order after conversion:');
       // log.log('  noteCustomer: "${result[0]['noteCustomer']}"');
       // log.log('  code: "${result[0]['code']}"');
       // log.log('  id: "${result[0]['id']}"');

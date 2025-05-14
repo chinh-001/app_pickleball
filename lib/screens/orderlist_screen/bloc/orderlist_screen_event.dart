@@ -42,3 +42,12 @@ class FetchBookingsEvent extends OrderListScreenEvent {
 class InitializeOrderListScreenEvent extends OrderListScreenEvent {
   const InitializeOrderListScreenEvent();
 }
+
+class SyncChannelEvent extends OrderListScreenEvent {
+  final String channelName;
+
+  const SyncChannelEvent({required this.channelName});
+
+  @override
+  List<Object> get props => [channelName];
+}

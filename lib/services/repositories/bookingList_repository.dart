@@ -139,7 +139,7 @@ class BookingListRepository implements IBookingListService {
     required DateTime date,
   }) async {
     try {
-      log.log('\n***** BOOKING LIST REPOSITORY: getAllBookings *****');
+      // log.log('\n***** BOOKING LIST REPOSITORY: getAllBookings *****');
 
       // Clear the cache before fetching new data to prevent stale data issues
       await BookingOrderList.clearCache(
@@ -148,7 +148,7 @@ class BookingListRepository implements IBookingListService {
       );
 
       // Get fresh data from the API
-      log.log('Fetching fresh data from API');
+      // log.log('Fetching fresh data from API');
       final response = await getAllBookingsRaw(
         channelToken: channelToken,
         date: date,
@@ -167,7 +167,7 @@ class BookingListRepository implements IBookingListService {
       // log.log(
       //   'Processed and saved ${bookingOrderList.orders.length} booking orders',
       // );
-      log.log('***** END BOOKING LIST REPOSITORY *****\n');
+      // log.log('***** END BOOKING LIST REPOSITORY *****\n');
 
       return bookingOrderList;
     } catch (e) {
