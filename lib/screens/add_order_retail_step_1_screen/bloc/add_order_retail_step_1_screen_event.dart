@@ -7,6 +7,14 @@ abstract class AddOrderRetailStep1ScreenEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class InitializeTimeOptionsEvent extends AddOrderRetailStep1ScreenEvent {
+  const InitializeTimeOptionsEvent();
+}
+
+class InitializeProductsEvent extends AddOrderRetailStep1ScreenEvent {
+  const InitializeProductsEvent();
+}
+
 class ServiceSelected extends AddOrderRetailStep1ScreenEvent {
   final String service;
 

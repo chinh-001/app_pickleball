@@ -1,5 +1,5 @@
 import '../../models/workTime_model.dart';
 
 abstract class IWorkTimeService {
-  Future<WorkTimeModel> getStartAndEndTime();
+  Future<WorkTimeModel> getStartAndEndTime({String? channelToken});
 }

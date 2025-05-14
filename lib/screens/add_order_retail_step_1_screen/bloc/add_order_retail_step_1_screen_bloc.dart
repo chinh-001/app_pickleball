@@ -1,5 +1,13 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:app_pickleball/services/repositories/work_time_repository.dart';
+import 'package:app_pickleball/services/repositories/choose_repository.dart';
+import 'package:app_pickleball/services/channel_sync_service.dart';
+import 'package:app_pickleball/models/productWithCourts_Model.dart';
+// Import ProductItem để sử dụng trong Bloc và State
+import 'package:app_pickleball/models/productWithCourts_Model.dart'
+    show ProductItem;
+import 'dart:developer' as log;
 
 part 'add_order_retail_step_1_screen_event.dart';
 part 'add_order_retail_step_1_screen_state.dart';
@@ -9,19 +17,185 @@ class AddOrderRetailStep1ScreenBloc
         Bloc<AddOrderRetailStep1ScreenEvent, AddOrderRetailStep1ScreenState> {
   // Tạo danh sách đầy đủ thời gian
   final List<String> fullTimeOptions = [];
+  final WorkTimeRepository _workTimeRepository;
+  final ChooseRepository _chooseRepository;
+  final ChannelSyncService _channelSyncService = ChannelSyncService.instance;
 
-  AddOrderRetailStep1ScreenBloc() : super(AddOrderRetailStep1ScreenState()) {
-    _initTimeOptions();
-
+  AddOrderRetailStep1ScreenBloc({
+    WorkTimeRepository? workTimeRepository,
+    ChooseRepository? chooseRepository,
+  }) : _workTimeRepository = workTimeRepository ?? WorkTimeRepository(),
+       _chooseRepository = chooseRepository ?? ChooseRepository(),
+       super(AddOrderRetailStep1ScreenState()) {
+    on<InitializeTimeOptionsEvent>(_onInitializeTimeOptions);
+    on<InitializeProductsEvent>(_onInitializeProducts);
     on<ServiceSelected>(_onServiceSelected);
     on<CourtCountChanged>(_onCourtCountChanged);
     on<DatesSelected>(_onDatesSelected);
     on<FromTimeSelected>(_onFromTimeSelected);
     on<ToTimeSelected>(_onToTimeSelected);
+
+    // Initialize data based on API
+    add(InitializeTimeOptionsEvent());
+    add(InitializeProductsEvent());
   }
 
-  void _initTimeOptions() {
-    // Tạo danh sách thời gian từ 6:00 đến 23:30 với bước 30 phút
+  Future<void> _onInitializeProducts(
+    InitializeProductsEvent event,
+    Emitter<AddOrderRetailStep1ScreenState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(isLoading: true));
+
+      // Fetch products data from repository
+      final productsData = await _chooseRepository.getProductsWithCourts();
+      log.log('Products data from API: ${productsData.totalItems} items');
+
+      if (productsData.items.isNotEmpty) {
+        final firstProduct = productsData.items.first;
+        emit(
+          state.copyWith(
+            productItems: productsData.items,
+            selectedService: firstProduct.name,
+            selectedServiceId: firstProduct.id,
+            isLoading: false,
+          ),
+        );
+        log.log(
+          'Selected first product: ${firstProduct.name} (${firstProduct.id})',
+        );
+      } else {
+        log.log('No products found, using default values');
+        emit(state.copyWith(isLoading: false));
+      }
+    } catch (e) {
+      log.log('Error fetching products: $e');
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  Future<void> _onInitializeTimeOptions(
+    InitializeTimeOptionsEvent event,
+    Emitter<AddOrderRetailStep1ScreenState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(isLoading: true));
+
+      // Get channel token for current selected channel
+      final selectedChannel = _channelSyncService.selectedChannel;
+      String? channelToken;
+
+      if (selectedChannel.isNotEmpty) {
+        log.log('Getting work time for channel: $selectedChannel');
+
+        // Get work time data from repository
+        final workTimeData = await _workTimeRepository.getStartAndEndTime();
+        log.log('Work time data from API: $workTimeData');
+
+        // Parse start and end times
+        final startTimeParts = workTimeData.startTime.split(':');
+        final endTimeParts = workTimeData.endTime.split(':');
+
+        if (startTimeParts.length >= 2 && endTimeParts.length >= 2) {
+          final startHour = int.parse(startTimeParts[0]);
+          final startMinute = int.parse(startTimeParts[1]);
+          final endHour = int.parse(endTimeParts[0]);
+          final endMinute = int.parse(endTimeParts[1]);
+
+          // Generate time options in 30-minute intervals
+          fullTimeOptions.clear();
+
+          // Format for consistent display
+          final formattedStartTime =
+              '${startHour.toString().padLeft(2, '0')}:${startMinute.toString().padLeft(2, '0')}';
+          final formattedEndTime =
+              '${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')}';
+
+          log.log('Formatted start time: $formattedStartTime');
+          log.log('Formatted end time: $formattedEndTime');
+
+          // Generate time slots with 30-minute intervals
+          int currentHour = startHour;
+          int currentMinute = startMinute;
+
+          // Handle if start minute is not aligned to 30-minute intervals
+          if (currentMinute % 30 != 0) {
+            currentMinute = (currentMinute ~/ 30) * 30;
+          }
+
+          while (true) {
+            final timeString =
+                '${currentHour.toString().padLeft(2, '0')}:${currentMinute.toString().padLeft(2, '0')}';
+            fullTimeOptions.add(timeString);
+
+            // Increment by 30 minutes
+            currentMinute += 30;
+            if (currentMinute >= 60) {
+              currentHour += 1;
+              currentMinute = 0;
+            }
+
+            // Check if we've reached or passed the end time
+            if (currentHour > endHour ||
+                (currentHour == endHour && currentMinute > endMinute)) {
+              break;
+            }
+          }
+
+          // Add end time if it's not already in the list and is a valid time
+          if (!fullTimeOptions.contains(formattedEndTime) &&
+              (endHour > startHour ||
+                  (endHour == startHour && endMinute > startMinute))) {
+            fullTimeOptions.add(formattedEndTime);
+          }
+
+          // If we have at least two time options, set the first as fromTime and second as toTime
+          if (fullTimeOptions.length >= 2) {
+            emit(
+              state.copyWith(
+                selectedFromTime: fullTimeOptions.first,
+                selectedToTime: fullTimeOptions[1],
+                numberOfHours: _calculateHours(
+                  fullTimeOptions.first,
+                  fullTimeOptions[1],
+                ),
+                isLoading: false,
+              ),
+            );
+          } else if (fullTimeOptions.isNotEmpty) {
+            // Handle case where there's only one time option
+            emit(
+              state.copyWith(
+                selectedFromTime: fullTimeOptions.first,
+                selectedToTime: fullTimeOptions.first,
+                numberOfHours: 0,
+                isLoading: false,
+              ),
+            );
+          } else {
+            // Fall back to default values if no time options
+            _initDefaultTimeOptions();
+            emit(state.copyWith(isLoading: false));
+          }
+
+          return;
+        }
+      }
+
+      // Fall back to default time options if there's an issue
+      _initDefaultTimeOptions();
+      emit(state.copyWith(isLoading: false));
+    } catch (e) {
+      log.log('Error initializing time options: $e');
+      // Fall back to default time options
+      _initDefaultTimeOptions();
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  void _initDefaultTimeOptions() {
+    fullTimeOptions.clear();
+    // Create default time options from 6:00 to 23:30 with 30-minute intervals
     for (int hour = 6; hour < 24; hour++) {
       for (int minute = 0; minute < 60; minute += 30) {
         final String hourStr = hour.toString().padLeft(2, '0');
@@ -43,8 +217,23 @@ class AddOrderRetailStep1ScreenBloc
     ServiceSelected event,
     Emitter<AddOrderRetailStep1ScreenState> emit,
   ) {
+    // Find the product with matching name to get its ID
+    final selectedProduct = state.productItems.firstWhere(
+      (product) => product.name == event.service,
+      orElse: () => ProductItem(id: '', name: event.service),
+    );
+
     emit(
-      _updateFormCompleteness(state.copyWith(selectedService: event.service)),
+      _updateFormCompleteness(
+        state.copyWith(
+          selectedService: event.service,
+          selectedServiceId: selectedProduct.id,
+        ),
+      ),
+    );
+
+    log.log(
+      'Selected service: ${event.service} with ID: ${selectedProduct.id}',
     );
   }
 

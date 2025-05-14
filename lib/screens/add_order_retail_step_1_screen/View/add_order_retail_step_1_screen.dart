@@ -5,6 +5,8 @@ import 'package:app_pickleball/screens/widgets/custom_calendar_add_booking.dart'
 import 'package:app_pickleball/screens/widgets/custom_button.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_1_screen/bloc/add_order_retail_step_1_screen_bloc.dart';
+import 'package:app_pickleball/services/repositories/work_time_repository.dart';
+import 'package:app_pickleball/services/repositories/choose_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/View/add_order_retail_step_2_view.dart';
 
@@ -22,7 +24,10 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
   @override
   void initState() {
     super.initState();
-    _bloc = AddOrderRetailStep1ScreenBloc();
+    _bloc = AddOrderRetailStep1ScreenBloc(
+      workTimeRepository: WorkTimeRepository(),
+      chooseRepository: ChooseRepository(),
+    );
   }
 
   @override
@@ -49,72 +54,75 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
               backgroundColor: Colors.green,
               iconTheme: const IconThemeData(color: Colors.white),
             ),
-            body: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildStepIndicator(context),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Dịch vụ
-                        _buildServiceDropdown(context, state),
-                        const SizedBox(height: 16),
+            body:
+                state.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildStepIndicator(context),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Dịch vụ
+                                _buildServiceDropdown(context, state),
+                                const SizedBox(height: 16),
 
-                        // Số sân
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                AppLocalizations.of(
-                                  context,
-                                ).translate('courtCount'),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                // Số sân
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        ).translate('courtCount'),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    _buildCourtCountSelector(context, state),
+                                  ],
                                 ),
-                              ),
+                                const SizedBox(height: 16),
+
+                                // Lịch (Calendar)
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('selectDateAndTime'),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                CustomCalendarAddBooking(
+                                  onDatesSelected: (dates) {
+                                    context
+                                        .read<AddOrderRetailStep1ScreenBloc>()
+                                        .add(DatesSelected(dates));
+                                  },
+                                  allowSelectPastDates:
+                                      false, // Chỉ cho phép chọn ngày hiện tại và tương lai
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Thời gian bắt đầu và kết thúc
+                                _buildTimeSelectors(context, state),
+                                const SizedBox(height: 16),
+
+                                // Hiển thị đặt sân đã chọn
+                                _buildSelectedBookings(context, state),
+                              ],
                             ),
-                            _buildCourtCountSelector(context, state),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Lịch (Calendar)
-                        Text(
-                          AppLocalizations.of(
-                            context,
-                          ).translate('selectDateAndTime'),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        CustomCalendarAddBooking(
-                          onDatesSelected: (dates) {
-                            context.read<AddOrderRetailStep1ScreenBloc>().add(
-                              DatesSelected(dates),
-                            );
-                          },
-                          allowSelectPastDates:
-                              false, // Chỉ cho phép chọn ngày hiện tại và tương lai
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Thời gian bắt đầu và kết thúc
-                        _buildTimeSelectors(context, state),
-                        const SizedBox(height: 16),
-
-                        // Hiển thị đặt sân đã chọn
-                        _buildSelectedBookings(context, state),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
             bottomNavigationBar: _buildBottomBar(context, state),
           );
         },
@@ -190,7 +198,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
       title: AppLocalizations.of(context).translate('serviceName'),
       options: state.servicesList,
       selectedValue:
-          state.selectedService.isEmpty
+          state.selectedService.isEmpty && state.servicesList.isNotEmpty
               ? state.servicesList.first
               : state.selectedService,
       menuMaxHeight: 200,
