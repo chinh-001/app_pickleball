@@ -27,6 +27,7 @@ class MenuFunctionScreenBloc
        super(MenuFunctionScreenInitial()) {
     on<SelectPeriodicBookingEvent>(_onSelectPeriodicBooking);
     on<SelectRetailBookingEvent>(_onSelectRetailBooking);
+    on<SelectScanQrCodeEvent>(_onSelectScanQrCode);
   }
 
   void _onSelectPeriodicBooking(
@@ -34,6 +35,13 @@ class MenuFunctionScreenBloc
     Emitter<MenuFunctionScreenState> emit,
   ) {
     emit(PeriodicBookingSelectedState());
+  }
+
+  void _onSelectScanQrCode(
+    SelectScanQrCodeEvent event,
+    Emitter<MenuFunctionScreenState> emit,
+  ) {
+    emit(ScanQrCodeSelectedState());
   }
 
   void _onSelectRetailBooking(

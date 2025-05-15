@@ -4,6 +4,7 @@ import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/widgets/custom_menu_item.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_1_screen/View/add_order_retail_step_1_screen.dart';
 import 'package:app_pickleball/screens/menu_function_screen/bloc/menu_function_screen_bloc.dart';
+import 'package:app_pickleball/screens/scanQrCode_screen/View/scanQr_screen.dart';
 
 class MenuFunctionScreen extends StatelessWidget {
   const MenuFunctionScreen({super.key});
@@ -36,6 +37,11 @@ class MenuFunctionScreen extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => const AddOrderRetailStep1Screen(),
               ),
+            );
+          } else if (state is ScanQrCodeSelectedState) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ScanQrScreen()),
             );
           } else if (state is MenuFunctionScreenLoading) {
             // Show loading dialog
@@ -122,6 +128,39 @@ class MenuFunctionScreen extends StatelessWidget {
                         onTap: () {
                           context.read<MenuFunctionScreenBloc>().add(
                             SelectRetailBookingEvent(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  // Tiêu đề cho "Chức năng khác"
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24, bottom: 16),
+                    child: Text(
+                      AppLocalizations.of(context).translate('otherFunctions'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  // Danh sách chức năng khác
+                  ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      // Item "quét mã qr"
+                      _buildMenuItem(
+                        context: context,
+                        icon: Icons.qr_code_scanner,
+                        text: AppLocalizations.of(
+                          context,
+                        ).translate('scanQrCode'),
+                        onTap: () {
+                          context.read<MenuFunctionScreenBloc>().add(
+                            SelectScanQrCodeEvent(),
                           );
                         },
                       ),

@@ -10,3 +10,5 @@ abstract class MenuFunctionScreenEvent extends Equatable {
 class SelectPeriodicBookingEvent extends MenuFunctionScreenEvent {}
 
 class SelectRetailBookingEvent extends MenuFunctionScreenEvent {}
+
+class SelectScanQrCodeEvent extends MenuFunctionScreenEvent {}

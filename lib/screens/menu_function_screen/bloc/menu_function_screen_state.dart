@@ -14,3 +14,5 @@ class MenuFunctionScreenLoading extends MenuFunctionScreenState {}
 class PeriodicBookingSelectedState extends MenuFunctionScreenState {}
 
 class RetailBookingSelectedState extends MenuFunctionScreenState {}
+
+class ScanQrCodeSelectedState extends MenuFunctionScreenState {}
