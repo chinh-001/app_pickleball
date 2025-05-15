@@ -165,5 +165,11 @@
   "pickFromGallery": "Chọn từ thư viện",
   "scanWithCamera": "Quét bằng camera",
   "chooseMethod": "Chọn phương thức quét",
-  "noPermissionGallery": "Không có quyền truy cập thư viện ảnh"
+  "noPermissionGallery": "Không có quyền truy cập thư viện ảnh",
+  
+  "openUrl": "Mở đường dẫn",
+  "openingUrlInBrowser": "Đang mở đường dẫn trong trình duyệt...",
+  
+  "qr": "Mã QR",
+  "website": "Trang web"
 } 

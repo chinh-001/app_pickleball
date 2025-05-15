@@ -165,5 +165,11 @@
   "pickFromGallery": "Pick from Gallery",
   "scanWithCamera": "Scan with Camera",
   "chooseMethod": "Choose scan method",
-  "noPermissionGallery": "No gallery permission"
+  "noPermissionGallery": "No gallery permission",
+  
+  "openUrl": "Open URL",
+  "openingUrlInBrowser": "Opening URL in browser...",
+  
+  "qr": "QR",
+  "website": "Website"
 } 
