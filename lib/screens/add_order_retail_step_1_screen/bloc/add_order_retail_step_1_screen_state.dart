@@ -25,19 +25,24 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     this.isLoading = false,
   });
 
-  List<String> get servicesList =>
-      productItems.isEmpty
-          ? const [
-            'Pikachu Pickleball Xuân Hòa',
-            'Bao sân',
-            'Demo',
-            'Pickleball TADA Sport Thanh Đa',
-            'Pickleball TADA Sport Bình Lợi',
-            'Pickleball TADA Sport D2',
-            'Điều hòa',
-            'Mái che',
-          ]
-          : productItems.map((item) => item.name).toList();
+  List<String> get servicesList {
+    if (productItems.isEmpty) {
+      return const [
+        'Pikachu Pickleball Xuân Hòa',
+        'Bao sân',
+        'Demo',
+        'Pickleball TADA Sport Thanh Đa',
+        'Pickleball TADA Sport Bình Lợi',
+        'Pickleball TADA Sport D2',
+        'Điều hòa',
+        'Mái che',
+      ];
+    }
+
+    // Return the product names from the model
+    // The localization will be handled in the View
+    return productItems.map((item) => item.name).toList();
+  }
 
   AddOrderRetailStep1ScreenState copyWith({
     String? selectedService,

@@ -30,7 +30,7 @@ class ConnectivityService {
 
   // Update connection status
   void _updateConnectionStatus(ConnectivityResult result) {
-    log.log('Connectivity status changed: $result');
+    // log.log('Connectivity status changed: $result');
     _controller.add(result);
   }
 

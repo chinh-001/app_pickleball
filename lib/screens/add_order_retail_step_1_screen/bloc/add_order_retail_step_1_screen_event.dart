@@ -15,6 +15,15 @@ class InitializeProductsEvent extends AddOrderRetailStep1ScreenEvent {
   const InitializeProductsEvent();
 }
 
+class SetContextEvent extends AddOrderRetailStep1ScreenEvent {
+  final BuildContext context;
+
+  const SetContextEvent(this.context);
+
+  @override
+  List<Object> get props => [context];
+}
+
 class ServiceSelected extends AddOrderRetailStep1ScreenEvent {
   final String service;
 

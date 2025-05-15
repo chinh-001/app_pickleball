@@ -139,5 +139,27 @@
   "payment": "Payment",
   "price": "Price",
   "total": "Total",
-  "searchCustomer": "Search customer"
+  "searchCustomer": "Search customer",
+  
+  "product_73": "Air Conditioning",
+  "product_75": "Canopy",
+  "product_77": "Covered Court",
+  "product_78": "Outdoor Court",
+  
+  "otherFunctions": "Other Functions",
+  "scanQrCode": "Scan QR Code",
+  "scanQrCodeTitle": "QR Scanner",
+  "scanQrCodeDescription": "Align QR code within the frame to scan",
+  "scanQrCodeHint": "The scanner will automatically detect the QR code",
+  "noPermissionCamera": "No camera permission",
+  "requestCameraPermission": "We need camera permission to scan QR codes",
+  
+  "scanQrCodeSuccess": "QR Code scanned successfully!",
+  "scanQrCodeContent": "QR Content",
+  "scanAgain": "Scan Again",
+  "done": "Done",
+  "pickFromGallery": "Pick from Gallery",
+  "scanWithCamera": "Scan with Camera",
+  "chooseMethod": "Choose scan method",
+  "noPermissionGallery": "No gallery permission"
 } 

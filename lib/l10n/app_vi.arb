@@ -139,5 +139,27 @@
   "payment": "Thanh tiền",
   "price": "Giá",
   "total": "Tổng",
-  "searchCustomer": "Tìm kiếm khách hàng"
+  "searchCustomer": "Tìm kiếm khách hàng",
+  
+  "product_73": "Điều hòa",
+  "product_75": "Mái che",
+  "product_77": "Sân có mái che",
+  "product_78": "Sân ngoài trời",
+  
+  "otherFunctions": "Chức năng khác",
+  "scanQrCode": "Quét mã QR",
+  "scanQrCodeTitle": "Quét mã QR",
+  "scanQrCodeDescription": "Căn chỉnh mã QR vào khung để quét",
+  "scanQrCodeHint": "Máy quét sẽ tự động nhận diện mã QR",
+  "noPermissionCamera": "Không có quyền truy cập camera",
+  "requestCameraPermission": "Chúng tôi cần quyền truy cập camera để quét mã QR",
+  
+  "scanQrCodeSuccess": "Quét mã QR thành công!",
+  "scanQrCodeContent": "Nội dung mã QR",
+  "scanAgain": "Quét lại",
+  "done": "Hoàn thành",
+  "pickFromGallery": "Chọn từ thư viện",
+  "scanWithCamera": "Quét bằng camera",
+  "chooseMethod": "Chọn phương thức quét",
+  "noPermissionGallery": "Không có quyền truy cập thư viện ảnh"
 } 

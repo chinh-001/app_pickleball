@@ -7,6 +7,8 @@ import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_1_screen/bloc/add_order_retail_step_1_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/work_time_repository.dart';
 import 'package:app_pickleball/services/repositories/choose_repository.dart';
+import 'package:app_pickleball/services/repositories/courts_for_product_repository.dart';
+import 'package:app_pickleball/models/productWithCourts_Model.dart';
 import 'package:intl/intl.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/View/add_order_retail_step_2_view.dart';
 
@@ -27,13 +29,38 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
     _bloc = AddOrderRetailStep1ScreenBloc(
       workTimeRepository: WorkTimeRepository(),
       chooseRepository: ChooseRepository(),
+      courtsForProductRepository: CourtsForProductRepository(),
+      context: context,
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Update context in bloc whenever it changes (e.g., language switch)
+    _bloc.add(SetContextEvent(context));
   }
 
   @override
   void dispose() {
     _bloc.close();
     super.dispose();
+  }
+
+  // Helper method to get localized product name
+  String getLocalizedProductName(String productId, String originalName) {
+    // List of product IDs that need localization
+    List<String> localizedProductIds = ['73', '75', '77', '78'];
+
+    if (localizedProductIds.contains(productId)) {
+      final localKey = 'product_$productId';
+      final localizedName = AppLocalizations.of(context).translate(localKey);
+
+      // If translation exists, return it; otherwise, return original name
+      return localizedName != localKey ? localizedName : originalName;
+    }
+
+    return originalName;
   }
 
   @override
@@ -194,13 +221,45 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
     BuildContext context,
     AddOrderRetailStep1ScreenState state,
   ) {
+    // Prepare list of service names with localization applied
+    List<String> localizedServices = [];
+
+    if (state.productItems.isEmpty) {
+      localizedServices = state.servicesList;
+    } else {
+      // Apply localization to each service name
+      for (var product in state.productItems) {
+        String localizedName = getLocalizedProductName(
+          product.id,
+          product.name,
+        );
+        localizedServices.add(localizedName);
+      }
+    }
+
+    // Determine the selected value with localization applied
+    String selectedValue = state.selectedService;
+    if (state.selectedServiceId.isNotEmpty) {
+      // Find the product with the matching ID
+      final matchingProducts =
+          state.productItems
+              .where((p) => p.id == state.selectedServiceId)
+              .toList();
+      if (matchingProducts.isNotEmpty) {
+        final product = matchingProducts.first;
+        selectedValue = getLocalizedProductName(product.id, product.name);
+      }
+    }
+
+    // If no selection yet and we have services, use the first one
+    if (selectedValue.isEmpty && localizedServices.isNotEmpty) {
+      selectedValue = localizedServices.first;
+    }
+
     return CustomDropdown(
       title: AppLocalizations.of(context).translate('serviceName'),
-      options: state.servicesList,
-      selectedValue:
-          state.selectedService.isEmpty && state.servicesList.isNotEmpty
-              ? state.servicesList.first
-              : state.selectedService,
+      options: localizedServices,
+      selectedValue: selectedValue,
       menuMaxHeight: 200,
       onChanged: (String? newValue) {
         if (newValue != null) {
@@ -340,6 +399,20 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
       return Container();
     }
 
+    // Get localized service name if needed
+    String displayServiceName = state.selectedService;
+    if (state.selectedServiceId.isNotEmpty) {
+      // Find the product with this ID
+      final matchingProducts =
+          state.productItems
+              .where((p) => p.id == state.selectedServiceId)
+              .toList();
+      if (matchingProducts.isNotEmpty) {
+        final product = matchingProducts.first;
+        displayServiceName = getLocalizedProductName(product.id, product.name);
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -409,7 +482,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text('${state.selectedService}'),
+                            Text('${displayServiceName}'),
                           ],
                         ),
                       ),
