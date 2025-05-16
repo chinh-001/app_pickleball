@@ -137,8 +137,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                         _buildPaymentMethodSection(context, state),
                         const SizedBox(height: 24),
                         _buildPaymentStatusSection(context, state),
-                        const SizedBox(height: 24),
-                        _buildOrderStatusSection(context, state),
                       ],
                     ),
                   ),
@@ -659,26 +657,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           ),
         ]),
       ],
-    );
-  }
-
-  Widget _buildOrderStatusSection(
-    BuildContext context,
-    AddOrderRetailStep2ScreenState state,
-  ) {
-    final orderStatusOptions = [AppLocalizations.of(context).translate('new')];
-
-    return _buildRadioGroupSection(
-      title: '${AppLocalizations.of(context).translate('status')}:',
-      currentValue: state.orderStatus,
-      options: orderStatusOptions,
-      onChanged: (value) {
-        if (value != null) {
-          context.read<AddOrderRetailStep2ScreenBloc>().add(
-            OrderStatusChanged(value),
-          );
-        }
-      },
     );
   }
 

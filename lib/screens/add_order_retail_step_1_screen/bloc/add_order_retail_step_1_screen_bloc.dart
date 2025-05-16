@@ -5,7 +5,6 @@ import 'package:app_pickleball/services/repositories/choose_repository.dart';
 import 'package:app_pickleball/services/repositories/courts_for_product_repository.dart';
 import 'package:app_pickleball/services/channel_sync_service.dart';
 import 'package:app_pickleball/models/productWithCourts_Model.dart';
-import 'package:app_pickleball/models/courtsForProduct_model.dart';
 // Import ProductItem để sử dụng trong Bloc và State
 import 'package:app_pickleball/models/productWithCourts_Model.dart'
     show ProductItem;
