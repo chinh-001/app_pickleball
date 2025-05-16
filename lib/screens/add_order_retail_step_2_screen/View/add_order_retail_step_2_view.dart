@@ -334,56 +334,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     );
   }
 
-  Widget _buildRadioGroupSection({
-    required String title,
-    required String currentValue,
-    required List<String> options,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8.0,
-          runSpacing: 4.0,
-          children:
-              options.map((option) {
-                bool isSelected = currentValue == option;
-                return ChoiceChip(
-                  label: Text(option),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      onChanged(option);
-                    }
-                  },
-                  selectedColor: Colors.green,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black87,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(
-                      color: isSelected ? Colors.green : Colors.grey.shade300,
-                    ),
-                  ),
-                  backgroundColor: Colors.grey.shade50,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                );
-              }).toList(),
-        ),
-      ],
-    );
-  }
-
   Widget _buildPaymentMethodSection(
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
