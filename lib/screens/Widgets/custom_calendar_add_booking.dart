@@ -21,7 +21,7 @@ class CustomCalendarAddBooking extends StatefulWidget {
 }
 
 class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  CalendarFormat _calendarFormat = CalendarFormat.week;
   DateTime _focusedDay = DateTime.now();
   Set<DateTime> _selectedDays = {};
   late final DateTime _firstDay;
