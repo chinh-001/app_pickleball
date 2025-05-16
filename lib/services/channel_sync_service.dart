@@ -24,9 +24,9 @@ class ChannelSyncService {
   // Setter for selected channel
   set selectedChannel(String channel) {
     if (_selectedChannel != channel) {
-      log.log(
-        'ChannelSyncService: Channel changed from "$_selectedChannel" to "$channel"',
-      );
+      // log.log(
+      //   'ChannelSyncService: Channel changed from "$_selectedChannel" to "$channel"',
+      // );
       _selectedChannel = channel;
 
       // Notify all listeners of the channel change
@@ -37,7 +37,7 @@ class ChannelSyncService {
   // Add a listener with a unique id
   void addListener(String id, ChannelChangeCallback callback) {
     _listeners[id] = callback;
-    log.log('ChannelSyncService: Added listener with id: $id');
+    // log.log('ChannelSyncService: Added listener with id: $id');
   }
 
   // Remove a listener by id

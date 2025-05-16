@@ -148,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen>
               const SizedBox(height: 20),
               BlocBuilder<HomeScreenBloc, HomeScreenState>(
                 builder: (context, state) {
-                  log.log('Current state: $state');
+                  // log.log('Current state: $state');
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Container(
@@ -260,7 +260,10 @@ class _HomeScreenState extends State<HomeScreen>
               const SizedBox(height: 10),
               // Hiển thị text thông báo không có sân nào thay vì danh sách courts
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
                 child: Center(
                   child: Text(
                     AppLocalizations.of(context).translate('noCourts'),
@@ -272,7 +275,6 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
-
             ],
           ),
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../bloc/scanqr_screen_bloc.dart';
 import 'dart:developer' as developer;
 
@@ -15,12 +16,44 @@ class ScanQrScreen extends StatefulWidget {
 class _ScanQrScreenState extends State<ScanQrScreen> {
   final MobileScannerController _scannerController = MobileScannerController();
   bool _hasScanned = false;
+  bool _hasCameraPermission = false;
   late ScanqrScreenBloc _scanqrScreenBloc;
 
   @override
   void initState() {
     super.initState();
     _scanqrScreenBloc = ScanqrScreenBloc();
+    _requestCameraPermission();
+  }
+
+  Future<void> _requestCameraPermission() async {
+    developer.log('Requesting camera permission');
+    final status = await Permission.camera.request();
+    developer.log('Camera permission status: $status');
+
+    setState(() {
+      _hasCameraPermission = status.isGranted;
+    });
+
+    if (!status.isGranted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              ).translate('cameraPermissionRequired'),
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Cài đặt',
+              onPressed: () => openAppSettings(),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -43,25 +76,56 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         child: Scaffold(
           body: Stack(
             children: [
-              // QR Scanner
-              MobileScanner(
-                controller: _scannerController,
-                onDetect: (capture) {
-                  if (!_hasScanned) {
-                    final List<Barcode> barcodes = capture.barcodes;
-                    if (barcodes.isNotEmpty) {
-                      setState(() {
-                        _hasScanned = true;
-                      });
+              // QR Scanner or error message based on permission
+              _hasCameraPermission
+                  ? MobileScanner(
+                    controller: _scannerController,
+                    onDetect: (capture) {
+                      developer.log(
+                        'Barcode detected: ${capture.barcodes.length} codes',
+                      );
 
-                      final String? code = barcodes.first.rawValue;
-                      if (code != null) {
-                        _scanqrScreenBloc.add(HandleScannedCodeEvent(code));
+                      if (!_hasScanned) {
+                        final List<Barcode> barcodes = capture.barcodes;
+                        if (barcodes.isNotEmpty) {
+                          final String? code = barcodes.first.rawValue;
+                          developer.log('Scanned code: $code');
+
+                          if (code != null) {
+                            setState(() {
+                              _hasScanned = true;
+                            });
+                            _scanqrScreenBloc.add(HandleScannedCodeEvent(code));
+                          }
+                        }
                       }
-                    }
-                  }
-                },
-              ),
+                    },
+                  )
+                  : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.camera_alt,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Không có quyền truy cập camera',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => _requestCameraPermission(),
+                          child: const Text('Cấp quyền'),
+                        ),
+                      ],
+                    ),
+                  ),
 
               // Overlay UI
               SafeArea(
@@ -203,65 +267,159 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
   }
 
   void _showResultDialog(String code) {
+    final bool isUrl =
+        _scanqrScreenBloc.isValidUrl(code) ||
+        code.contains('.com') ||
+        code.contains('.org') ||
+        code.contains('.net');
+
+    String urlToLaunch = code;
+    if (isUrl && !code.startsWith('http://') && !code.startsWith('https://')) {
+      urlToLaunch = 'https://$code';
+    }
+
     showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context).translate('qrCodeResult')),
-            content: Text(code),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  setState(() {
-                    _hasScanned = false;
-                  });
-                  _scanqrScreenBloc.add(ResetScannerEvent());
-                },
-                child: Text(
-                  AppLocalizations.of(context).translate('scanAgain'),
-                ),
-              ),
-              // Add a button to open URL if it looks like a URL
-              if (_scanqrScreenBloc.isValidUrl(code) ||
-                  code.contains('.com') ||
-                  code.contains('.org') ||
-                  code.contains('.net'))
-                TextButton(
-                  onPressed: () async {
-                    // If it doesn't start with http/https, add https://
-                    String urlToLaunch = code;
-                    if (!code.startsWith('http://') &&
-                        !code.startsWith('https://')) {
-                      urlToLaunch = 'https://$code';
-                    }
-
-                    Navigator.of(context).pop();
-                    final result = await _scanqrScreenBloc.launchUrl(
-                      urlToLaunch,
-                    );
-                    if (!result && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Could not open URL: $urlToLaunch'),
-                          backgroundColor: Colors.red,
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  child: Text(
-                    AppLocalizations.of(context).translate('openUrl'),
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10.0,
+                    offset: const Offset(0.0, 10.0),
                   ),
-                ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                },
-                child: Text(AppLocalizations.of(context).translate('done')),
+                ],
               ),
-            ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header with Icon
+                  Container(
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.qr_code_scanner,
+                      color: Colors.green,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Title
+                  Text(
+                    AppLocalizations.of(context).translate('qrCodeResult'),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Content
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 15,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      code,
+                      style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      // Quét lại button
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[200],
+                            foregroundColor: Colors.black87,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            setState(() {
+                              _hasScanned = false;
+                            });
+                            _scanqrScreenBloc.add(ResetScannerEvent());
+                          },
+                          child: Text(
+                            AppLocalizations.of(context).translate('scanAgain'),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+
+                      // Mở đường dẫn button (chỉ hiển thị nếu là URL)
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isUrl ? Colors.green : Colors.grey,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          onPressed:
+                              isUrl
+                                  ? () async {
+                                    Navigator.of(context).pop();
+                                    final result = await _scanqrScreenBloc
+                                        .launchUrl(urlToLaunch);
+                                    if (!result && mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Không thể mở URL: $urlToLaunch',
+                                          ),
+                                          backgroundColor: Colors.red,
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                  : null,
+                          child: Text(
+                            AppLocalizations.of(context).translate('openUrl'),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
     );
   }

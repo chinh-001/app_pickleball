@@ -68,7 +68,7 @@ class OrderListScreenBloc
       // Luôn truy xuất trực tiếp từ repository để có dữ liệu mới nhất
       // Lấy danh sách kênh từ quyền hạn người dùng
       final userChannels = await _permissionsRepository.getAvailableChannels();
-      log.log('Fetched user channels: $userChannels');
+      // log.log('Fetched user channels: $userChannels');
 
       if (userChannels.isEmpty) {
         log.log(

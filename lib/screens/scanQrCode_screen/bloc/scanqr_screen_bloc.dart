@@ -9,23 +9,24 @@ part 'scanqr_screen_event.dart';
 part 'scanqr_screen_state.dart';
 
 class ScanqrScreenBloc extends Bloc<ScanqrScreenEvent, ScanqrScreenState> {
-  ScanqrScreenBloc() : super(ScanqrScreenInitial());
-
-  @override
-  Stream<ScanqrScreenState> mapEventToState(ScanqrScreenEvent event) async* {
-    if (event is HandleScannedCodeEvent) {
-      yield* _mapHandleScannedCodeEventToState(event);
-    } else if (event is ResetScannerEvent) {
-      yield ScanningState();
-    }
+  ScanqrScreenBloc() : super(ScanqrScreenInitial()) {
+    on<HandleScannedCodeEvent>(_onHandleScannedCodeEvent);
+    on<ResetScannerEvent>(_onResetScannerEvent);
   }
 
-  Stream<ScanqrScreenState> _mapHandleScannedCodeEventToState(
+  void _onHandleScannedCodeEvent(
     HandleScannedCodeEvent event,
-  ) async* {
+    Emitter<ScanqrScreenState> emit,
+  ) {
     developer.log('Scanned QR code: ${event.code}');
+    emit(ScannedCodeState(event.code));
+  }
 
-    yield ScannedCodeState(event.code);
+  void _onResetScannerEvent(
+    ResetScannerEvent event,
+    Emitter<ScanqrScreenState> emit,
+  ) {
+    emit(ScanningState());
   }
 
   // Check if the string is a valid URL
