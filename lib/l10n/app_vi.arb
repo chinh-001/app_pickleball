@@ -34,6 +34,8 @@
   "availableCourts": "Các sân có sẵn:",
   "noCourts": "Không có sân nào",
   "noBookings": "Không có booking",
+  "noCourtAvailable": "Không có sân",
+  "courtAvailable": "Có sân",
   
   "orderDetails": "Chi Tiết Đơn Hàng",
   "bookingType": "Loại đặt sân",

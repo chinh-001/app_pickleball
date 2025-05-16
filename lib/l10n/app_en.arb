@@ -34,6 +34,8 @@
   "availableCourts": "Available courts:",
   "noCourts": "No courts available",
   "noBookings": "No bookings",
+  "noCourtAvailable": "No court available",
+  "courtAvailable": "Court available",
   
   "orderDetails": "Order Details",
   "bookingType": "Booking Type",
