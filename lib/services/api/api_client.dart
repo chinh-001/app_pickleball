@@ -82,22 +82,40 @@ class ApiClient {
     required JsonConverter<T> converter,
   }) async {
     try {
+      log.log('\n=== API CLIENT: QUERY GRAPHQL ===');
+      log.log('Thực hiện truy vấn GraphQL');
+
       final requestBody = json.encode({'query': query, 'variables': variables});
+      // log.log('Request Body: $requestBody');
 
       // Lấy headers
       final headers = await _getHeaders(channelToken: channelToken);
+      log.log('Channel Token: $channelToken');
       // log.log('Request Headers: $headers');
 
+      log.log('Gửi request đến: ${ApiEndpoints.graphql}');
       final response = await _client.post(
         Uri.parse(ApiEndpoints.graphql),
         headers: headers,
         body: requestBody,
       );
 
+      log.log('Response Status Code: ${response.statusCode}');
+      log.log(
+        'Response Body (100 ký tự đầu): ${response.body.length > 100 ? response.body.substring(0, 100) + "..." : response.body}',
+      );
+
       await _saveCookies(response);
       final jsonResponse = _handleResponse(response);
+
       if (jsonResponse != null) {
-        return converter(jsonResponse);
+        log.log('Truy vấn thành công, chuyển đổi response');
+        final result = converter(jsonResponse);
+        log.log('=== KẾT THÚC API CLIENT: QUERY GRAPHQL THÀNH CÔNG ===\n');
+        return result;
+      } else {
+        log.log('Truy vấn thất bại, jsonResponse là null');
+        log.log('=== KẾT THÚC API CLIENT: QUERY GRAPHQL THẤT BẠI ===\n');
       }
       return null;
     } catch (e) {
@@ -216,14 +234,35 @@ class ApiClient {
 
   Map<String, dynamic>? _handleResponse(http.Response response) {
     try {
+      log.log('\n=== API CLIENT: HANDLE RESPONSE ===');
+      log.log('Đang xử lý response với status code: ${response.statusCode}');
+
       final data = json.decode(response.body);
+      log.log('Đã decode JSON response thành công');
+
       if (data is Map<String, dynamic>) {
         if (data.containsKey('errors')) {
           // Vẫn trả về data ngay cả khi có lỗi, để lớp cao hơn có thể xử lý dữ liệu một phần
-          // log.log('GraphQL Errors: ${data['errors']}');
+          log.log('GraphQL Errors: ${data['errors']}');
           return data;
         }
         if (response.statusCode >= 200 && response.statusCode < 300) {
+          log.log('Response hợp lệ, status: ${response.statusCode}');
+          // Kiểm tra và log cấu trúc data
+          if (data.containsKey('data')) {
+            // log.log('Response có field data');
+            final dataField = data['data'];
+            if (dataField is Map<String, dynamic>) {
+              for (var key in dataField.keys) {
+                log.log('Data có field: $key');
+              }
+              // Log để debug getAvailableCourtForBooking
+              if (dataField.containsKey('getAvailableCourtForBooking')) {
+                final courtData = dataField['getAvailableCourtForBooking'];
+                log.log('getAvailableCourtForBooking data: $courtData');
+              }
+            }
+          }
           return data;
         }
       }

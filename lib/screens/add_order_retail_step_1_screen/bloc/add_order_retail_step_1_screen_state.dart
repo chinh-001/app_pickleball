@@ -11,6 +11,10 @@ class AddOrderRetailStep1ScreenState extends Equatable {
   final List<ProductItem> productItems;
   final bool isFormComplete;
   final bool isLoading;
+  final List<CourtItem> availableCourts;
+  final List<String> selectedCourtIds;
+  final List<AvailableCourForBookingModel> availableCourtsByDate;
+  final bool isCheckingAvailability;
 
   const AddOrderRetailStep1ScreenState({
     this.selectedService = '',
@@ -23,6 +27,10 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     this.productItems = const [],
     this.isFormComplete = false,
     this.isLoading = false,
+    this.availableCourts = const [],
+    this.selectedCourtIds = const [],
+    this.availableCourtsByDate = const [],
+    this.isCheckingAvailability = false,
   });
 
   List<String> get servicesList {
@@ -55,6 +63,10 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     List<ProductItem>? productItems,
     bool? isFormComplete,
     bool? isLoading,
+    List<CourtItem>? availableCourts,
+    List<String>? selectedCourtIds,
+    List<AvailableCourForBookingModel>? availableCourtsByDate,
+    bool? isCheckingAvailability,
   }) {
     return AddOrderRetailStep1ScreenState(
       selectedService: selectedService ?? this.selectedService,
@@ -67,6 +79,12 @@ class AddOrderRetailStep1ScreenState extends Equatable {
       productItems: productItems ?? this.productItems,
       isFormComplete: isFormComplete ?? this.isFormComplete,
       isLoading: isLoading ?? this.isLoading,
+      availableCourts: availableCourts ?? this.availableCourts,
+      selectedCourtIds: selectedCourtIds ?? this.selectedCourtIds,
+      availableCourtsByDate:
+          availableCourtsByDate ?? this.availableCourtsByDate,
+      isCheckingAvailability:
+          isCheckingAvailability ?? this.isCheckingAvailability,
     );
   }
 
@@ -82,5 +100,9 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     productItems,
     isFormComplete,
     isLoading,
+    availableCourts,
+    selectedCourtIds,
+    availableCourtsByDate,
+    isCheckingAvailability,
   ];
 }

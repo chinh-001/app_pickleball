@@ -68,3 +68,18 @@ class ToTimeSelected extends AddOrderRetailStep1ScreenEvent {
   @override
   List<Object> get props => [toTime];
 }
+
+class CourtSelected extends AddOrderRetailStep1ScreenEvent {
+  final String courtId;
+  final bool isSelected;
+
+  const CourtSelected({required this.courtId, required this.isSelected});
+
+  @override
+  List<Object> get props => [courtId, isSelected];
+}
+
+// Event mới để kiểm tra sân có sẵn
+class CheckAvailableCourts extends AddOrderRetailStep1ScreenEvent {
+  const CheckAvailableCourts();
+}

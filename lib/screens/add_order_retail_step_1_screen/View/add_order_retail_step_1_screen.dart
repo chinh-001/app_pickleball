@@ -8,9 +8,13 @@ import 'package:app_pickleball/screens/add_order_retail_step_1_screen/bloc/add_o
 import 'package:app_pickleball/services/repositories/work_time_repository.dart';
 import 'package:app_pickleball/services/repositories/choose_repository.dart';
 import 'package:app_pickleball/services/repositories/courts_for_product_repository.dart';
+import 'package:app_pickleball/services/repositories/available_cour_for_booking_repository.dart';
+// import 'package:app_pickleball/models/courtsForProduct_model.dart';
+import 'package:app_pickleball/models/available_cour_for_booking_model.dart';
 // import 'package:app_pickleball/models/productWithCourts_Model.dart';
 import 'package:intl/intl.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/View/add_order_retail_step_2_view.dart';
+import 'dart:developer' as log;
 
 class AddOrderRetailStep1Screen extends StatefulWidget {
   const AddOrderRetailStep1Screen({Key? key}) : super(key: key);
@@ -30,6 +34,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
       workTimeRepository: WorkTimeRepository(),
       chooseRepository: ChooseRepository(),
       courtsForProductRepository: CourtsForProductRepository(),
+      availableCourRepository: AvailableCourForBookingRepository(),
       context: context,
     );
   }
@@ -444,18 +449,92 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '#${index + 1}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          Text(
+                            '#${index + 1}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 16),
+                          Text('${DateFormat('E, dd/MM/yyyy').format(date)}'),
+                          const Spacer(),
+                          Text(
+                            '${state.selectedFromTime} - ${state.selectedToTime}',
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Text('${DateFormat('E, dd/MM/yyyy').format(date)}'),
-                      const Spacer(),
-                      Text(
-                        '${state.selectedFromTime} - ${state.selectedToTime}',
-                      ),
+                      const SizedBox(height: 8),
+
+                      // Hiển thị trạng thái đang kiểm tra
+                      if (state.isCheckingAvailability)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 8),
+                                Text('Đang kiểm tra sân có sẵn...'),
+                              ],
+                            ),
+                          ),
+                        )
+                      // Hiển thị thông báo khi không có sân hoặc danh sách các sân có sẵn
+                      else if (_getAvailableCourtsForDate(state, date).isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            'Không có sân',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        )
+                      else
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children:
+                              _getAvailableCourtsForDate(state, date).map((
+                                court,
+                              ) {
+                                // Kiểm tra xem sân có được chọn không
+                                final bool isSelected = state.selectedCourtIds
+                                    .contains(court.id);
+
+                                return ElevatedButton(
+                                  onPressed: () {
+                                    // Khi nhấn nút, thay đổi trạng thái chọn của sân
+                                    context
+                                        .read<AddOrderRetailStep1ScreenBloc>()
+                                        .add(
+                                          CourtSelected(
+                                            courtId: court.id,
+                                            isSelected:
+                                                !isSelected, // Đảo ngược trạng thái hiện tại
+                                          ),
+                                        );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    // Sân được chọn -> màu xanh, chưa chọn -> màu xám
+                                    backgroundColor:
+                                        isSelected ? Colors.green : Colors.grey,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    minimumSize: const Size(60, 36),
+                                  ),
+                                  child: Text(court.name),
+                                );
+                              }).toList(),
+                        ),
                     ],
                   ),
                 );
@@ -576,5 +655,26 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
         ],
       ),
     );
+  }
+
+  List<Court> _getAvailableCourtsForDate(
+    AddOrderRetailStep1ScreenState state,
+    DateTime date,
+  ) {
+    // Định dạng ngày để so sánh (YYYY-MM-DD)
+    final dateString = DateFormat('yyyy-MM-dd').format(date);
+
+    // Tìm dữ liệu cho ngày cụ thể trong danh sách kết quả từ API
+    for (var item in state.availableCourtsByDate) {
+      if (item.bookingDate == dateString) {
+        // Lọc sân chỉ lấy những sân có status là "available"
+        return item.courts
+            .where((court) => court.status == "available")
+            .toList();
+      }
+    }
+
+    // Nếu không tìm thấy, trả về danh sách rỗng
+    return [];
   }
 }
