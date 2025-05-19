@@ -92,7 +92,7 @@ class AvailableCourForBookingRepository
         'quantityCourt': input.quantityCourt,
       };
 
-      log.log('Query GraphQL: $query');
+      // log.log('Query GraphQL: $query');
       log.log('Variables: $variables');
 
       final jsonResponse = await _apiClient.query<List<dynamic>>(

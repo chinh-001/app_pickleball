@@ -12,9 +12,10 @@ class AddOrderRetailStep1ScreenState extends Equatable {
   final bool isFormComplete;
   final bool isLoading;
   final List<CourtItem> availableCourts;
-  final List<String> selectedCourtIds;
+  final Map<String, List<String>> selectedCourtsByDate;
   final List<AvailableCourForBookingModel> availableCourtsByDate;
   final bool isCheckingAvailability;
+  final double totalPayment;
 
   const AddOrderRetailStep1ScreenState({
     this.selectedService = '',
@@ -28,10 +29,19 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     this.isFormComplete = false,
     this.isLoading = false,
     this.availableCourts = const [],
-    this.selectedCourtIds = const [],
+    this.selectedCourtsByDate = const {},
     this.availableCourtsByDate = const [],
     this.isCheckingAvailability = false,
+    this.totalPayment = 0.0,
   });
+
+  List<String> get selectedCourtIds {
+    final allSelectedCourts = <String>[];
+    selectedCourtsByDate.forEach(
+      (_, courts) => allSelectedCourts.addAll(courts),
+    );
+    return allSelectedCourts;
+  }
 
   List<String> get servicesList {
     if (productItems.isEmpty) {
@@ -64,9 +74,10 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     bool? isFormComplete,
     bool? isLoading,
     List<CourtItem>? availableCourts,
-    List<String>? selectedCourtIds,
+    Map<String, List<String>>? selectedCourtsByDate,
     List<AvailableCourForBookingModel>? availableCourtsByDate,
     bool? isCheckingAvailability,
+    double? totalPayment,
   }) {
     return AddOrderRetailStep1ScreenState(
       selectedService: selectedService ?? this.selectedService,
@@ -80,11 +91,12 @@ class AddOrderRetailStep1ScreenState extends Equatable {
       isFormComplete: isFormComplete ?? this.isFormComplete,
       isLoading: isLoading ?? this.isLoading,
       availableCourts: availableCourts ?? this.availableCourts,
-      selectedCourtIds: selectedCourtIds ?? this.selectedCourtIds,
+      selectedCourtsByDate: selectedCourtsByDate ?? this.selectedCourtsByDate,
       availableCourtsByDate:
           availableCourtsByDate ?? this.availableCourtsByDate,
       isCheckingAvailability:
           isCheckingAvailability ?? this.isCheckingAvailability,
+      totalPayment: totalPayment ?? this.totalPayment,
     );
   }
 
@@ -101,8 +113,9 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     isFormComplete,
     isLoading,
     availableCourts,
-    selectedCourtIds,
+    selectedCourtsByDate,
     availableCourtsByDate,
     isCheckingAvailability,
+    totalPayment,
   ];
 }

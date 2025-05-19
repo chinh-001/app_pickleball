@@ -15,6 +15,7 @@ import 'package:app_pickleball/models/available_cour_for_booking_model.dart';
 import 'package:intl/intl.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/View/add_order_retail_step_2_view.dart';
 import 'dart:developer' as log;
+import 'package:intl/number_symbols.dart';
 
 class AddOrderRetailStep1Screen extends StatefulWidget {
   const AddOrderRetailStep1Screen({Key? key}) : super(key: key);
@@ -503,35 +504,76 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                               _getAvailableCourtsForDate(state, date).map((
                                 court,
                               ) {
-                                // Kiểm tra xem sân có được chọn không
-                                final bool isSelected = state.selectedCourtIds
-                                    .contains(court.id);
+                                // Lấy danh sách sân đã chọn cho ngày cụ thể này
+                                final String dateKey = DateFormat(
+                                  'yyyy-MM-dd',
+                                ).format(date);
+                                final List<String> selectedCourtsForThisDate =
+                                    state.selectedCourtsByDate[dateKey] ?? [];
+
+                                // Kiểm tra xem sân có được chọn cho ngày này không
+                                final bool isSelected =
+                                    selectedCourtsForThisDate.contains(
+                                      court.id,
+                                    );
+
+                                // Kiểm tra xem đã đạt giới hạn số lượng sân chọn chưa
+                                final bool reachedLimit =
+                                    selectedCourtsForThisDate.length >=
+                                    state.courtCount;
+
+                                // Chỉ vô hiệu hóa nếu đạt giới hạn VÀ sân hiện tại chưa được chọn
+                                final bool isDisabled =
+                                    reachedLimit && !isSelected;
 
                                 return ElevatedButton(
-                                  onPressed: () {
-                                    // Khi nhấn nút, thay đổi trạng thái chọn của sân
-                                    context
-                                        .read<AddOrderRetailStep1ScreenBloc>()
-                                        .add(
-                                          CourtSelected(
-                                            courtId: court.id,
-                                            isSelected:
-                                                !isSelected, // Đảo ngược trạng thái hiện tại
-                                          ),
-                                        );
-                                  },
+                                  onPressed:
+                                      isDisabled
+                                          ? null // Vô hiệu hóa nút nếu đã đạt giới hạn và sân này chưa được chọn
+                                          : () {
+                                            // Khi nhấn nút, thay đổi trạng thái chọn của sân
+                                            context
+                                                .read<
+                                                  AddOrderRetailStep1ScreenBloc
+                                                >()
+                                                .add(
+                                                  CourtSelected(
+                                                    courtId: court.id,
+                                                    isSelected:
+                                                        !isSelected, // Đảo ngược trạng thái hiện tại
+                                                    bookingDate:
+                                                        date, // Thêm ngày đặt sân
+                                                  ),
+                                                );
+                                          },
                                   style: ElevatedButton.styleFrom(
                                     // Sân được chọn -> màu xanh, chưa chọn -> màu xám
+                                    // Sân vô hiệu hóa -> màu xám nhạt
                                     backgroundColor:
-                                        isSelected ? Colors.green : Colors.grey,
-                                    foregroundColor: Colors.white,
+                                        isDisabled
+                                            ? Colors.grey[300]
+                                            : (isSelected
+                                                ? Colors.green
+                                                : Colors.grey),
+                                    foregroundColor:
+                                        isDisabled
+                                            ? Colors.black38
+                                            : Colors.white,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 8,
                                     ),
                                     minimumSize: const Size(60, 36),
                                   ),
-                                  child: Text(court.name),
+                                  child: Text(
+                                    court.name,
+                                    style: TextStyle(
+                                      color:
+                                          isDisabled
+                                              ? Colors.black38
+                                              : Colors.white,
+                                    ),
+                                  ),
                                 );
                               }).toList(),
                         ),
@@ -587,7 +629,11 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '0 VNĐ',
+                      NumberFormat.currency(
+                        locale: 'vi_VN',
+                        symbol: 'VNĐ',
+                        decimalDigits: 0,
+                      ).format(state.totalPayment),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],

@@ -467,13 +467,15 @@ class AddOrderRetailStep1ScreenBloc
         }
       }
 
-      // Cập nhật state với kết quả
+      // Cập nhật state với kết quả và xóa các lựa chọn sân cũ
       emit(
         state.copyWith(
           availableCourtsByDate: availableCourts,
           isCheckingAvailability: false,
-          // Xóa danh sách sân đã chọn cũ
-          selectedCourtIds: [],
+          // Xóa danh sách sân đã chọn cũ bằng cách tạo Map rỗng mới
+          selectedCourtsByDate: const {},
+          // Reset tổng tiền về 0
+          totalPayment: 0.0,
         ),
       );
 
@@ -709,29 +711,152 @@ class AddOrderRetailStep1ScreenBloc
     return state.copyWith(isFormComplete: isComplete);
   }
 
+  // Phương thức tính tổng giá tiền dựa trên các sân đã chọn
+  double _calculateTotalPayment() {
+    double total = 0.0;
+
+    // Duyệt qua từng ngày đã chọn sân
+    state.selectedCourtsByDate.forEach((dateKey, courtIds) {
+      // Tìm thông tin ngày này trong dữ liệu có sẵn
+      for (var dateData in state.availableCourtsByDate) {
+        if (dateData.bookingDate == dateKey) {
+          // Với mỗi sân được chọn, tìm thông tin giá và cộng vào tổng
+          for (var courtId in courtIds) {
+            for (var court in dateData.courts) {
+              if (court.id == courtId) {
+                total += court.price;
+                log.log(
+                  'Thêm giá của sân ${court.name} (${court.id}): ${court.price} VND',
+                );
+                break;
+              }
+            }
+          }
+          break;
+        }
+      }
+    });
+
+    log.log('Tổng giá tiền đã tính: $total VND');
+    return total;
+  }
+
   // Xử lý khi người dùng chọn hoặc bỏ chọn một sân
   void _onCourtSelected(
     CourtSelected event,
     Emitter<AddOrderRetailStep1ScreenState> emit,
   ) {
-    // Tạo một bản sao của danh sách ID sân hiện tại
-    List<String> updatedSelectedCourtIds = List.from(state.selectedCourtIds);
+    // Định dạng ngày để làm khóa cho Map
+    final String dateKey = DateFormat('yyyy-MM-dd').format(event.bookingDate);
+
+    // Tạo một bản sao của Map lưu trữ sân theo ngày
+    Map<String, List<String>> updatedSelectedCourtsByDate =
+        Map<String, List<String>>.from(state.selectedCourtsByDate);
+
+    // Lấy danh sách sân hiện tại cho ngày này (hoặc tạo mới nếu chưa có)
+    List<String> courtsForDate = List.from(
+      updatedSelectedCourtsByDate[dateKey] ?? [],
+    );
+
+    // Biến để kiểm tra xem có thay đổi gì không
+    bool hasChanges = false;
 
     if (event.isSelected) {
-      // Nếu là chọn sân và ID chưa có trong danh sách, thêm vào
-      if (!updatedSelectedCourtIds.contains(event.courtId)) {
-        updatedSelectedCourtIds.add(event.courtId);
+      // Nếu là chọn sân và ID chưa có trong danh sách
+      if (!courtsForDate.contains(event.courtId)) {
+        // Kiểm tra số lượng sân đã chọn có vượt quá giới hạn không
+        if (courtsForDate.length < state.courtCount) {
+          // Nếu chưa đạt giới hạn thì thêm sân mới
+          courtsForDate.add(event.courtId);
+          hasChanges = true;
+          log.log(
+            'Thêm sân ${event.courtId} vào ngày $dateKey (${courtsForDate.length}/${state.courtCount} sân)',
+          );
+        } else {
+          // Đã đạt giới hạn, log thông báo
+          log.log(
+            'Không thể thêm sân: Đã đạt giới hạn ${state.courtCount} sân cho ngày $dateKey',
+          );
+        }
       }
     } else {
       // Nếu là bỏ chọn sân, xóa ID khỏi danh sách
-      updatedSelectedCourtIds.remove(event.courtId);
+      if (courtsForDate.contains(event.courtId)) {
+        courtsForDate.remove(event.courtId);
+        hasChanges = true;
+        log.log(
+          'Bỏ chọn sân ${event.courtId} khỏi ngày $dateKey (${courtsForDate.length}/${state.courtCount} sân)',
+        );
+      }
     }
 
-    // Cập nhật state với danh sách mới
-    emit(
-      _updateFormCompleteness(
-        state.copyWith(selectedCourtIds: updatedSelectedCourtIds),
-      ),
-    );
+    // Chỉ cập nhật nếu có thay đổi
+    if (hasChanges) {
+      // Cập nhật lại danh sách cho ngày cụ thể
+      updatedSelectedCourtsByDate[dateKey] = courtsForDate;
+
+      // Log thông tin để debug
+      log.log('Cập nhật sân cho ngày $dateKey:');
+      log.log(
+        '- Sân ID: ${event.courtId}, Trạng thái: ${event.isSelected ? 'Đã chọn' : 'Đã bỏ chọn'}',
+      );
+      log.log('- Danh sách sân hiện tại: ${courtsForDate.join(', ')}');
+
+      // Cập nhật state với Map mới và tính lại tổng tiền
+      emit(
+        _updateFormCompleteness(
+          state.copyWith(
+            selectedCourtsByDate: updatedSelectedCourtsByDate,
+            // Tính lại tổng tiền sau khi cập nhật danh sách sân đã chọn
+          ),
+        ),
+      );
+
+      // Tính và cập nhật tổng tiền
+      // Lưu ý: Phải tính sau khi đã emit state mới với danh sách sân cập nhật
+      final updatedState = state.copyWith(
+        selectedCourtsByDate: updatedSelectedCourtsByDate,
+      );
+      final double newTotalPayment = _calculateTotalPaymentForState(
+        updatedState,
+      );
+      emit(
+        _updateFormCompleteness(
+          updatedState.copyWith(totalPayment: newTotalPayment),
+        ),
+      );
+    }
+  }
+
+  // Tính tổng tiền cho một state cụ thể (để tránh vấn đề state chưa được cập nhật)
+  double _calculateTotalPaymentForState(
+    AddOrderRetailStep1ScreenState currentState,
+  ) {
+    double total = 0.0;
+
+    // Duyệt qua từng ngày đã chọn sân
+    currentState.selectedCourtsByDate.forEach((dateKey, courtIds) {
+      // Tìm thông tin ngày này trong dữ liệu có sẵn
+      for (var dateData in currentState.availableCourtsByDate) {
+        if (dateData.bookingDate == dateKey) {
+          // Với mỗi sân được chọn, tìm thông tin giá và cộng vào tổng
+          for (var courtId in courtIds) {
+            for (var court in dateData.courts) {
+              if (court.id == courtId) {
+                total += court.price;
+                log.log(
+                  'Thêm giá của sân ${court.name} (${court.id}): ${court.price} VND',
+                );
+                break;
+              }
+            }
+          }
+          break;
+        }
+      }
+    });
+
+    log.log('Tổng giá tiền đã tính: $total VND');
+    return total;
   }
 }
