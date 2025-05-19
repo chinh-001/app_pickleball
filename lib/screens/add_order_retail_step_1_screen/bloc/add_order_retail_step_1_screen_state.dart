@@ -16,6 +16,7 @@ class AddOrderRetailStep1ScreenState extends Equatable {
   final List<AvailableCourForBookingModel> availableCourtsByDate;
   final bool isCheckingAvailability;
   final double totalPayment;
+  final List<String> localizedProductIds;
 
   const AddOrderRetailStep1ScreenState({
     this.selectedService = '',
@@ -33,6 +34,7 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     this.availableCourtsByDate = const [],
     this.isCheckingAvailability = false,
     this.totalPayment = 0.0,
+    this.localizedProductIds = const [],
   });
 
   List<String> get selectedCourtIds {
@@ -78,6 +80,7 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     List<AvailableCourForBookingModel>? availableCourtsByDate,
     bool? isCheckingAvailability,
     double? totalPayment,
+    List<String>? localizedProductIds,
   }) {
     return AddOrderRetailStep1ScreenState(
       selectedService: selectedService ?? this.selectedService,
@@ -97,6 +100,7 @@ class AddOrderRetailStep1ScreenState extends Equatable {
       isCheckingAvailability:
           isCheckingAvailability ?? this.isCheckingAvailability,
       totalPayment: totalPayment ?? this.totalPayment,
+      localizedProductIds: localizedProductIds ?? this.localizedProductIds,
     );
   }
 
@@ -117,5 +121,6 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     availableCourtsByDate,
     isCheckingAvailability,
     totalPayment,
+    localizedProductIds,
   ];
 }

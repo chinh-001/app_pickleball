@@ -281,40 +281,64 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
     BuildContext context,
     AddOrderRetailStep1ScreenState state,
   ) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.remove),
-          onPressed:
-              state.courtCount > 1
-                  ? () {
-                    context.read<AddOrderRetailStep1ScreenBloc>().add(
-                      CourtCountChanged(state.courtCount - 1),
-                    );
-                  }
-                  : null,
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(4),
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap:
+                state.courtCount > 1
+                    ? () {
+                      context.read<AddOrderRetailStep1ScreenBloc>().add(
+                        CourtCountChanged(state.courtCount - 1),
+                      );
+                    }
+                    : null,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border(right: BorderSide(color: Colors.grey.shade300)),
+              ),
+              child: Text(
+                '-',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: state.courtCount > 1 ? Colors.black : Colors.grey,
+                ),
+              ),
+            ),
           ),
-          child: Text(
-            '${state.courtCount}',
-            style: const TextStyle(fontSize: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: Text(
+              '${state.courtCount}',
+              style: const TextStyle(fontSize: 16),
+            ),
           ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () {
-            context.read<AddOrderRetailStep1ScreenBloc>().add(
-              CourtCountChanged(state.courtCount + 1),
-            );
-          },
-        ),
-      ],
+          InkWell(
+            onTap: () {
+              context.read<AddOrderRetailStep1ScreenBloc>().add(
+                CourtCountChanged(state.courtCount + 1),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border(left: BorderSide(color: Colors.grey.shade300)),
+              ),
+              child: const Text(
+                '+',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -381,7 +405,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
+                  border: Border.all(color: Colors.black),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(

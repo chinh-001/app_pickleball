@@ -101,9 +101,6 @@ class ApiClient {
       );
 
       log.log('Response Status Code: ${response.statusCode}');
-      log.log(
-        'Response Body (100 ký tự đầu): ${response.body.length > 100 ? response.body.substring(0, 100) + "..." : response.body}',
-      );
 
       await _saveCookies(response);
       final jsonResponse = _handleResponse(response);

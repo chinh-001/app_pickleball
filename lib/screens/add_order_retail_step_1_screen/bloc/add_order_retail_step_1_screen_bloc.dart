@@ -33,9 +33,6 @@ class AddOrderRetailStep1ScreenBloc
   final ChannelSyncService _channelSyncService = ChannelSyncService.instance;
   BuildContext? _context;
 
-  // List of product IDs that need localization
-  final List<String> _localizedProductIds = ['73', '75', '77', '78'];
-
   AddOrderRetailStep1ScreenBloc({
     WorkTimeRepository? workTimeRepository,
     ChooseRepository? chooseRepository,
@@ -75,7 +72,7 @@ class AddOrderRetailStep1ScreenBloc
 
   String _getLocalizedProductName(ProductItem product) {
     // If context is not available or product ID is not in localized list, return original name
-    if (_context == null || !_localizedProductIds.contains(product.id)) {
+    if (_context == null || !state.localizedProductIds.contains(product.id)) {
       return product.name;
     }
 
@@ -85,6 +82,26 @@ class AddOrderRetailStep1ScreenBloc
 
     // If translation exists, return it; otherwise, return original name
     return localizedName != localKey ? localizedName : product.name;
+  }
+
+  /// Xác định các ID sản phẩm cần bản địa hóa dựa trên dữ liệu từ API
+  List<String> _determineLocalizedProductIds(List<ProductItem> products) {
+    // TODO: Trong tương lai, triển khai API endpoint riêng để lấy danh sách sản phẩm cần được bản địa hóa
+    // hoặc thêm trường đánh dấu trong response của API getProductsWithCourts
+
+    // Giả lập việc lấy danh sách từ API dựa trên những sản phẩm có sẵn
+    final Set<String> localizedProductIdsSet = {};
+
+    // Phát hiện các ID cần localize dựa trên tên sản phẩm
+    // Ví dụ: các sản phẩm có tên bắt đầu bằng "Pickleball" hoặc "Pikachu"
+    for (var product in products) {
+      if (product.name.toLowerCase().contains('pickleball') ||
+          product.name.toLowerCase().contains('pikachu')) {
+        localizedProductIdsSet.add(product.id);
+      }
+    }
+
+    return localizedProductIdsSet.toList();
   }
 
   Future<void> _onInitializeProducts(
@@ -102,12 +119,16 @@ class AddOrderRetailStep1ScreenBloc
         // Store original product items
         List<ProductItem> productItems = productsData.items;
 
+        // Xác định danh sách ID cần bản địa hóa từ API
+        final localizedProductIds = _determineLocalizedProductIds(productItems);
+        log.log('Localized product IDs from API: $localizedProductIds');
+
         // Apply localization if context is available
         if (_context != null) {
           // Find a product with a localized ID to use as the default selection
           ProductItem? localizedProduct;
           for (var product in productItems) {
-            if (_localizedProductIds.contains(product.id)) {
+            if (localizedProductIds.contains(product.id)) {
               localizedProduct = product;
               break;
             }
@@ -122,6 +143,7 @@ class AddOrderRetailStep1ScreenBloc
               selectedService: _getLocalizedProductName(firstProduct),
               selectedServiceId: firstProduct.id,
               isLoading: false,
+              localizedProductIds: localizedProductIds,
             ),
           );
           log.log(
@@ -139,6 +161,7 @@ class AddOrderRetailStep1ScreenBloc
               selectedService: firstProduct.name,
               selectedServiceId: firstProduct.id,
               isLoading: false,
+              localizedProductIds: localizedProductIds,
             ),
           );
           log.log(
