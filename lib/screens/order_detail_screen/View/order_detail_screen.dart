@@ -373,7 +373,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             _currentPrice = value;
 
             // Chỉ gửi sự kiện định dạng giá nếu có thay đổi
-            context.read<OrderDetailBloc>().add(FormatPriceEvent(value));
+            context.read<OrderDetailBloc>().add(
+              FormatPriceEvent(value, context),
+            );
           },
         ),
       ],

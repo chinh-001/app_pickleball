@@ -49,11 +49,12 @@ class UpdatePaymentStatusEvent extends OrderDetailEvent {
 
 class FormatPriceEvent extends OrderDetailEvent {
   final String price;
+  final BuildContext context;
 
-  const FormatPriceEvent(this.price);
+  const FormatPriceEvent(this.price, this.context);
 
   @override
-  List<Object?> get props => [price];
+  List<Object?> get props => [price, context];
 }
 
 class PickImageEvent extends OrderDetailEvent {}

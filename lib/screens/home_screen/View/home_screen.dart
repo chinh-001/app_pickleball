@@ -8,9 +8,9 @@ import 'package:app_pickleball/screens/widgets/custom_calendar_update.dart';
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
-import 'package:app_pickleball/utils/number_format.dart';
 import 'package:app_pickleball/utils/auth_helper.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
+import 'package:app_pickleball/utils/number_format.dart';
 import 'dart:developer' as log;
 import 'package:intl/intl.dart';
 
@@ -303,9 +303,11 @@ class _HomeScreenState extends State<HomeScreen>
                                           '{amount}',
                                           state is HomeScreenLoaded
                                               ? state.totalSales
-                                                  .toInt()
-                                                  .toCommaSeparated()
-                                              : '0',
+                                                  .toCurrency(context)
+                                                  .replaceAll(' VND', '')
+                                              : 0
+                                                  .toCurrency(context)
+                                                  .replaceAll(' VND', ''),
                                         ),
                                     style: const TextStyle(
                                       color: Colors.white,

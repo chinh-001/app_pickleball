@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/utils/number_format.dart';
+import 'package:app_pickleball/utils/date_format_utils.dart';
 import 'dart:io';
 import 'dart:developer' as log;
 part 'order_detail_screen_event.dart';
@@ -124,9 +125,18 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         }
       }
 
-      // Định dạng tổng tiền
+      // Định dạng tổng tiền sử dụng localization
       final String rawTotalPrice = item['total_price'] ?? '';
-      final String formattedTotalPrice = _formatTotalPrice(rawTotalPrice);
+      final String formattedTotalPrice = _formatTotalPrice(
+        rawTotalPrice,
+        context,
+      );
+
+      // Định dạng thời gian nếu cần
+      final String formattedTime =
+          selectedTime.isNotEmpty
+              ? DateTimeFormatter.formatTimeString(context, selectedTime)
+              : selectedTime;
 
       // Emit trạng thái đã tải dữ liệu
       emit(
@@ -134,7 +144,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
           selectedType: selectedType,
           selectedStatus: selectedStatus,
           selectedPaymentStatus: selectedPaymentStatus,
-          selectedTime: selectedTime,
+          selectedTime: formattedTime,
           typeOptions: typeOptions,
           statusOptions: statusOptions,
           paymentStatusOptions: paymentStatusOptions,
@@ -174,19 +184,20 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   }
 
   void _onFormatPrice(FormatPriceEvent event, Emitter<OrderDetailState> emit) {
-    final formattedPrice = _formatTotalPrice(event.price);
+    final formattedPrice = _formatTotalPrice(event.price, event.context);
     emit(PriceFormattedState(formattedPrice));
   }
 
-  String _formatTotalPrice(String price) {
+  String _formatTotalPrice(String price, BuildContext context) {
     if (price.isEmpty) return '';
 
     try {
-      // Chuyển chuỗi thành số và định dạng
+      // Chuyển chuỗi thành số và định dạng sử dụng extension CurrencyFormat
       final priceNumber = int.tryParse(price.replaceAll(RegExp(r'[^\d]'), ''));
       if (priceNumber == null) return price;
 
-      return priceNumber.toCommaSeparated();
+      // Loại bỏ "VND" ở cuối vì đã có suffix trong TextField
+      return priceNumber.toCurrency(context).replaceAll(' VND', '');
     } catch (e) {
       log.log('Error formatting price: $e');
       return price;
@@ -197,13 +208,16 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     SelectTimeEvent event,
     Emitter<OrderDetailState> emit,
   ) async {
+    // Lưu context vào biến local trước khi gọi async
+    final context = event.context;
+
     final TimeOfDay? selectedTime = await showTimePicker(
-      context: event.context,
+      context: context,
       initialTime: TimeOfDay.now(),
     );
 
     if (selectedTime != null) {
-      final formattedTime = selectedTime.format(event.context);
+      final formattedTime = selectedTime.format(context);
       if (state is OrderDetailDataLoaded) {
         final currentState = state as OrderDetailDataLoaded;
         emit(currentState.copyWith(selectedTime: formattedTime));

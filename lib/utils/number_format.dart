@@ -1,8 +1,17 @@
-extension NumberFormat on num {
-  String toCommaSeparated() {
-    return toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+extension CurrencyFormat on num {
+  /// Định dạng số thành tiền tệ dựa trên locale hiện tại
+  ///
+  /// Ví dụ: 10000 -> 10,000 VND
+  String toCurrency(BuildContext context, {int decimalDigits = 0}) {
+    final locale = Localizations.localeOf(context).toString();
+    final formatter = NumberFormat.currency(
+      locale: locale,
+      symbol: '',
+      decimalDigits: decimalDigits,
     );
+    return '${formatter.format(this)} VND';
   }
 }
