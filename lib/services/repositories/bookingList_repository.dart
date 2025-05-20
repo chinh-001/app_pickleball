@@ -92,39 +92,7 @@ class BookingListRepository implements IBookingListService {
       // Also log a more user-friendly summary of the items
       if (response['data'] != null &&
           response['data']['getAllBooking'] != null &&
-          response['data']['getAllBooking']['items'] != null) {
-        // final data = response['data'];
-        // final totalItems = data['getAllBooking']['totalItems'];
-        // final items = data['getAllBooking']['items'] as List;
-
-        // log.log('\n===== BOOKING ITEMS SUMMARY =====');
-        // log.log('Total items found: $totalItems');
-        // log.log('Number of items retrieved: ${items.length}\n');
-
-        // for (var i = 0; i < items.length; i++) {
-        //   final item = items[i];
-        //   final customer = item['customer'] as Map<String, dynamic>;
-        //   final court = item['court'] as Map<String, dynamic>;
-        //   final status = item['status'] as Map<String, dynamic>;
-        //   final paymentStatus = item['paymentstatus'] as Map<String, dynamic>;
-
-        //   log.log('BOOKING #${i + 1}:');
-        //   log.log('ID: ${item['id']}');
-        //   log.log('Code: ${item['code']}');
-        //   log.log('Customer: ${customer['firstName']} ${customer['lastName']}');
-        //   log.log('Phone: ${customer['phoneNumber']}');
-        //   log.log('Court: ${court['name']}');
-        //   log.log('Time: ${item['start_time']} - ${item['end_time']}');
-        //   log.log('Type: ${item['type']}');
-        //   log.log('Status: ${status['name']} (ID: ${status['id']})');
-        //   log.log(
-        //     'Payment Status: ${paymentStatus['name']} (ID: ${paymentStatus['id']})',
-        //   );
-        //   log.log('Total Price: ${item['total_price']}');
-        //   log.log('Note: ${item['noteCustomer']}');
-        //   log.log('-----------------------------------\n');
-        // }
-      }
+          response['data']['getAllBooking']['items'] != null) {}
 
       return response;
     } catch (e) {
@@ -139,8 +107,6 @@ class BookingListRepository implements IBookingListService {
     required DateTime date,
   }) async {
     try {
-      // log.log('\n***** BOOKING LIST REPOSITORY: getAllBookings *****');
-
       // Clear the cache before fetching new data to prevent stale data issues
       await BookingOrderList.clearCache(
         channelToken: channelToken,
@@ -163,11 +129,6 @@ class BookingListRepository implements IBookingListService {
 
       // Save data to storage
       await bookingOrderList.saveOrderListData();
-
-      // log.log(
-      //   'Processed and saved ${bookingOrderList.orders.length} booking orders',
-      // );
-      // log.log('***** END BOOKING LIST REPOSITORY *****\n');
 
       return bookingOrderList;
     } catch (e) {
