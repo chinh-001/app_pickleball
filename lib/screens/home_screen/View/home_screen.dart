@@ -246,15 +246,29 @@ class _HomeScreenState extends State<HomeScreen>
                 },
               ),
               const SizedBox(height: 20),
-              Container(
-                alignment: Alignment.centerLeft,
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  AppLocalizations.of(context).translate('availableCourts'),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).translate('availableCourts'),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.filter_list, color: Colors.green),
+                      iconSize: 24,
+                      onPressed: () {
+                        // Xử lý khi nhấn vào icon bộ lọc
+                      },
+                      tooltip: AppLocalizations.of(context).translate('filter'),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 10),
