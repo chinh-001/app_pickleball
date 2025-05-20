@@ -15,6 +15,9 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
   final UserPermissionsRepository _permissionsRepository;
   final ChannelSyncService _channelSyncService = ChannelSyncService.instance;
 
+  // Khởi tạo biến lưu trữ dữ liệu gốc trước khi lọc
+  BookingList? _originalBookingList;
+
   // Kênh dự phòng nếu không có kênh từ quyền hạn
   final List<String> fallbackChannels = ['Default channel', 'Demo-channel'];
 
@@ -28,6 +31,8 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     on<ChangeChannelEvent>(_onChangeChannel);
     on<InitializeHomeScreenEvent>(_onInitializeHomeScreen);
     on<SyncChannelEvent>(_onSyncChannel);
+    on<FilterByDateRangeEvent>(_onFilterByDateRange);
+    on<ClearDateFilterEvent>(_onClearDateFilter);
 
     // Register as a listener for channel changes
     _channelSyncService.addListener('home_screen_bloc', (newChannel) {
@@ -80,6 +85,69 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     // Unregister the listener when the bloc is closed
     _channelSyncService.removeListener('home_screen_bloc');
     return super.close();
+  }
+
+  // Xử lý lọc theo khoảng ngày
+  void _onFilterByDateRange(
+    FilterByDateRangeEvent event,
+    Emitter<HomeScreenState> emit,
+  ) {
+    log.log(
+      'Lọc dữ liệu theo khoảng ngày: ${event.selectedDates.length} ngày được chọn',
+    );
+
+    if (state is HomeScreenLoaded) {
+      final currentState = state as HomeScreenLoaded;
+
+      // Lưu lại dữ liệu gốc nếu chưa có
+      _originalBookingList ??= currentState.bookingList;
+
+      // Lọc dữ liệu dựa trên khoảng ngày được chọn
+      final filteredBookingList = _originalBookingList!.filterByDateRange(
+        event.selectedDates,
+      );
+
+      // Emit state mới với dữ liệu đã lọc
+      emit(
+        HomeScreenLoaded(
+          totalOrders: currentState.totalOrders,
+          totalSales: currentState.totalSales,
+          bookingList: filteredBookingList,
+          selectedChannel: currentState.selectedChannel,
+          availableChannels: currentState.availableChannels,
+          bookingStatus: currentState.bookingStatus,
+          selectedDates: event.selectedDates,
+        ),
+      );
+    }
+  }
+
+  // Xử lý xóa bộ lọc ngày
+  void _onClearDateFilter(
+    ClearDateFilterEvent event,
+    Emitter<HomeScreenState> emit,
+  ) {
+    log.log('Xóa bộ lọc ngày');
+
+    if (state is HomeScreenLoaded) {
+      final currentState = state as HomeScreenLoaded;
+
+      // Khôi phục lại dữ liệu gốc
+      emit(
+        HomeScreenLoaded(
+          totalOrders: currentState.totalOrders,
+          totalSales: currentState.totalSales,
+          bookingList: _originalBookingList ?? currentState.bookingList,
+          selectedChannel: currentState.selectedChannel,
+          availableChannels: currentState.availableChannels,
+          bookingStatus: currentState.bookingStatus,
+          selectedDates: null,
+        ),
+      );
+
+      // Đặt lại dữ liệu gốc
+      _originalBookingList = null;
+    }
   }
 
   // Xử lý event khởi tạo để lấy channels từ quyền hạn người dùng

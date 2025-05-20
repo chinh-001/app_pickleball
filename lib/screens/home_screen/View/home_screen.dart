@@ -4,6 +4,7 @@ import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/widgets/custom_bottom_navigation_bar.dart';
 import 'package:app_pickleball/screens/widgets/custom_floating_action_button.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
+import 'package:app_pickleball/screens/widgets/custom_calendar_update.dart';
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
@@ -11,6 +12,7 @@ import 'package:app_pickleball/utils/number_format.dart';
 import 'package:app_pickleball/utils/auth_helper.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'dart:developer' as log;
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -52,6 +54,37 @@ class _HomeScreenState extends State<HomeScreen>
   void dispose() {
     // Don't close the bloc here as it's cached
     super.dispose();
+  }
+
+  // Xử lý khi người dùng chọn ngày từ lịch
+  void _handleDateSelected(List<DateTime> dates) {
+    if (dates.isNotEmpty) {
+      // Gọi event để lọc dữ liệu
+      _homeBloc.add(FilterByDateRangeEvent(selectedDates: dates));
+
+      log.log(
+        'Đã chọn ${dates.length} ngày: ${dates.map((d) => DateFormat('dd/MM/yyyy').format(d)).join(", ")}',
+      );
+    } else {
+      // Nếu không có ngày nào được chọn, xóa bộ lọc
+      _homeBloc.add(const ClearDateFilterEvent());
+    }
+  }
+
+  // Mở lịch dạng bottom sheet
+  void _showCalendar() {
+    // Lấy danh sách ngày đã chọn từ state hiện tại
+    List<DateTime>? initialSelectedDates;
+    if (_homeBloc.state is HomeScreenLoaded) {
+      initialSelectedDates =
+          (_homeBloc.state as HomeScreenLoaded).selectedDates;
+    }
+
+    CustomCalendarUpdate.show(
+      context,
+      onDatesSelected: _handleDateSelected,
+      initialSelectedDates: initialSelectedDates,
+    );
   }
 
   @override
@@ -115,35 +148,95 @@ class _HomeScreenState extends State<HomeScreen>
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: BlocBuilder<HomeScreenBloc, HomeScreenState>(
-                  builder: (context, state) {
-                    return CustomDropdown(
-                      title: AppLocalizations.of(
-                        context,
-                      ).translate('selectChannel'),
-                      options: state.availableChannels,
-                      dropdownHeight: 40,
-                      dropdownWidth: 400,
-                      selectedValue: state.selectedChannel,
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          // log.log('\n+++++ HOME SCREEN: CHANNEL CHANGED +++++');
-                          log.log(
-                            'Channel changed from "${state.selectedChannel}" to "$newValue"',
-                          );
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: BlocBuilder<HomeScreenBloc, HomeScreenState>(
+                        builder: (context, state) {
+                          return CustomDropdown(
+                            title: AppLocalizations.of(
+                              context,
+                            ).translate('selectChannel'),
+                            options: state.availableChannels,
+                            dropdownHeight: 40,
+                            dropdownWidth: 400,
+                            selectedValue: state.selectedChannel,
+                            onChanged: (String? newValue) {
+                              if (newValue != null) {
+                                log.log(
+                                  'Channel changed from "${state.selectedChannel}" to "$newValue"',
+                                );
 
-                          _homeBloc.add(
-                            ChangeChannelEvent(channelName: newValue),
+                                _homeBloc.add(
+                                  ChangeChannelEvent(channelName: newValue),
+                                );
+                              }
+                            },
                           );
-
-                          // log.log(
-                          //   '+++++ END HOME SCREEN CHANNEL CHANGE +++++\n',
-                          // );
-                        }
-                      },
-                    );
-                  },
+                        },
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              BlocBuilder<HomeScreenBloc, HomeScreenState>(
+                builder: (context, state) {
+                  if (state is HomeScreenLoaded &&
+                      state.selectedDates != null &&
+                      state.selectedDates!.isNotEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16.0,
+                        right: 16.0,
+                        top: 8.0,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.green.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: Colors.green,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                state.selectedDates!.length > 1
+                                    ? '${state.selectedDates!.length} ngày đã chọn'
+                                    : DateFormat(
+                                      'dd/MM/yyyy',
+                                    ).format(state.selectedDates!.first),
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                _homeBloc.add(const ClearDateFilterEvent());
+                              },
+                              child: const Icon(
+                                Icons.close,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
               const SizedBox(height: 20),
               BlocBuilder<HomeScreenBloc, HomeScreenState>(
@@ -263,9 +356,7 @@ class _HomeScreenState extends State<HomeScreen>
                       constraints: const BoxConstraints(),
                       icon: const Icon(Icons.filter_list, color: Colors.green),
                       iconSize: 24,
-                      onPressed: () {
-                        // Xử lý khi nhấn vào icon bộ lọc
-                      },
+                      onPressed: _showCalendar,
                       tooltip: AppLocalizations.of(context).translate('filter'),
                     ),
                   ],

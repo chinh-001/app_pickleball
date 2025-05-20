@@ -418,6 +418,59 @@ class BookingList {
     );
   }
 
+  // Lọc danh sách dựa trên khoảng ngày
+  BookingList filterByDateRange(List<DateTime> dates) {
+    if (dates.isEmpty) {
+      return this; // Trả về danh sách hiện tại nếu không có ngày nào được chọn
+    }
+
+    // Chuẩn hóa các ngày được chọn để chỉ bao gồm năm-tháng-ngày
+    final normalizedDates =
+        dates
+            .map((date) => DateTime(date.year, date.month, date.day))
+            .toSet()
+            .toList();
+
+    // Lọc danh sách sân theo ngày
+    final filteredCourts =
+        courts.where((court) {
+          // Lấy thông tin ngày từ sân (giả sử có trường "booking_date" hoặc tương tự)
+          if (court.containsKey('booking_date')) {
+            try {
+              final bookingDateStr = court['booking_date'] as String?;
+              if (bookingDateStr == null || bookingDateStr.isEmpty) {
+                return false;
+              }
+
+              final bookingDate = DateTime.parse(bookingDateStr);
+              final normalizedBookingDate = DateTime(
+                bookingDate.year,
+                bookingDate.month,
+                bookingDate.day,
+              );
+
+              // Kiểm tra xem ngày của sân có nằm trong các ngày được chọn không
+              return normalizedDates.any(
+                (date) =>
+                    date.year == normalizedBookingDate.year &&
+                    date.month == normalizedBookingDate.month &&
+                    date.day == normalizedBookingDate.day,
+              );
+            } catch (e) {
+              log.log('Lỗi khi phân tích ngày đặt sân: $e');
+              return false;
+            }
+          }
+          return false;
+        }).toList();
+
+    return BookingList(
+      courts: filteredCourts,
+      lastUpdated: DateTime.now(),
+      channelToken: channelToken,
+    );
+  }
+
   // Convert danh sách thành JSON
   Map<String, dynamic> toJson() {
     return {

@@ -3,14 +3,20 @@ part of 'home_screen_bloc.dart';
 abstract class HomeScreenState extends Equatable {
   final String selectedChannel;
   final List<String> availableChannels;
+  final List<DateTime>? selectedDates;
 
   const HomeScreenState({
     this.selectedChannel = 'Default channel',
     this.availableChannels = const [],
+    this.selectedDates,
   });
 
   @override
-  List<Object> get props => [selectedChannel, availableChannels];
+  List<Object> get props => [
+    selectedChannel,
+    availableChannels,
+    selectedDates ?? [],
+  ];
 }
 
 class HomeScreenInitial extends HomeScreenState {
@@ -21,9 +27,11 @@ class HomeScreenLoading extends HomeScreenState {
   const HomeScreenLoading({
     required String selectedChannel,
     required List<String> availableChannels,
+    List<DateTime>? selectedDates,
   }) : super(
          selectedChannel: selectedChannel,
          availableChannels: availableChannels,
+         selectedDates: selectedDates,
        );
 }
 
@@ -40,9 +48,11 @@ class HomeScreenLoaded extends HomeScreenState {
     required String selectedChannel,
     required List<String> availableChannels,
     required this.bookingStatus,
+    List<DateTime>? selectedDates,
   }) : super(
          selectedChannel: selectedChannel,
          availableChannels: availableChannels,
+         selectedDates: selectedDates,
        );
 
   List<Map<String, dynamic>> get items {
@@ -57,6 +67,7 @@ class HomeScreenLoaded extends HomeScreenState {
     selectedChannel,
     availableChannels,
     bookingStatus,
+    selectedDates ?? [],
   ];
 }
 
@@ -67,11 +78,18 @@ class HomeScreenError extends HomeScreenState {
     required this.message,
     required String selectedChannel,
     required List<String> availableChannels,
+    List<DateTime>? selectedDates,
   }) : super(
          selectedChannel: selectedChannel,
          availableChannels: availableChannels,
+         selectedDates: selectedDates,
        );
 
   @override
-  List<Object> get props => [message, selectedChannel, availableChannels];
+  List<Object> get props => [
+    message,
+    selectedChannel,
+    availableChannels,
+    selectedDates ?? [],
+  ];
 }

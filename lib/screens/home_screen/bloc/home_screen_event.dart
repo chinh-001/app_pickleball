@@ -37,3 +37,16 @@ class SyncChannelEvent extends HomeScreenEvent {
   @override
   List<Object?> get props => [channelName];
 }
+
+class FilterByDateRangeEvent extends HomeScreenEvent {
+  final List<DateTime> selectedDates;
+
+  const FilterByDateRangeEvent({required this.selectedDates});
+
+  @override
+  List<Object?> get props => [selectedDates];
+}
+
+class ClearDateFilterEvent extends HomeScreenEvent {
+  const ClearDateFilterEvent();
+}

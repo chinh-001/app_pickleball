@@ -173,5 +173,18 @@
   "openingUrlInBrowser": "Opening URL in browser...",
   
   "qr": "Scan QR",
-  "website": "Website"
+  "website": "Website",
+  
+  "calendar": "Calendar",
+  "listView": "List",
+  "thisWeek": "This Week",
+  "nextWeek": "Next Week",
+  "thisMonth": "This Month",
+  "selectDaysInThisWeek": "Select days in this week",
+  "selectDaysInNextWeek": "Select days in next week",
+  "selectDaysInThisMonth": "Select days in this month",
+  "monthFormat": "Month {month}",
+  "apply": "Apply",
+  "daysSelected": "{count} days selected",
+  "filter": "Filter"
 } 

@@ -173,5 +173,18 @@
   "openingUrlInBrowser": "Đang mở đường dẫn trong trình duyệt...",
   
   "qr": "Mã QR",
-  "website": "Trang web"
+  "website": "Trang web",
+  
+  "calendar": "Lịch",
+  "listView": "Danh sách",
+  "thisWeek": "Tuần này",
+  "nextWeek": "Tuần sau",
+  "thisMonth": "Tháng này",
+  "selectDaysInThisWeek": "Chọn ngày trong tuần này",
+  "selectDaysInNextWeek": "Chọn ngày trong tuần sau",
+  "selectDaysInThisMonth": "Chọn ngày trong tháng này",
+  "monthFormat": "Tháng {month}",
+  "apply": "Áp dụng",
+  "daysSelected": "{count} ngày đã chọn",
+  "filter": "Lọc"
 } 
