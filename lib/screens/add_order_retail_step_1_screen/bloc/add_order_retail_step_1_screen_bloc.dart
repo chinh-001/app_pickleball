@@ -4,14 +4,13 @@ import 'package:app_pickleball/services/repositories/work_time_repository.dart';
 import 'package:app_pickleball/services/repositories/choose_repository.dart';
 import 'package:app_pickleball/services/repositories/courts_for_product_repository.dart';
 import 'package:app_pickleball/services/channel_sync_service.dart';
-import 'package:app_pickleball/models/productWithCourts_Model.dart';
 // Import ProductItem để sử dụng trong Bloc và State
 import 'package:app_pickleball/models/productWithCourts_Model.dart'
     show ProductItem;
 import 'package:app_pickleball/models/courtsForProduct_model.dart'
-    show CourtItem, CourtsForProductResponse;
+    show CourtItem;
 import 'package:app_pickleball/models/available_cour_for_booking_model.dart'
-    show AvailableCourForBookingModel, Court, AvailableCourInputModel;
+    show AvailableCourForBookingModel, AvailableCourInputModel;
 import 'package:app_pickleball/services/repositories/available_cour_for_booking_repository.dart';
 import 'dart:developer' as log;
 import 'package:app_pickleball/services/localization/app_localizations.dart';
@@ -151,7 +150,7 @@ class AddOrderRetailStep1ScreenBloc
           );
 
           // Fetch courts for this product ID
-          _fetchCourtsForProduct(firstProduct.id);
+          await _fetchCourtsForProduct(firstProduct.id, emit);
         } else {
           // No context available, use original names
           final firstProduct = productItems.first;
@@ -169,7 +168,7 @@ class AddOrderRetailStep1ScreenBloc
           );
 
           // Fetch courts for this product ID
-          _fetchCourtsForProduct(firstProduct.id);
+          await _fetchCourtsForProduct(firstProduct.id, emit);
         }
       } else {
         log.log('No products found, using default values');
@@ -181,7 +180,10 @@ class AddOrderRetailStep1ScreenBloc
     }
   }
 
-  Future<void> _fetchCourtsForProduct(String productId) async {
+  Future<void> _fetchCourtsForProduct(
+    String productId,
+    Emitter<AddOrderRetailStep1ScreenState> emit,
+  ) async {
     if (productId.isEmpty) {
       log.log('Cannot fetch courts: Product ID is empty');
       // Nếu không có product ID, cập nhật state với danh sách rỗng
@@ -403,50 +405,6 @@ class AddOrderRetailStep1ScreenBloc
       log.log('=== GỌI API KIỂM TRA SÂN CÓ SẴN ===');
       log.log('Input JSON: ${input.toJson()}');
 
-      // Truy vấn GraphQL được sử dụng
-      const graphqlQuery = '''
-        query GetAvailableCourtForBooking(
-          \$bookingDates: [String!]!,
-          \$start_time: String!,
-          \$end_time: String!,
-          \$productId: ID!,
-          \$quantityCourt: Int!
-        ) {
-          getAvailableCourtForBooking(
-            input: {
-              bookingDates: \$bookingDates,
-              start_time: \$start_time,
-              end_time: \$end_time,
-              productId: \$productId,
-              quantityCourt: \$quantityCourt
-            }
-          ) {
-            bookingDate
-            courts {
-              id
-              name
-              status
-              price
-              start_time
-              end_time
-            }
-          }
-        }
-      ''';
-
-      // Biến được truyền vào truy vấn
-      final graphqlVariables = {
-        'bookingDates': formattedDates,
-        'start_time': state.selectedFromTime,
-        'end_time': state.selectedToTime,
-        'productId': state.selectedServiceId,
-        'quantityCourt': state.courtCount,
-      };
-
-      // Log truy vấn và biến
-      log.log('=== TRUY VẤN GRAPHQL ĐÃ GỬI ĐI ===');
-      // log.log('Query: $graphqlQuery');
-      // log.log('Variables: $graphqlVariables');
       log.log('Channel hiện tại: ${_channelSyncService.selectedChannel}');
 
       // Gọi API kiểm tra sân có sẵn
@@ -519,7 +477,7 @@ class AddOrderRetailStep1ScreenBloc
   void _onServiceSelected(
     ServiceSelected event,
     Emitter<AddOrderRetailStep1ScreenState> emit,
-  ) {
+  ) async {
     log.log('\n=== ServiceSelected Event ===');
     log.log('Dịch vụ đã chọn: ${event.service}');
 
@@ -554,7 +512,7 @@ class AddOrderRetailStep1ScreenBloc
     );
 
     // Fetch courts for this product ID
-    _fetchCourtsForProduct(selectedProduct.id);
+    await _fetchCourtsForProduct(selectedProduct.id, emit);
 
     // Kiểm tra sân có sẵn nếu đủ thông tin
     if (state.selectedDates.isNotEmpty &&
@@ -563,7 +521,7 @@ class AddOrderRetailStep1ScreenBloc
       log.log(
         'Đủ thông tin, kích hoạt CheckAvailableCourts từ ServiceSelected',
       );
-      add(const CheckAvailableCourts());
+      await _onCheckAvailableCourts(const CheckAvailableCourts(), emit);
     } else {
       log.log('Thiếu thông tin sau khi chọn dịch vụ:');
       if (state.selectedDates.isEmpty) log.log('- Chưa chọn ngày');
@@ -575,7 +533,7 @@ class AddOrderRetailStep1ScreenBloc
   void _onCourtCountChanged(
     CourtCountChanged event,
     Emitter<AddOrderRetailStep1ScreenState> emit,
-  ) {
+  ) async {
     emit(_updateFormCompleteness(state.copyWith(courtCount: event.courtCount)));
 
     // Kiểm tra sân có sẵn nếu đủ thông tin
@@ -583,14 +541,14 @@ class AddOrderRetailStep1ScreenBloc
         state.selectedFromTime.isNotEmpty &&
         state.selectedToTime.isNotEmpty &&
         state.selectedServiceId.isNotEmpty) {
-      add(const CheckAvailableCourts());
+      await _onCheckAvailableCourts(const CheckAvailableCourts(), emit);
     }
   }
 
   void _onDatesSelected(
     DatesSelected event,
     Emitter<AddOrderRetailStep1ScreenState> emit,
-  ) {
+  ) async {
     log.log('\n=== DatesSelected Event ===');
     log.log('Số ngày đã chọn: ${event.dates.length}');
     if (event.dates.isNotEmpty) {
@@ -605,7 +563,7 @@ class AddOrderRetailStep1ScreenBloc
         state.selectedToTime.isNotEmpty &&
         state.selectedServiceId.isNotEmpty) {
       log.log('Đủ thông tin, kích hoạt CheckAvailableCourts từ DatesSelected');
-      add(const CheckAvailableCourts());
+      await _onCheckAvailableCourts(const CheckAvailableCourts(), emit);
     } else {
       log.log('Thiếu thông tin sau khi chọn ngày:');
       if (event.dates.isEmpty) log.log('- Chưa chọn ngày');
@@ -619,7 +577,7 @@ class AddOrderRetailStep1ScreenBloc
   void _onFromTimeSelected(
     FromTimeSelected event,
     Emitter<AddOrderRetailStep1ScreenState> emit,
-  ) {
+  ) async {
     log.log('\n=== FromTimeSelected Event ===');
     log.log('Giờ bắt đầu đã chọn: ${event.fromTime}');
 
@@ -660,7 +618,7 @@ class AddOrderRetailStep1ScreenBloc
       log.log(
         'Đủ thông tin, kích hoạt CheckAvailableCourts từ FromTimeSelected',
       );
-      add(const CheckAvailableCourts());
+      await _onCheckAvailableCourts(const CheckAvailableCourts(), emit);
     } else {
       log.log('Thiếu thông tin sau khi chọn giờ bắt đầu:');
       if (state.selectedDates.isEmpty) log.log('- Chưa chọn ngày');
@@ -674,7 +632,7 @@ class AddOrderRetailStep1ScreenBloc
   void _onToTimeSelected(
     ToTimeSelected event,
     Emitter<AddOrderRetailStep1ScreenState> emit,
-  ) {
+  ) async {
     log.log('\n=== ToTimeSelected Event ===');
     log.log('Giờ kết thúc đã chọn: ${event.toTime}');
 
@@ -693,7 +651,7 @@ class AddOrderRetailStep1ScreenBloc
         event.toTime.isNotEmpty &&
         state.selectedServiceId.isNotEmpty) {
       log.log('Đủ thông tin, kích hoạt CheckAvailableCourts từ ToTimeSelected');
-      add(const CheckAvailableCourts());
+      await _onCheckAvailableCourts(const CheckAvailableCourts(), emit);
     } else {
       log.log('Thiếu thông tin sau khi chọn giờ kết thúc:');
       if (state.selectedDates.isEmpty) log.log('- Chưa chọn ngày');
@@ -729,39 +687,23 @@ class AddOrderRetailStep1ScreenBloc
   AddOrderRetailStep1ScreenState _updateFormCompleteness(
     AddOrderRetailStep1ScreenState state,
   ) {
-    final bool isComplete =
-        state.selectedDates.isNotEmpty && state.selectedService.isNotEmpty;
-    return state.copyWith(isFormComplete: isComplete);
-  }
-
-  // Phương thức tính tổng giá tiền dựa trên các sân đã chọn
-  double _calculateTotalPayment() {
-    double total = 0.0;
-
-    // Duyệt qua từng ngày đã chọn sân
-    state.selectedCourtsByDate.forEach((dateKey, courtIds) {
-      // Tìm thông tin ngày này trong dữ liệu có sẵn
-      for (var dateData in state.availableCourtsByDate) {
-        if (dateData.bookingDate == dateKey) {
-          // Với mỗi sân được chọn, tìm thông tin giá và cộng vào tổng
-          for (var courtId in courtIds) {
-            for (var court in dateData.courts) {
-              if (court.id == courtId) {
-                total += court.price;
-                log.log(
-                  'Thêm giá của sân ${court.name} (${court.id}): ${court.price} VND',
-                );
-                break;
-              }
-            }
-          }
+    // Kiểm tra nếu có ít nhất một sân được chọn
+    bool hasSelectedCourts = false;
+    if (state.selectedCourtsByDate.isNotEmpty) {
+      for (var courtsList in state.selectedCourtsByDate.values) {
+        if (courtsList.isNotEmpty) {
+          hasSelectedCourts = true;
           break;
         }
       }
-    });
+    }
 
-    log.log('Tổng giá tiền đã tính: $total VND');
-    return total;
+    final bool isComplete =
+        state.selectedDates.isNotEmpty &&
+        state.selectedService.isNotEmpty &&
+        hasSelectedCourts;
+
+    return state.copyWith(isFormComplete: isComplete);
   }
 
   // Xử lý khi người dùng chọn hoặc bỏ chọn một sân
@@ -828,15 +770,11 @@ class AddOrderRetailStep1ScreenBloc
       // Cập nhật state với Map mới và tính lại tổng tiền
       emit(
         _updateFormCompleteness(
-          state.copyWith(
-            selectedCourtsByDate: updatedSelectedCourtsByDate,
-            // Tính lại tổng tiền sau khi cập nhật danh sách sân đã chọn
-          ),
+          state.copyWith(selectedCourtsByDate: updatedSelectedCourtsByDate),
         ),
       );
 
       // Tính và cập nhật tổng tiền
-      // Lưu ý: Phải tính sau khi đã emit state mới với danh sách sân cập nhật
       final updatedState = state.copyWith(
         selectedCourtsByDate: updatedSelectedCourtsByDate,
       );

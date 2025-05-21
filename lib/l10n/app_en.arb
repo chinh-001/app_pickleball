@@ -186,5 +186,10 @@
   "monthFormat": "Month {month}",
   "apply": "Apply",
   "daysSelected": "{count} days selected",
-  "filter": "Filter"
+  "filter": "Filter",
+
+  "pleaseSelectDate": "Please select booking date",
+  "pleaseSelectService": "Please select a service",
+  "pleaseSelectCourt": "Please select at least one court",
+  "pleaseCompleteAllInfo": "Please complete all required information"
 } 

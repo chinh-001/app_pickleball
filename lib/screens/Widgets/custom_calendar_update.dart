@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
+import 'package:app_pickleball/screens/widgets/custom_tab_button.dart';
+import 'package:app_pickleball/screens/widgets/custom_selection_tile.dart';
 
 class CustomCalendarUpdate extends StatefulWidget {
   final Function(List<DateTime>) onDatesSelected;
@@ -123,7 +125,6 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
       case 1: // This Week
         // Tính toán ngày đầu tuần (thứ 2) và cuối tuần (chủ nhật)
         final thisWeekMonday = now.subtract(Duration(days: now.weekday - 1));
-        final thisWeekSunday = thisWeekMonday.add(const Duration(days: 6));
 
         // Chọn tất cả các ngày trong tuần này
         _selectedDays = {};
@@ -331,47 +332,18 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
   }
 
   Widget _buildTabButton(int index, IconData icon, String title) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedViewIndex = index;
-            _tabController.animateTo(index);
-          });
-        },
-        child: Container(
-          color: Colors.transparent,
-          height: 40,
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: 14,
-                  color:
-                      _selectedViewIndex == index ? _primaryColor : Colors.grey,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight:
-                        _selectedViewIndex == index
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                    color:
-                        _selectedViewIndex == index
-                            ? _primaryColor
-                            : Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return CustomTabButton(
+      icon: icon,
+      title: title,
+      isSelected: _selectedViewIndex == index,
+      onTap: () {
+        setState(() {
+          _selectedViewIndex = index;
+          _tabController.animateTo(index);
+        });
+      },
+      selectedColor: _primaryColor,
+      unselectedColor: Colors.grey,
     );
   }
 
@@ -631,67 +603,14 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
         _pendingListItem == index ||
         (_pendingListItem == null && _selectedListItem == index);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Row(
-              children: [
-                // Icon trước title
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color:
-                        isSelected ? _primaryLightColor : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isSelected ? _primaryColor : Colors.grey,
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                // Nội dung
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected ? _primaryColor : _textColor,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return CustomSelectionTile(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
+      isSelected: isSelected,
+      onTap: onTap,
+      primaryColor: _primaryColor,
+      textColor: _textColor,
     );
   }
 }

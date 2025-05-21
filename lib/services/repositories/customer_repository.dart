@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:app_pickleball/models/customer_model.dart';
 import 'package:app_pickleball/services/interfaces/i_customer_service.dart';
-import 'package:app_pickleball/enum/CallApiStatus.dart';
 import 'package:app_pickleball/services/api/api_endpoints.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as log;
-import 'package:app_pickleball/utils/auth_helper.dart';
 
 class CustomerRepository implements ICustomerService {
   final String baseUrl = ApiEndpoints.base;

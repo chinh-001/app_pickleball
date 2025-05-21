@@ -4,6 +4,10 @@ import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/widgets/custom_calendar_add_booking.dart';
 import 'package:app_pickleball/screens/widgets/custom_button.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
+import 'package:app_pickleball/screens/widgets/custom_step_indicator.dart';
+import 'package:app_pickleball/screens/widgets/custom_court_count_selector.dart';
+import 'package:app_pickleball/screens/widgets/custom_booking_date_card.dart';
+import 'package:app_pickleball/screens/widgets/custom_booking_summary.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_1_screen/bloc/add_order_retail_step_1_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/work_time_repository.dart';
 import 'package:app_pickleball/services/repositories/choose_repository.dart';
@@ -14,8 +18,6 @@ import 'package:app_pickleball/models/available_cour_for_booking_model.dart';
 // import 'package:app_pickleball/models/productWithCourts_Model.dart';
 import 'package:intl/intl.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/View/add_order_retail_step_2_view.dart';
-import 'dart:developer' as log;
-import 'package:intl/number_symbols.dart';
 
 class AddOrderRetailStep1Screen extends StatefulWidget {
   const AddOrderRetailStep1Screen({Key? key}) : super(key: key);
@@ -93,7 +95,14 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                     : SingleChildScrollView(
                       child: Column(
                         children: [
-                          _buildStepIndicator(context),
+                          CustomStepIndicator(
+                            currentStep: 1,
+                            stepKeys: [
+                              'courtInformation',
+                              'customerInformation',
+                              'completeBooking',
+                            ],
+                          ),
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
@@ -117,7 +126,16 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                                         ),
                                       ),
                                     ),
-                                    _buildCourtCountSelector(context, state),
+                                    CustomCourtCountSelector(
+                                      value: state.courtCount,
+                                      onChanged: (value) {
+                                        context
+                                            .read<
+                                              AddOrderRetailStep1ScreenBloc
+                                            >()
+                                            .add(CourtCountChanged(value));
+                                      },
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
@@ -139,8 +157,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                                         .read<AddOrderRetailStep1ScreenBloc>()
                                         .add(DatesSelected(dates));
                                   },
-                                  allowSelectPastDates:
-                                      false, // Chỉ cho phép chọn ngày hiện tại và tương lai
+                                  allowSelectPastDates: false,
                                 ),
                                 const SizedBox(height: 16),
 
@@ -161,66 +178,6 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
         },
       ),
     );
-  }
-
-  Widget _buildStepIndicator(BuildContext context) {
-    return Container(
-      color: Colors.green,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildStepCircle('1', true),
-            const SizedBox(width: 8),
-            Text(
-              AppLocalizations.of(context).translate('courtInformation'),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-            _buildStepCircle('2', false),
-            const SizedBox(width: 8),
-            Text(
-              AppLocalizations.of(context).translate('customerInformation'),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-            _buildStepCircle('3', false),
-            const SizedBox(width: 8),
-            Text(
-              AppLocalizations.of(context).translate('completeBooking'),
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStepCircle(String text, bool isActive) {
-    return isActive
-        ? CircleAvatar(
-          radius: 12,
-          backgroundColor: Colors.white,
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        )
-        : Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(text, style: const TextStyle(color: Colors.white)),
-          ),
-        );
   }
 
   Widget _buildServiceDropdown(
@@ -274,71 +231,6 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
           );
         }
       },
-    );
-  }
-
-  Widget _buildCourtCountSelector(
-    BuildContext context,
-    AddOrderRetailStep1ScreenState state,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          InkWell(
-            onTap:
-                state.courtCount > 1
-                    ? () {
-                      context.read<AddOrderRetailStep1ScreenBloc>().add(
-                        CourtCountChanged(state.courtCount - 1),
-                      );
-                    }
-                    : null,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                border: Border(right: BorderSide(color: Colors.grey.shade300)),
-              ),
-              child: Text(
-                '-',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: state.courtCount > 1 ? Colors.black : Colors.grey,
-                ),
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Text(
-              '${state.courtCount}',
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              context.read<AddOrderRetailStep1ScreenBloc>().add(
-                CourtCountChanged(state.courtCount + 1),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                border: Border(left: BorderSide(color: Colors.grey.shade300)),
-              ),
-              child: const Text(
-                '+',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -466,203 +358,37 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
               ...state.selectedDates.asMap().entries.map((entry) {
                 final int index = entry.key;
                 final DateTime date = entry.value;
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            '#${index + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(width: 16),
-                          Text('${DateFormat('E, dd/MM/yyyy').format(date)}'),
-                          const Spacer(),
-                          Text(
-                            '${state.selectedFromTime} - ${state.selectedToTime}',
-                          ),
-                        ],
+                final String dateKey = DateFormat('yyyy-MM-dd').format(date);
+                final List<String> selectedCourtsForThisDate =
+                    state.selectedCourtsByDate[dateKey] ?? [];
+
+                return CustomBookingDateCard(
+                  index: index,
+                  date: date,
+                  fromTime: state.selectedFromTime,
+                  toTime: state.selectedToTime,
+                  availableCourts: _getAvailableCourtsForDate(state, date),
+                  selectedCourtIds: selectedCourtsForThisDate,
+                  maxCourtSelections: state.courtCount,
+                  isCheckingAvailability: state.isCheckingAvailability,
+                  onCourtSelected: (courtId, isSelected, bookingDate) {
+                    context.read<AddOrderRetailStep1ScreenBloc>().add(
+                      CourtSelected(
+                        courtId: courtId,
+                        isSelected: isSelected,
+                        bookingDate: bookingDate,
                       ),
-                      const SizedBox(height: 8),
-
-                      // Hiển thị trạng thái đang kiểm tra
-                      if (state.isCheckingAvailability)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              children: [
-                                CircularProgressIndicator(),
-                                SizedBox(height: 8),
-                                Text('Đang kiểm tra sân có sẵn...'),
-                              ],
-                            ),
-                          ),
-                        )
-                      // Hiển thị thông báo khi không có sân hoặc danh sách các sân có sẵn
-                      else if (_getAvailableCourtsForDate(state, date).isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(
-                            'Không có sân',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        )
-                      else
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children:
-                              _getAvailableCourtsForDate(state, date).map((
-                                court,
-                              ) {
-                                // Lấy danh sách sân đã chọn cho ngày cụ thể này
-                                final String dateKey = DateFormat(
-                                  'yyyy-MM-dd',
-                                ).format(date);
-                                final List<String> selectedCourtsForThisDate =
-                                    state.selectedCourtsByDate[dateKey] ?? [];
-
-                                // Kiểm tra xem sân có được chọn cho ngày này không
-                                final bool isSelected =
-                                    selectedCourtsForThisDate.contains(
-                                      court.id,
-                                    );
-
-                                // Kiểm tra xem đã đạt giới hạn số lượng sân chọn chưa
-                                final bool reachedLimit =
-                                    selectedCourtsForThisDate.length >=
-                                    state.courtCount;
-
-                                // Chỉ vô hiệu hóa nếu đạt giới hạn VÀ sân hiện tại chưa được chọn
-                                final bool isDisabled =
-                                    reachedLimit && !isSelected;
-
-                                return ElevatedButton(
-                                  onPressed:
-                                      isDisabled
-                                          ? null // Vô hiệu hóa nút nếu đã đạt giới hạn và sân này chưa được chọn
-                                          : () {
-                                            // Khi nhấn nút, thay đổi trạng thái chọn của sân
-                                            context
-                                                .read<
-                                                  AddOrderRetailStep1ScreenBloc
-                                                >()
-                                                .add(
-                                                  CourtSelected(
-                                                    courtId: court.id,
-                                                    isSelected:
-                                                        !isSelected, // Đảo ngược trạng thái hiện tại
-                                                    bookingDate:
-                                                        date, // Thêm ngày đặt sân
-                                                  ),
-                                                );
-                                          },
-                                  style: ElevatedButton.styleFrom(
-                                    // Sân được chọn -> màu xanh, chưa chọn -> màu xám
-                                    // Sân vô hiệu hóa -> màu xám nhạt
-                                    backgroundColor:
-                                        isDisabled
-                                            ? Colors.grey[300]
-                                            : (isSelected
-                                                ? Colors.green
-                                                : Colors.grey),
-                                    foregroundColor:
-                                        isDisabled
-                                            ? Colors.black38
-                                            : Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                    minimumSize: const Size(60, 36),
-                                  ),
-                                  child: Text(
-                                    court.name,
-                                    style: TextStyle(
-                                      color:
-                                          isDisabled
-                                              ? Colors.black38
-                                              : Colors.white,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                        ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               }).toList(),
+
               if (state.selectedService.isNotEmpty)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context).translate('court'),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text('${displayServiceName}'),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        '${state.courtCount} ${AppLocalizations.of(context).translate('courts')}',
-                      ),
-                    ],
-                  ),
+                CustomBookingSummary(
+                  serviceName: displayServiceName,
+                  courtCount: state.courtCount,
+                  totalPayment: state.totalPayment,
                 ),
-              Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context).translate('totalPayment'),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      NumberFormat.currency(
-                        locale: 'vi_VN',
-                        symbol: 'VNĐ',
-                        decimalDigits: 0,
-                      ).format(state.totalPayment),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
@@ -704,22 +430,53 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
           Expanded(
             child: CustomElevatedButton(
               text: AppLocalizations.of(context).translate('next'),
-              onPressed:
-                  state.isFormComplete
-                      ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => const AddOrderRetailStep2View(),
-                          ),
-                        );
-                      }
-                      : () {},
+              onPressed: () {
+                if (state.isFormComplete) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddOrderRetailStep2View(),
+                    ),
+                  );
+                } else {
+                  // Kiểm tra lý do không thể tiếp tục
+                  String errorMessage;
+
+                  if (state.selectedDates.isEmpty) {
+                    errorMessage = AppLocalizations.of(
+                      context,
+                    ).translate('pleaseSelectDate');
+                  } else if (state.selectedService.isEmpty) {
+                    errorMessage = AppLocalizations.of(
+                      context,
+                    ).translate('pleaseSelectService');
+                  } else if (state.selectedCourtsByDate.isEmpty ||
+                      !state.selectedCourtsByDate.values.any(
+                        (courts) => courts.isNotEmpty,
+                      )) {
+                    errorMessage = AppLocalizations.of(
+                      context,
+                    ).translate('pleaseSelectCourt');
+                  } else {
+                    errorMessage = AppLocalizations.of(
+                      context,
+                    ).translate('pleaseCompleteAllInfo');
+                  }
+
+                  // Hiển thị SnackBar thông báo
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(errorMessage),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
               backgroundColor:
-                  state.isFormComplete ? Colors.green : Colors.white,
-              textColor: state.isFormComplete ? Colors.white : Colors.black,
-              borderColor: state.isFormComplete ? Colors.green : Colors.black,
+                  state.isFormComplete ? Colors.green : Colors.grey,
+              textColor: Colors.white,
+              borderColor: state.isFormComplete ? Colors.green : Colors.grey,
             ),
           ),
         ],

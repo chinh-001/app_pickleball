@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
-import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
-import 'package:app_pickleball/screens/widgets/custom_multiline_text_field.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/bloc/add_order_retail_step_2_screen_bloc.dart';
 import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/View/complete_booking_screen.dart';
-import 'package:app_pickleball/screens/widgets/custom_textField.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:app_pickleball/models/customer_model.dart';
 import 'package:app_pickleball/screens/widgets/custom_step_circle.dart';
 import 'package:app_pickleball/screens/widgets/custom_option_item.dart';
 import 'package:app_pickleball/screens/widgets/custom_options_container.dart';
@@ -29,7 +24,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
   final _searchController = TextEditingController();
-  final _typeAheadController = TextEditingController();
   late final AddOrderRetailStep2ScreenBloc _bloc;
   final ScrollController _scrollController = ScrollController();
   bool _showStepper = true;

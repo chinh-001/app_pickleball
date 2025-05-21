@@ -49,9 +49,6 @@ class BookingRepository implements IBookingService {
   @override
   Future<BookingStatus> getBookingStats({String? channelToken}) async {
     try {
-      // log.log('\n===== BOOKING REPOSITORY: getBookingStats =====');
-      // log.log('Starting request with channel token: $channelToken');
-
       // Lấy ngày hiện tại
       final now = DateTime.now();
       final startOfDay = DateTime(now.year, now.month, now.day);
@@ -64,8 +61,6 @@ class BookingRepository implements IBookingService {
           '${startOfDay.year}-${startOfDay.month.toString().padLeft(2, '0')}-${startOfDay.day.toString().padLeft(2, '0')}';
       final endDateStr =
           '${endOfDay.year}-${endOfDay.month.toString().padLeft(2, '0')}-${endOfDay.day.toString().padLeft(2, '0')}';
-
-      // log.log('Date range: $startDateStr to $endDateStr');
 
       const query = '''
         query GetBookingStats(\$startDate: Date!, \$endDate: Date!) {
@@ -115,7 +110,6 @@ class BookingRepository implements IBookingService {
       );
 
       if (jsonResponse == null) {
-        // log.log('Response is null');
         return _getOrCreateBookingStatus({
           'totalBookings': 0,
           'totalRevenue': 0.0,
@@ -124,7 +118,6 @@ class BookingRepository implements IBookingService {
 
       final data = jsonResponse['data'];
       if (data == null) {
-        // log.log('Data is null');
         return _getOrCreateBookingStatus({
           'totalBookings': 0,
           'totalRevenue': 0.0,
@@ -142,9 +135,6 @@ class BookingRepository implements IBookingService {
       final totalBookingData = data['GetTotalBooking'];
       final totalBookings =
           totalBookingData != null ? totalBookingData['totalItems'] ?? 0 : 0;
-
-      // log.log('Result: Revenue = $revenue, Total bookings = $totalBookings');
-      // log.log('===== END BOOKING REPOSITORY =====\n');
 
       final bookingData = {
         'totalBookings': totalBookings,

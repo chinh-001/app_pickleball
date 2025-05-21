@@ -68,11 +68,6 @@ class BookingListRepository implements IBookingListService {
         }
       ''';
 
-      // Only log the channel being requested, not the query itself
-      // log.log(
-      //   '\n***** BOOKING LIST REPOSITORY: Getting data for channel: $channelToken *****',
-      // );
-
       final response = await _apiClient.query<Map<String, dynamic>>(
         query,
         variables: {},

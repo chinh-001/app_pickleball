@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class CustomerResponse {
   final int totalItems;
   final List<Customer> items;
