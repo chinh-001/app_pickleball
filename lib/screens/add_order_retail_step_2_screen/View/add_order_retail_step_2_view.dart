@@ -7,6 +7,12 @@ import 'package:app_pickleball/screens/add_order_retail_step_2_screen/bloc/add_o
 import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/View/complete_booking_screen.dart';
 import 'package:app_pickleball/screens/widgets/custom_textField.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:app_pickleball/models/customer_model.dart';
+import 'package:app_pickleball/screens/widgets/custom_step_circle.dart';
+import 'package:app_pickleball/screens/widgets/custom_option_item.dart';
+import 'package:app_pickleball/screens/widgets/custom_options_container.dart';
+import 'package:app_pickleball/screens/widgets/custom_payment_summary.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
   const AddOrderRetailStep2View({super.key});
@@ -22,6 +28,8 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
+  final _searchController = TextEditingController();
+  final _typeAheadController = TextEditingController();
   late final AddOrderRetailStep2ScreenBloc _bloc;
   final ScrollController _scrollController = ScrollController();
   bool _showStepper = true;
@@ -91,6 +99,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     _emailController.dispose();
     _phoneController.dispose();
     _notesController.dispose();
+    _searchController.dispose();
     _bloc.close();
     super.dispose();
   }
@@ -161,21 +170,21 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         child: Row(
           children: [
             const SizedBox(width: 16),
-            _buildStepCircle('1', false, true),
+            CustomStepCircle(text: '1', isActive: false, isDone: true),
             const SizedBox(width: 8),
             Text(
               AppLocalizations.of(context).translate('courtInformation'),
               style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(width: 16),
-            _buildStepCircle('2', true, false),
+            CustomStepCircle(text: '2', isActive: true, isDone: false),
             const SizedBox(width: 8),
             Text(
               AppLocalizations.of(context).translate('customerInformation'),
               style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(width: 16),
-            _buildStepCircle('3', false, false),
+            CustomStepCircle(text: '3', isActive: false, isDone: false),
             const SizedBox(width: 8),
             Text(
               AppLocalizations.of(context).translate('completeBooking'),
@@ -186,46 +195,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         ),
       ),
     );
-  }
-
-  Widget _buildStepCircle(String text, bool isActive, bool isDone) {
-    return isActive
-        ? CircleAvatar(
-          radius: 12,
-          backgroundColor: Colors.white,
-          child: Center(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        )
-        : Container(
-          width: 24,
-          height: 24,
-          padding: EdgeInsets.zero,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
-            shape: BoxShape.circle,
-            color: isDone ? Colors.white : Colors.transparent,
-          ),
-          child: Center(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: isDone ? Colors.green : Colors.white,
-                fontWeight: isDone ? FontWeight.bold : FontWeight.normal,
-                fontSize: 12,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        );
   }
 
   Widget _buildCustomerSection(
@@ -262,75 +231,324 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        CustomSearchTextField(
-          hintText: AppLocalizations.of(context).translate('searchCustomer'),
-          prefixIcon: const Icon(Icons.search),
-          height: 40,
-          width: double.infinity,
-          margin: EdgeInsets.zero,
-          onChanged: (value) {
-            // Xử lý tìm kiếm khách hàng
-          },
-        ),
-        const SizedBox(height: 16),
-        CustomDropdown(
-          title: AppLocalizations.of(context).translate('salutation'),
-          options: salutationOptions,
-          selectedValue: state.selectedSalutation ?? salutationOptions.first,
-          onChanged: (value) {
-            if (value != null) {
-              context.read<AddOrderRetailStep2ScreenBloc>().add(
-                SalutationChanged(value),
-              );
+        GestureDetector(
+          onTap: () {
+            // Hiển thị form thêm khách hàng khi nhấn vào thanh tìm kiếm
+            if (!state.showAddCustomerForm) {
+              _bloc.add(const ShowAddCustomerForm());
             }
           },
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.transparent),
+            ),
+            child: CustomSearchTextField(
+              hintText: AppLocalizations.of(
+                context,
+              ).translate('searchCustomer'),
+              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              height: 40,
+              width: double.infinity,
+              margin: EdgeInsets.zero,
+              controller: _searchController,
+              onChanged: (value) {
+                // Để trống, xử lý khi nhấn vào ô tìm kiếm bằng onTap
+              },
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: CustomTextField(
-                labelText:
-                    '${AppLocalizations.of(context).translate('lastName')} *',
-                controller: _lastNameController,
+        if (!state.showAddCustomerForm) ...[
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: () {
+              _bloc.add(const ShowAddCustomerForm());
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  const Icon(Icons.add_circle, color: Colors.green, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppLocalizations.of(context).translate('addCustomer'),
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: CustomTextField(
-                labelText:
-                    '${AppLocalizations.of(context).translate('firstName')} *',
-                controller: _firstNameController,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        CustomTextField(
-          labelText: AppLocalizations.of(context).translate('email'),
-          controller: _emailController,
-        ),
-        const SizedBox(height: 16),
-        CustomTextField(
-          labelText: AppLocalizations.of(context).translate('phoneNumber'),
-          controller: _phoneController,
-        ),
-        const SizedBox(height: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context).translate('notes'),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            CustomMultilineTextField(
-              controller: _notesController,
-              hintText: AppLocalizations.of(context).translate('notes'),
-            ),
-          ],
-        ),
+          ),
+        ],
+        if (state.showAddCustomerForm) ...[
+          const SizedBox(height: 16),
+          _buildAddCustomerForm(context, state, salutationOptions),
+        ],
       ],
+    );
+  }
+
+  Widget _buildAddCustomerForm(
+    BuildContext context,
+    AddOrderRetailStep2ScreenState state,
+    List<String> salutationOptions,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context).translate('addCustomer'),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  _bloc.add(const HideAddCustomerForm());
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context).translate('salutation'),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: state.selectedSalutation ?? salutationOptions.first,
+                    isExpanded: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    items:
+                        salutationOptions.map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        context.read<AddOrderRetailStep2ScreenBloc>().add(
+                          SalutationChanged(value),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        text: AppLocalizations.of(
+                          context,
+                        ).translate('lastName'),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                        children: const [
+                          TextSpan(
+                            text: ' *',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: TextField(
+                        controller: _lastNameController,
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        text: AppLocalizations.of(
+                          context,
+                        ).translate('firstName'),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                        children: const [
+                          TextSpan(
+                            text: ' *',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: TextField(
+                        controller: _firstNameController,
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.email_outlined,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    AppLocalizations.of(context).translate('email'),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    border: InputBorder.none,
+                    hintText: 'example@email.com',
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.phone_outlined,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    AppLocalizations.of(context).translate('phoneNumber'),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextField(
+                  controller: _phoneController,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    border: InputBorder.none,
+                    hintText: '0912345678',
+                  ),
+                  keyboardType: TextInputType.phone,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -346,205 +564,58 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        _buildOptionsContainer([
-          _buildOption(
-            icon: Icons.money,
-            title: AppLocalizations.of(context).translate('cash'),
-            isSelected:
-                state.paymentMethod ==
-                AppLocalizations.of(context).translate('cash'),
-            iconColor: Colors.green,
-            onTap:
-                () => _bloc.add(
-                  PaymentMethodChanged(
-                    AppLocalizations.of(context).translate('cash'),
-                  ),
-                ),
-          ),
-          _buildOption(
-            icon: Icons.account_balance_wallet,
-            title: AppLocalizations.of(context).translate('eWallet'),
-            isSelected:
-                state.paymentMethod ==
-                AppLocalizations.of(context).translate('eWallet'),
-            iconColor: const Color(0xFF0068FF),
-            onTap:
-                () => _bloc.add(
-                  PaymentMethodChanged(
-                    AppLocalizations.of(context).translate('eWallet'),
-                  ),
-                ),
-          ),
-          _buildOption(
-            icon: Icons.account_balance,
-            title: AppLocalizations.of(context).translate('bankTransfer'),
-            isSelected:
-                state.paymentMethod ==
-                AppLocalizations.of(context).translate('bankTransfer'),
-            iconColor: const Color(0xFF1B7146),
-            onTap:
-                () => _bloc.add(
-                  PaymentMethodChanged(
-                    AppLocalizations.of(context).translate('bankTransfer'),
-                  ),
-                ),
-          ),
-        ]),
-        const SizedBox(height: 20),
-        _buildPaymentSummary(context),
-      ],
-    );
-  }
-
-  Widget _buildOptionsContainer(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(children: children),
-    );
-  }
-
-  Widget _buildOption({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    required bool isSelected,
-    required Color iconColor,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Row(
+        CustomOptionsContainer(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: iconColor, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+            CustomOptionItem(
+              icon: Icons.money,
+              title: AppLocalizations.of(context).translate('cash'),
+              isSelected:
+                  state.paymentMethod ==
+                  AppLocalizations.of(context).translate('cash'),
+              iconColor: Colors.green,
+              onTap:
+                  () => _bloc.add(
+                    PaymentMethodChanged(
+                      AppLocalizations.of(context).translate('cash'),
                     ),
                   ),
-                  if (subtitle != null)
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                ],
-              ),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: Colors.green, size: 20),
+            CustomOptionItem(
+              icon: Icons.account_balance_wallet,
+              title: AppLocalizations.of(context).translate('eWallet'),
+              isSelected:
+                  state.paymentMethod ==
+                  AppLocalizations.of(context).translate('eWallet'),
+              iconColor: const Color(0xFF0068FF),
+              onTap:
+                  () => _bloc.add(
+                    PaymentMethodChanged(
+                      AppLocalizations.of(context).translate('eWallet'),
+                    ),
+                  ),
+            ),
+            CustomOptionItem(
+              icon: Icons.account_balance,
+              title: AppLocalizations.of(context).translate('bankTransfer'),
+              isSelected:
+                  state.paymentMethod ==
+                  AppLocalizations.of(context).translate('bankTransfer'),
+              iconColor: const Color(0xFF1B7146),
+              onTap:
+                  () => _bloc.add(
+                    PaymentMethodChanged(
+                      AppLocalizations.of(context).translate('bankTransfer'),
+                    ),
+                  ),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentSummary(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(context).translate('paymentDetails'),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          _buildSummaryRow(
-            context,
-            AppLocalizations.of(context).translate('bookingPrice'),
-            '477,000đ',
-          ),
-          const SizedBox(height: 8),
-          _buildSummaryRow(
-            context,
-            AppLocalizations.of(context).translate('serviceFee'),
-            '37,700đ',
-          ),
-          const SizedBox(height: 8),
-          _buildSummaryRow(
-            context,
-            AppLocalizations.of(context).translate('discount'),
-            '-29,700đ',
-            valueColor: Colors.red,
-          ),
-          const Divider(height: 24),
-          _buildSummaryRow(
-            context,
-            AppLocalizations.of(context).translate('totalPayment'),
-            '485,000đ',
-            isTotal: true,
-            valueColor: Colors.green,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryRow(
-    BuildContext context,
-    String label,
-    String value, {
-    bool isTotal = false,
-    Color? valueColor,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isTotal ? 16 : 14,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: isTotal ? 16 : 14,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            color: valueColor,
-          ),
+        const SizedBox(height: 20),
+        CustomPaymentSummary(
+          bookingPrice: '477,000đ',
+          serviceFee: '37,700đ',
+          discount: '-29,700đ',
+          totalPayment: '485,000đ',
         ),
       ],
     );
@@ -562,50 +633,52 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        _buildOptionsContainer([
-          _buildOption(
-            icon: Icons.error_outline,
-            title: AppLocalizations.of(context).translate('unpaid'),
-            isSelected:
-                state.paymentStatus ==
-                AppLocalizations.of(context).translate('unpaid'),
-            iconColor: Colors.red,
-            onTap:
-                () => _bloc.add(
-                  PaymentStatusChanged(
-                    AppLocalizations.of(context).translate('unpaid'),
+        CustomOptionsContainer(
+          children: [
+            CustomOptionItem(
+              icon: Icons.error_outline,
+              title: AppLocalizations.of(context).translate('unpaid'),
+              isSelected:
+                  state.paymentStatus ==
+                  AppLocalizations.of(context).translate('unpaid'),
+              iconColor: Colors.red,
+              onTap:
+                  () => _bloc.add(
+                    PaymentStatusChanged(
+                      AppLocalizations.of(context).translate('unpaid'),
+                    ),
                   ),
-                ),
-          ),
-          _buildOption(
-            icon: Icons.check_circle_outline,
-            title: AppLocalizations.of(context).translate('paid'),
-            isSelected:
-                state.paymentStatus ==
-                AppLocalizations.of(context).translate('paid'),
-            iconColor: Colors.green,
-            onTap:
-                () => _bloc.add(
-                  PaymentStatusChanged(
-                    AppLocalizations.of(context).translate('paid'),
+            ),
+            CustomOptionItem(
+              icon: Icons.check_circle_outline,
+              title: AppLocalizations.of(context).translate('paid'),
+              isSelected:
+                  state.paymentStatus ==
+                  AppLocalizations.of(context).translate('paid'),
+              iconColor: Colors.green,
+              onTap:
+                  () => _bloc.add(
+                    PaymentStatusChanged(
+                      AppLocalizations.of(context).translate('paid'),
+                    ),
                   ),
-                ),
-          ),
-          _buildOption(
-            icon: Icons.account_balance_wallet_outlined,
-            title: AppLocalizations.of(context).translate('deposit'),
-            isSelected:
-                state.paymentStatus ==
-                AppLocalizations.of(context).translate('deposit'),
-            iconColor: Colors.orange,
-            onTap:
-                () => _bloc.add(
-                  PaymentStatusChanged(
-                    AppLocalizations.of(context).translate('deposit'),
+            ),
+            CustomOptionItem(
+              icon: Icons.account_balance_wallet_outlined,
+              title: AppLocalizations.of(context).translate('deposit'),
+              isSelected:
+                  state.paymentStatus ==
+                  AppLocalizations.of(context).translate('deposit'),
+              iconColor: Colors.orange,
+              onTap:
+                  () => _bloc.add(
+                    PaymentStatusChanged(
+                      AppLocalizations.of(context).translate('deposit'),
+                    ),
                   ),
-                ),
-          ),
-        ]),
+            ),
+          ],
+        ),
       ],
     );
   }

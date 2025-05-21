@@ -30,6 +30,8 @@ class AddOrderRetailStep2ScreenBloc
     on<EmailChanged>(_onEmailChanged);
     on<PhoneChanged>(_onPhoneChanged);
     on<NotesChanged>(_onNotesChanged);
+    on<ShowAddCustomerForm>(_onShowAddCustomerForm);
+    on<HideAddCustomerForm>(_onHideAddCustomerForm);
     on<InitializeForm>(_onInitializeForm);
   }
 
@@ -94,6 +96,20 @@ class AddOrderRetailStep2ScreenBloc
     Emitter<AddOrderRetailStep2ScreenState> emit,
   ) {
     emit(state.copyWith(notes: event.notes));
+  }
+
+  void _onShowAddCustomerForm(
+    ShowAddCustomerForm event,
+    Emitter<AddOrderRetailStep2ScreenState> emit,
+  ) {
+    emit(state.copyWith(showAddCustomerForm: true));
+  }
+
+  void _onHideAddCustomerForm(
+    HideAddCustomerForm event,
+    Emitter<AddOrderRetailStep2ScreenState> emit,
+  ) {
+    emit(state.copyWith(showAddCustomerForm: false));
   }
 
   void _onInitializeForm(

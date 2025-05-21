@@ -10,6 +10,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
   final String email;
   final String phone;
   final String notes;
+  final bool showAddCustomerForm;
 
   const AddOrderRetailStep2ScreenState({
     required this.selectedSalutation,
@@ -21,6 +22,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     required this.email,
     required this.phone,
     required this.notes,
+    this.showAddCustomerForm = false,
   });
 
   AddOrderRetailStep2ScreenState copyWith({
@@ -33,6 +35,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     String? email,
     String? phone,
     String? notes,
+    bool? showAddCustomerForm,
   }) {
     return AddOrderRetailStep2ScreenState(
       selectedSalutation: selectedSalutation ?? this.selectedSalutation,
@@ -44,6 +47,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       notes: notes ?? this.notes,
+      showAddCustomerForm: showAddCustomerForm ?? this.showAddCustomerForm,
     );
   }
 
@@ -58,5 +62,6 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     email,
     phone,
     notes,
+    showAddCustomerForm,
   ];
 }

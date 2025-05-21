@@ -88,6 +88,14 @@ class NotesChanged extends AddOrderRetailStep2ScreenEvent {
   List<Object> get props => [notes];
 }
 
+class ShowAddCustomerForm extends AddOrderRetailStep2ScreenEvent {
+  const ShowAddCustomerForm();
+}
+
+class HideAddCustomerForm extends AddOrderRetailStep2ScreenEvent {
+  const HideAddCustomerForm();
+}
+
 class InitializeForm extends AddOrderRetailStep2ScreenEvent {
   final String? defaultSalutation;
   final String defaultPaymentMethod;
