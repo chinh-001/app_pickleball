@@ -82,9 +82,9 @@ class CourtsForProductRepository implements ICourtsForProductService {
       }
 
       final result = CourtsForProductResponse.fromJson(data);
-      log.log(
-        'Got courts for product ID $productId: ${result.courts.length} courts',
-      );
+      // log.log(
+      //   'Got courts for product ID $productId: ${result.courts.length} courts',
+      // );
       return result;
     } catch (e) {
       log.log('Error fetching courts for product: $e');

@@ -174,7 +174,7 @@ class UserPermissionsRepository implements IUserPermissionsService {
       final permissionsJson = permissions.toJson();
       await AuthHelper.saveUserPermissionsData(permissionsJson);
 
-      log.log('User permissions saved successfully');
+      // log.log('User permissions saved successfully');
       return true;
     } catch (e) {
       log.log('Error saving user permissions: $e');

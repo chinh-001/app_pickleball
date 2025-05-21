@@ -231,11 +231,11 @@ class ApiClient {
 
   Map<String, dynamic>? _handleResponse(http.Response response) {
     try {
-      log.log('\n=== API CLIENT: HANDLE RESPONSE ===');
-      log.log('Đang xử lý response với status code: ${response.statusCode}');
+      // log.log('\n=== API CLIENT: HANDLE RESPONSE ===');
+      // log.log('Đang xử lý response với status code: ${response.statusCode}');
 
       final data = json.decode(response.body);
-      log.log('Đã decode JSON response thành công');
+      // log.log('Đã decode JSON response thành công');
 
       if (data is Map<String, dynamic>) {
         if (data.containsKey('errors')) {
@@ -244,7 +244,7 @@ class ApiClient {
           return data;
         }
         if (response.statusCode >= 200 && response.statusCode < 300) {
-          log.log('Response hợp lệ, status: ${response.statusCode}');
+          // log.log('Response hợp lệ, status: ${response.statusCode}');
           // Kiểm tra và log cấu trúc data
           if (data.containsKey('data')) {
             // log.log('Response có field data');
