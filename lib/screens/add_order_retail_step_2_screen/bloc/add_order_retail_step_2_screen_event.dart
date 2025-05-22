@@ -108,3 +108,12 @@ class InitializeForm extends AddOrderRetailStep2ScreenEvent {
   @override
   List<Object?> get props => [defaultSalutation, defaultPaymentMethod];
 }
+
+class SearchCustomers extends AddOrderRetailStep2ScreenEvent {
+  final String searchQuery;
+
+  const SearchCustomers(this.searchQuery);
+
+  @override
+  List<Object> get props => [searchQuery];
+}

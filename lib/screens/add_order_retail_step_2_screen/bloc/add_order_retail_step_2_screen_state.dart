@@ -11,6 +11,9 @@ class AddOrderRetailStep2ScreenState extends Equatable {
   final String phone;
   final String notes;
   final bool showAddCustomerForm;
+  final String searchQuery;
+  final List<dynamic> searchResults;
+  final bool isSearching;
 
   const AddOrderRetailStep2ScreenState({
     required this.selectedSalutation,
@@ -23,6 +26,9 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     required this.phone,
     required this.notes,
     this.showAddCustomerForm = false,
+    this.searchQuery = '',
+    this.searchResults = const [],
+    this.isSearching = false,
   });
 
   AddOrderRetailStep2ScreenState copyWith({
@@ -36,6 +42,9 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     String? phone,
     String? notes,
     bool? showAddCustomerForm,
+    String? searchQuery,
+    List<dynamic>? searchResults,
+    bool? isSearching,
   }) {
     return AddOrderRetailStep2ScreenState(
       selectedSalutation: selectedSalutation ?? this.selectedSalutation,
@@ -48,6 +57,9 @@ class AddOrderRetailStep2ScreenState extends Equatable {
       phone: phone ?? this.phone,
       notes: notes ?? this.notes,
       showAddCustomerForm: showAddCustomerForm ?? this.showAddCustomerForm,
+      searchQuery: searchQuery ?? this.searchQuery,
+      searchResults: searchResults ?? this.searchResults,
+      isSearching: isSearching ?? this.isSearching,
     );
   }
 
@@ -63,5 +75,8 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     phone,
     notes,
     showAddCustomerForm,
+    searchQuery,
+    searchResults,
+    isSearching,
   ];
 }

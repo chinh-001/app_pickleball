@@ -20,7 +20,13 @@ class CustomOptionsContainer extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(children: children),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(children: children),
+        ),
+      ),
     );
   }
 }

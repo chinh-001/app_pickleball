@@ -32,37 +32,46 @@ class CustomPaymentSummary extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(context).translate('paymentDetails'),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context).translate('paymentDetails'),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              CustomSummaryRow(
+                label: AppLocalizations.of(context).translate('bookingPrice'),
+                value: bookingPrice,
+              ),
+              const SizedBox(height: 8),
+              CustomSummaryRow(
+                label: AppLocalizations.of(context).translate('serviceFee'),
+                value: serviceFee,
+              ),
+              const SizedBox(height: 8),
+              CustomSummaryRow(
+                label: AppLocalizations.of(context).translate('discount'),
+                value: discount,
+                valueColor: Colors.red,
+              ),
+              const Divider(height: 24),
+              CustomSummaryRow(
+                label: AppLocalizations.of(context).translate('totalPayment'),
+                value: totalPayment,
+                isTotal: true,
+                valueColor: Colors.green,
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          CustomSummaryRow(
-            label: AppLocalizations.of(context).translate('bookingPrice'),
-            value: bookingPrice,
-          ),
-          const SizedBox(height: 8),
-          CustomSummaryRow(
-            label: AppLocalizations.of(context).translate('serviceFee'),
-            value: serviceFee,
-          ),
-          const SizedBox(height: 8),
-          CustomSummaryRow(
-            label: AppLocalizations.of(context).translate('discount'),
-            value: discount,
-            valueColor: Colors.red,
-          ),
-          const Divider(height: 24),
-          CustomSummaryRow(
-            label: AppLocalizations.of(context).translate('totalPayment'),
-            value: totalPayment,
-            isTotal: true,
-            valueColor: Colors.green,
-          ),
-        ],
+        ),
       ),
     );
   }

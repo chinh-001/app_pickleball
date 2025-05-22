@@ -4,6 +4,12 @@ class CustomerResponse {
   CustomerResponse({required this.items});
 
   factory CustomerResponse.fromJson(Map<String, dynamic> json) {
+    if (json == null ||
+        !json.containsKey('customers') ||
+        json['customers'] == null) {
+      return CustomerResponse.empty();
+    }
+
     return CustomerResponse(
       items:
           (json['customers']['items'] as List<dynamic>?)
