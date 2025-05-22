@@ -21,8 +21,18 @@ class CustomerRepository implements ICustomerService {
 
       final String query = '''
       query Customers {
-        customers {
-          totalItems
+        customers(
+          options: {
+            filter: {
+              _or: [
+                { firstName: { contains: "" } }
+                { lastName: { contains: "" } }
+                { phoneNumber: { contains: null } }
+                { emailAddress: { contains: null } }
+              ]
+            }
+          }
+        ) {
           items {
             id
             createdAt

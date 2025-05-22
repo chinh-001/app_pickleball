@@ -1,12 +1,10 @@
 class CustomerResponse {
-  final int totalItems;
   final List<Customer> items;
 
-  CustomerResponse({required this.totalItems, required this.items});
+  CustomerResponse({required this.items});
 
   factory CustomerResponse.fromJson(Map<String, dynamic> json) {
     return CustomerResponse(
-      totalItems: json['customers']['totalItems'] ?? 0,
       items:
           (json['customers']['items'] as List<dynamic>?)
               ?.map((item) => Customer.fromJson(item))
@@ -16,7 +14,7 @@ class CustomerResponse {
   }
 
   factory CustomerResponse.empty() {
-    return CustomerResponse(totalItems: 0, items: []);
+    return CustomerResponse(items: []);
   }
 }
 
