@@ -44,6 +44,7 @@ class AddOrderRetailStep2ScreenBloc
     on<HideAddCustomerForm>(_onHideAddCustomerForm);
     on<InitializeForm>(_onInitializeForm);
     on<SearchCustomers>(_onSearchCustomers);
+    on<ResetForm>(_onResetForm);
   }
 
   void _onSalutationChanged(
@@ -141,14 +142,17 @@ class AddOrderRetailStep2ScreenBloc
   ) async {
     final String searchQuery = event.searchQuery;
 
+    // Cập nhật query vào state
+    emit(state.copyWith(searchQuery: searchQuery));
+
     // Chỉ tìm kiếm khi nhập ít nhất 3 ký tự
     if (searchQuery.length < 3) {
-      emit(state.copyWith(searchQuery: searchQuery, searchResults: []));
+      emit(state.copyWith(searchResults: [], isSearching: false));
       return;
     }
 
     // Cập nhật trạng thái đang tìm kiếm
-    emit(state.copyWith(searchQuery: searchQuery, isSearching: true));
+    emit(state.copyWith(isSearching: true));
 
     try {
       // Lấy channel hiện tại từ ChannelSyncService
@@ -212,5 +216,22 @@ class AddOrderRetailStep2ScreenBloc
       log.log('SearchCustomers - ERROR: Lỗi khi tìm kiếm khách hàng: $e');
       emit(state.copyWith(searchResults: [], isSearching: false));
     }
+  }
+
+  void _onResetForm(
+    ResetForm event,
+    Emitter<AddOrderRetailStep2ScreenState> emit,
+  ) {
+    // Giữ lại thông tin thanh toán và trạng thái, chỉ reset thông tin khách hàng
+    emit(
+      state.copyWith(
+        selectedSalutation: null,
+        lastName: '',
+        firstName: '',
+        email: '',
+        phone: '',
+        notes: '',
+      ),
+    );
   }
 }

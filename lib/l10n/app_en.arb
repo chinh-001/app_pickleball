@@ -142,6 +142,13 @@
   "price": "Price",
   "total": "Total",
   "searchCustomer": "Search customer",
+  "resultsFound": "results found",
+  "enterAtLeast3Chars": "Enter at least 3 characters to search",
+  "searching": "Searching...",
+  "noResultsFound": "No results found",
+  "selectCustomer": "Select a customer",
+  "clearForm": "Clear Form",
+  "addNewCustomer": "  New Customer",
   
   "product_73": "Air Conditioning",
   "product_75": "Canopy",

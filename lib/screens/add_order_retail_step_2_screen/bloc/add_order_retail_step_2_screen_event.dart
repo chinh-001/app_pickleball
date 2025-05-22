@@ -117,3 +117,7 @@ class SearchCustomers extends AddOrderRetailStep2ScreenEvent {
   @override
   List<Object> get props => [searchQuery];
 }
+
+class ResetForm extends AddOrderRetailStep2ScreenEvent {
+  const ResetForm();
+}

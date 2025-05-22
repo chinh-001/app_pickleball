@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:app_pickleball/enum/CallApiStatus.dart';
+import 'package:app_pickleball/enum/call_api_status.dart';
 import 'package:app_pickleball/services/interfaces/i_auth_service.dart';
 import 'package:app_pickleball/models/userAccount_model.dart';
 part 'login_event.dart';

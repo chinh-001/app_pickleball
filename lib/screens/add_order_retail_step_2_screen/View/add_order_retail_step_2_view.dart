@@ -8,6 +8,7 @@ import 'package:app_pickleball/screens/widgets/custom_step_circle.dart';
 import 'package:app_pickleball/screens/widgets/custom_option_item.dart';
 import 'package:app_pickleball/screens/widgets/custom_options_container.dart';
 import 'package:app_pickleball/screens/widgets/custom_payment_summary.dart';
+import 'package:app_pickleball/screens/widgets/custom_button.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
   const AddOrderRetailStep2View({super.key});
@@ -246,6 +247,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
               width: double.infinity,
               margin: EdgeInsets.zero,
               controller: _searchController,
+              debounceTime: const Duration(milliseconds: 400),
               onChanged: (value) {
                 // Gửi sự kiện tìm kiếm khi người dùng nhập ít nhất 3 ký tự
                 context.read<AddOrderRetailStep2ScreenBloc>().add(
@@ -255,6 +257,29 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             ),
           ),
         ),
+        // Hiển thị thông báo nhập 3 ký tự
+        if (state.searchQuery.isNotEmpty && state.searchQuery.length < 3) ...[
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              AppLocalizations.of(context).translate('enterAtLeast3Chars'),
+              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+            ),
+          ),
+        ],
         // Hiển thị kết quả tìm kiếm
         if (state.searchQuery.length >= 3 &&
             state.searchResults.isNotEmpty) ...[
@@ -279,7 +304,9 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${state.searchResults.length} ${AppLocalizations.of(context).translate('resultsFound')}',
+                    state.isSearching
+                        ? AppLocalizations.of(context).translate('searching')
+                        : '${state.searchResults.length} ${AppLocalizations.of(context).translate('resultsFound')}',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -296,10 +323,16 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                         final customer = state.searchResults[index];
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: Text(customer.fullName),
+                          title: Text(
+                            '${customer.firstName} ${customer.lastName}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           subtitle:
                               customer.phoneNumber != null
-                                  ? Text(customer.phoneNumber!)
+                                  ? Text(
+                                    '${customer.phoneNumber!}',
+                                    style: const TextStyle(fontSize: 13),
+                                  )
                                   : null,
                           onTap: () {
                             // Cập nhật thông tin khách hàng khi chọn
@@ -307,6 +340,9 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                             _firstNameController.text = customer.firstName;
                             _emailController.text = customer.emailAddress ?? '';
                             _phoneController.text = customer.phoneNumber ?? '';
+
+                            // Hiển thị form thông tin khách hàng
+                            _bloc.add(const ShowAddCustomerForm());
 
                             // Clear search field and results
                             _searchController.clear();
@@ -320,6 +356,31 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+        // Hiển thị thông báo không tìm thấy kết quả
+        if (state.searchQuery.length >= 3 &&
+            !state.isSearching &&
+            state.searchResults.isEmpty) ...[
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              AppLocalizations.of(context).translate('noResultsFound'),
+              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
             ),
           ),
         ],
@@ -569,7 +630,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                           vertical: 12,
                         ),
                         border: InputBorder.none,
-                        hintText: 'example@email.com',
                       ),
                       keyboardType: TextInputType.emailAddress,
                     ),
@@ -611,10 +671,38 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                           vertical: 12,
                         ),
                         border: InputBorder.none,
-                        hintText: '0912345678',
                       ),
                       keyboardType: TextInputType.phone,
                     ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomElevatedButton(
+                          text: AppLocalizations.of(
+                            context,
+                          ).translate('clearForm'),
+                          onPressed: _resetForm,
+                          backgroundColor: Colors.grey.shade100,
+                          textColor: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: CustomElevatedButton(
+                          text: AppLocalizations.of(
+                            context,
+                          ).translate('addNewCustomer'),
+                          onPressed: () {
+                            // Reset form và ẩn form hiện tại (để có thể nhập lại từ đầu)
+                            _resetForm();
+                          },
+                          backgroundColor: Colors.green,
+                          textColor: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -858,5 +946,17 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             ),
       ),
     );
+  }
+
+  void _resetForm() {
+    // Xóa tất cả dữ liệu form
+    _lastNameController.clear();
+    _firstNameController.clear();
+    _emailController.clear();
+    _phoneController.clear();
+    _notesController.clear();
+
+    // Gửi event reset form đến bloc
+    _bloc.add(const ResetForm());
   }
 }
