@@ -1,11 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'package:app_pickleball/models/customer_model.dart';
 import 'package:app_pickleball/services/interfaces/i_customer_service.dart';
 import 'package:app_pickleball/services/api/api_endpoints.dart';
 import 'package:app_pickleball/services/api/api_client.dart';
-import 'package:http/http.dart' as http;
 import 'dart:developer' as log;
 
 class CustomerRepository implements ICustomerService {

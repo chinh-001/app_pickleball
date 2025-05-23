@@ -99,14 +99,20 @@ class HideAddCustomerForm extends AddOrderRetailStep2ScreenEvent {
 class InitializeForm extends AddOrderRetailStep2ScreenEvent {
   final String? defaultSalutation;
   final String defaultPaymentMethod;
+  final double? totalPayment;
 
   const InitializeForm({
     this.defaultSalutation,
     required this.defaultPaymentMethod,
+    this.totalPayment,
   });
 
   @override
-  List<Object?> get props => [defaultSalutation, defaultPaymentMethod];
+  List<Object?> get props => [
+    defaultSalutation,
+    defaultPaymentMethod,
+    totalPayment,
+  ];
 }
 
 class SearchCustomers extends AddOrderRetailStep2ScreenEvent {
@@ -120,4 +126,13 @@ class SearchCustomers extends AddOrderRetailStep2ScreenEvent {
 
 class ResetForm extends AddOrderRetailStep2ScreenEvent {
   const ResetForm();
+}
+
+class SetTotalPayment extends AddOrderRetailStep2ScreenEvent {
+  final double totalPayment;
+
+  const SetTotalPayment(this.totalPayment);
+
+  @override
+  List<Object> get props => [totalPayment];
 }

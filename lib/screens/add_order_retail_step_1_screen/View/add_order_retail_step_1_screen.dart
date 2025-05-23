@@ -435,7 +435,10 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AddOrderRetailStep2View(),
+                      builder:
+                          (context) => AddOrderRetailStep2View(
+                            totalPayment: state.totalPayment,
+                          ),
                     ),
                   );
                 } else {

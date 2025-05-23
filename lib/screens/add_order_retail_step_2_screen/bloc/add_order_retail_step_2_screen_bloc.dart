@@ -45,6 +45,7 @@ class AddOrderRetailStep2ScreenBloc
     on<InitializeForm>(_onInitializeForm);
     on<SearchCustomers>(_onSearchCustomers);
     on<ResetForm>(_onResetForm);
+    on<SetTotalPayment>(_onSetTotalPayment);
   }
 
   void _onSalutationChanged(
@@ -130,10 +131,18 @@ class AddOrderRetailStep2ScreenBloc
   ) {
     emit(
       state.copyWith(
-        paymentMethod: event.defaultPaymentMethod,
         selectedSalutation: event.defaultSalutation,
+        paymentMethod: event.defaultPaymentMethod,
+        totalPayment: event.totalPayment,
       ),
     );
+  }
+
+  void _onSetTotalPayment(
+    SetTotalPayment event,
+    Emitter<AddOrderRetailStep2ScreenState> emit,
+  ) {
+    emit(state.copyWith(totalPayment: event.totalPayment));
   }
 
   Future<void> _onSearchCustomers(

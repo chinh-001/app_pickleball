@@ -95,294 +95,303 @@ class _HomeScreenState extends State<HomeScreen>
       value: _homeBloc,
       child: Scaffold(
         body: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 10.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: CustomSearchTextField(
-                        hintText: AppLocalizations.of(
-                          context,
-                        ).translate('searchHint'),
-                        prefixIcon: const Icon(
-                          Icons.menu,
-                          size: 20,
-                          color: Color.fromARGB(255, 0, 0, 0),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 10.0,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: CustomSearchTextField(
+                          hintText: AppLocalizations.of(
+                            context,
+                          ).translate('searchHint'),
+                          prefixIcon: const Icon(
+                            Icons.menu,
+                            size: 20,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
+                          height: 40,
+                          width: double.infinity,
+                          margin: EdgeInsets.zero,
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            255,
+                            255,
+                            255,
+                          ),
+                          onChanged: (query) {
+                            // Xử lý tìm kiếm
+                          },
                         ),
-                        height: 40,
-                        width: double.infinity,
-                        margin: EdgeInsets.zero,
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          255,
-                          255,
-                          255,
+                      ),
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: const Icon(
+                          Icons.notifications,
+                          color: Colors.black,
                         ),
-                        onChanged: (query) {
-                          // Xử lý tìm kiếm
+                        iconSize: 24,
+                        onPressed: () {
+                          // Handle notifications
                         },
                       ),
-                    ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: const Icon(
-                        Icons.notifications,
-                        color: Colors.black,
-                      ),
-                      iconSize: 24,
-                      onPressed: () {
-                        // Handle notifications
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: BlocBuilder<HomeScreenBloc, HomeScreenState>(
-                        builder: (context, state) {
-                          return CustomDropdown(
-                            title: AppLocalizations.of(
-                              context,
-                            ).translate('selectChannel'),
-                            options: state.availableChannels,
-                            dropdownHeight: 40,
-                            dropdownWidth: 400,
-                            selectedValue: state.selectedChannel,
-                            onChanged: (String? newValue) {
-                              if (newValue != null) {
-                                log.log(
-                                  'Channel changed from "${state.selectedChannel}" to "$newValue"',
-                                );
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: BlocBuilder<HomeScreenBloc, HomeScreenState>(
+                          builder: (context, state) {
+                            return CustomDropdown(
+                              title: AppLocalizations.of(
+                                context,
+                              ).translate('selectChannel'),
+                              options: state.availableChannels,
+                              dropdownHeight: 40,
+                              dropdownWidth: 400,
+                              selectedValue: state.selectedChannel,
+                              onChanged: (String? newValue) {
+                                if (newValue != null) {
+                                  log.log(
+                                    'Channel changed from "${state.selectedChannel}" to "$newValue"',
+                                  );
 
-                                _homeBloc.add(
-                                  ChangeChannelEvent(channelName: newValue),
-                                );
-                              }
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              BlocBuilder<HomeScreenBloc, HomeScreenState>(
-                builder: (context, state) {
-                  if (state is HomeScreenLoaded &&
-                      state.selectedDates != null &&
-                      state.selectedDates!.isNotEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.only(
-                        left: 16.0,
-                        right: 16.0,
-                        top: 8.0,
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                                  _homeBloc.add(
+                                    ChangeChannelEvent(channelName: newValue),
+                                  );
+                                }
+                              },
+                            );
+                          },
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.green.withOpacity(0.3),
+                      ),
+                    ],
+                  ),
+                ),
+                BlocBuilder<HomeScreenBloc, HomeScreenState>(
+                  builder: (context, state) {
+                    if (state is HomeScreenLoaded &&
+                        state.selectedDates != null &&
+                        state.selectedDates!.isNotEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          left: 16.0,
+                          right: 16.0,
+                          top: 8.0,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.green.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.calendar_today,
+                                size: 16,
+                                color: Colors.green,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  state.selectedDates!.length > 1
+                                      ? '${state.selectedDates!.length} ngày đã chọn'
+                                      : DateFormat(
+                                        'dd/MM/yyyy',
+                                      ).format(state.selectedDates!.first),
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _homeBloc.add(const ClearDateFilterEvent());
+                                },
+                                child: const Icon(
+                                  Icons.close,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: Row(
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                const SizedBox(height: 20),
+                BlocBuilder<HomeScreenBloc, HomeScreenState>(
+                  builder: (context, state) {
+                    // log.log('Current state: $state');
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Stack(
                           children: [
-                            const Icon(
-                              Icons.calendar_today,
-                              size: 16,
-                              color: Colors.green,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                state.selectedDates!.length > 1
-                                    ? '${state.selectedDates!.length} ngày đã chọn'
-                                    : DateFormat(
-                                      'dd/MM/yyyy',
-                                    ).format(state.selectedDates!.first),
-                                style: const TextStyle(fontSize: 13),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(25.0),
+                              child: ColorFiltered(
+                                colorFilter: ColorFilter.mode(
+                                  const Color.fromARGB(
+                                    255,
+                                    105,
+                                    96,
+                                    96,
+                                  ).withOpacity(0.5),
+                                  BlendMode.darken,
+                                ),
+                                child: Image.asset(
+                                  'assets/images/grass_bg.png',
+                                  width: double.infinity,
+                                  height: 140,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                _homeBloc.add(const ClearDateFilterEvent());
-                              },
-                              child: const Icon(
-                                Icons.close,
-                                size: 16,
-                                color: Colors.grey,
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 16.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)
+                                          .translate('totalBookings')
+                                          .replaceAll(
+                                            '{count}',
+                                            state is HomeScreenLoaded
+                                                ? state.totalOrders.toString()
+                                                : '0',
+                                          ),
+                                      style: const TextStyle(
+                                        color: Colors.yellow,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      AppLocalizations.of(context)
+                                          .translate('expectedRevenue')
+                                          .replaceAll(
+                                            '{amount}',
+                                            state is HomeScreenLoaded
+                                                ? state.totalSales
+                                                    .toCurrency(context)
+                                                    .replaceAll(' VND', '')
+                                                : 0
+                                                    .toCurrency(context)
+                                                    .replaceAll(' VND', ''),
+                                          ),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
+                            if (state is HomeScreenLoading)
+                              Center(
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black45,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
                     );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-              const SizedBox(height: 20),
-              BlocBuilder<HomeScreenBloc, HomeScreenState>(
-                builder: (context, state) {
-                  // log.log('Current state: $state');
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Container(
-                      height: 150,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
+                  },
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        AppLocalizations.of(
+                          context,
+                        ).translate('availableCourts'),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      child: Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(25.0),
-                            child: ColorFiltered(
-                              colorFilter: ColorFilter.mode(
-                                const Color.fromARGB(
-                                  255,
-                                  105,
-                                  96,
-                                  96,
-                                ).withOpacity(0.5),
-                                BlendMode.darken,
-                              ),
-                              child: Image.asset(
-                                'assets/images/grass_bg.png',
-                                width: double.infinity,
-                                height: 140,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 16.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    AppLocalizations.of(context)
-                                        .translate('totalBookings')
-                                        .replaceAll(
-                                          '{count}',
-                                          state is HomeScreenLoaded
-                                              ? state.totalOrders.toString()
-                                              : '0',
-                                        ),
-                                    style: const TextStyle(
-                                      color: Colors.yellow,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    AppLocalizations.of(context)
-                                        .translate('expectedRevenue')
-                                        .replaceAll(
-                                          '{amount}',
-                                          state is HomeScreenLoaded
-                                              ? state.totalSales
-                                                  .toCurrency(context)
-                                                  .replaceAll(' VND', '')
-                                              : 0
-                                                  .toCurrency(context)
-                                                  .replaceAll(' VND', ''),
-                                        ),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          if (state is HomeScreenLoading)
-                            Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.black45,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: const Icon(
+                          Icons.filter_list,
+                          color: Colors.green,
+                        ),
+                        iconSize: 24,
+                        onPressed: _showCalendar,
+                        tooltip: AppLocalizations.of(
+                          context,
+                        ).translate('filter'),
                       ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context).translate('availableCourts'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Hiển thị text thông báo không có sân nào thay vì danh sách courts
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context).translate('noCourts'),
                       style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
                       ),
-                    ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: const Icon(Icons.filter_list, color: Colors.green),
-                      iconSize: 24,
-                      onPressed: _showCalendar,
-                      tooltip: AppLocalizations.of(context).translate('filter'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              // Hiển thị text thông báo không có sân nào thay vì danh sách courts
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                child: Center(
-                  child: Text(
-                    AppLocalizations.of(context).translate('noCourts'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.grey,
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         floatingActionButton: const CustomFloatingActionButton(),

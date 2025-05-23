@@ -9,9 +9,12 @@ import 'package:app_pickleball/screens/widgets/custom_option_item.dart';
 import 'package:app_pickleball/screens/widgets/custom_options_container.dart';
 import 'package:app_pickleball/screens/widgets/custom_payment_summary.dart';
 import 'package:app_pickleball/screens/widgets/custom_button.dart';
+import 'package:app_pickleball/utils/number_format.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
-  const AddOrderRetailStep2View({super.key});
+  final double totalPayment;
+
+  const AddOrderRetailStep2View({super.key, this.totalPayment = 0.0});
 
   @override
   State<AddOrderRetailStep2View> createState() =>
@@ -41,6 +44,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
       _bloc.add(
         InitializeForm(
           defaultPaymentMethod: AppLocalizations.of(context).translate('cash'),
+          totalPayment: widget.totalPayment,
         ),
       );
 
@@ -717,6 +721,12 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
   ) {
+    // Sử dụng extension CurrencyFormat để định dạng tiền tệ
+    final bookingPrice = (state.totalPayment);
+    final serviceFee = (state.totalPayment * 0);
+    final discount = (state.totalPayment * 0);
+    final totalPayment = (state.totalPayment);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -773,10 +783,10 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         ),
         const SizedBox(height: 20),
         CustomPaymentSummary(
-          bookingPrice: '477,000đ',
-          serviceFee: '37,700đ',
-          discount: '-29,700đ',
-          totalPayment: '485,000đ',
+          bookingPrice: bookingPrice.toCurrency(context),
+          serviceFee: serviceFee.toCurrency(context),
+          discount: discount.toCurrency(context),
+          totalPayment: totalPayment.toCurrency(context),
         ),
       ],
     );
