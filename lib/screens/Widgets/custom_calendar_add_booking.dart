@@ -73,20 +73,34 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
     }
   }
 
+  // Lấy định dạng tháng/năm theo ngôn ngữ
+  String _getLocalizedMonthYear(DateTime date, BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    if (locale == 'vi') {
+      return 'Tháng ${date.month}/${date.year}';
+    } else {
+      return DateFormat.yMMM().format(date);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Xác định ngôn ngữ hiện tại
+    final locale = Localizations.localeOf(context).languageCode;
+
     return Column(
       children: [
         _buildCalendarHeader(),
+        // Tự tạo thanh hiển thị tên các ngày trong tuần
+        _buildCustomDaysOfWeek(locale),
         TableCalendar(
           firstDay: _firstDay,
           lastDay: _lastDay,
           focusedDay: _focusedDay,
           calendarFormat: _calendarFormat,
           startingDayOfWeek: StartingDayOfWeek.monday,
-          daysOfWeekVisible: true,
+          daysOfWeekVisible: false, // Ẩn thanh ngày mặc định
           rowHeight: 40, // Đặt chiều cao dòng
-          daysOfWeekHeight: 30, // Đặt chiều cao dòng của ngày trong tuần
           sixWeekMonthsEnforced: true, // Luôn hiển thị 6 tuần
           availableGestures: AvailableGestures.none, // Tắt cử chỉ vuốt
           calendarStyle: CalendarStyle(
@@ -183,6 +197,37 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
     );
   }
 
+  // Widget tùy chỉnh hiển thị các ngày trong tuần
+  Widget _buildCustomDaysOfWeek(String locale) {
+    // Tên các ngày trong tuần theo ngôn ngữ
+    final List<String> weekdayNames =
+        locale == 'vi'
+            ? ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
+            : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(7, (index) {
+          // Cuối tuần (thứ 7, chủ nhật) có màu đỏ
+          final isWeekend = index >= 5;
+          return Expanded(
+            child: Text(
+              weekdayNames[index],
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isWeekend ? Colors.red : Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
   DateTime _normalizeDate(DateTime date) {
     return DateTime(date.year, date.month, date.day);
   }
@@ -193,55 +238,78 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: () {
-                  // Sửa: Luôn cho phép xem tháng trước, không phụ thuộc vào _firstDay
-                  _safelyUpdateFocusedDay(
-                    DateTime(
-                      _focusedDay.year,
-                      _focusedDay.month - 1,
-                      _focusedDay.day > 28 ? 28 : _focusedDay.day,
-                    ),
-                  );
-                },
-              ),
-              Text(
-                '${DateFormat.yMMM().format(_focusedDay)}',
-                style: const TextStyle(fontSize: 16),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: () {
-                  final nextMonth = DateTime(
-                    _focusedDay.year,
-                    _focusedDay.month + 1,
-                    1,
-                  );
-
-                  if (nextMonth.isBefore(_lastDay) ||
-                      nextMonth.year == _lastDay.year &&
-                          nextMonth.month == _lastDay.month) {
+          Flexible(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    // Sửa: Luôn cho phép xem tháng trước, không phụ thuộc vào _firstDay
                     _safelyUpdateFocusedDay(
                       DateTime(
                         _focusedDay.year,
-                        _focusedDay.month + 1,
-                        _focusedDay.day,
+                        _focusedDay.month - 1,
+                        _focusedDay.day > 28 ? 28 : _focusedDay.day,
                       ),
                     );
-                  }
-                },
-              ),
-            ],
+                  },
+                ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    _getLocalizedMonthYear(_focusedDay, context),
+                    style: const TextStyle(fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    final nextMonth = DateTime(
+                      _focusedDay.year,
+                      _focusedDay.month + 1,
+                      1,
+                    );
+
+                    if (nextMonth.isBefore(_lastDay) ||
+                        nextMonth.year == _lastDay.year &&
+                            nextMonth.month == _lastDay.month) {
+                      _safelyUpdateFocusedDay(
+                        DateTime(
+                          _focusedDay.year,
+                          _focusedDay.month + 1,
+                          _focusedDay.day,
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               TextButton(
+                style: ButtonStyle(
+                  padding: MaterialStateProperty.all(
+                    EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  minimumSize: MaterialStateProperty.all(Size.zero),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 child: Text(
                   AppLocalizations.of(context).translate('month'),
                   style: TextStyle(
+                    fontSize: 13,
                     color:
                         _calendarFormat == CalendarFormat.month
                             ? Colors.green
@@ -255,9 +323,17 @@ class _CustomCalendarAddBookingState extends State<CustomCalendarAddBooking> {
                 },
               ),
               TextButton(
+                style: ButtonStyle(
+                  padding: MaterialStateProperty.all(
+                    EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  minimumSize: MaterialStateProperty.all(Size.zero),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 child: Text(
                   AppLocalizations.of(context).translate('week'),
                   style: TextStyle(
+                    fontSize: 13,
                     color:
                         _calendarFormat == CalendarFormat.week
                             ? Colors.green
