@@ -4,6 +4,7 @@ import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/order_detail_screen/bloc/order_detail_screen_bloc.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'dart:developer' as log;
+import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final Map<String, String> item;
@@ -125,7 +126,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             },
             builder: (context, state) {
               if (state is OrderDetailLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: CustomLoadingIndicator());
               } else if (state is OrderDetailFailure) {
                 return Center(child: Text(state.error));
               } else if (state is OrderDetailDataLoaded) {
@@ -136,7 +137,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 }
                 return _buildFormContent(context, state);
               }
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: CustomLoadingIndicator());
             },
           ),
         ),

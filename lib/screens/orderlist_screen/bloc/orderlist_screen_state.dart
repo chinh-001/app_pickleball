@@ -5,8 +5,8 @@ abstract class OrderListScreenState extends Equatable {
   final List<String> availableChannels;
 
   const OrderListScreenState({
-    required this.selectedChannel,
-    required this.availableChannels,
+    this.selectedChannel = 'Default channel',
+    this.availableChannels = const ['Default channel'],
   });
 
   @override
@@ -15,9 +15,12 @@ abstract class OrderListScreenState extends Equatable {
 
 class OrderListScreenInitial extends OrderListScreenState {
   const OrderListScreenInitial({
-    required super.selectedChannel,
-    required super.availableChannels,
-  });
+    String selectedChannel = 'Default channel',
+    List<String> availableChannels = const ['Default channel'],
+  }) : super(
+         selectedChannel: selectedChannel,
+         availableChannels: availableChannels,
+       );
 }
 
 class OrderListScreenLoading extends OrderListScreenState {

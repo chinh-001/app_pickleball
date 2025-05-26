@@ -13,6 +13,7 @@ import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/utils/number_format.dart';
 import 'dart:developer' as log;
 import 'package:intl/intl.dart';
+import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -328,11 +329,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     color: Colors.black45,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
+                                  child: const CustomLoadingIndicator(),
                                 ),
                               ),
                           ],

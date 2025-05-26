@@ -5,6 +5,7 @@ import 'package:app_pickleball/screens/widgets/custom_menu_item.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_1_screen/View/add_order_retail_step_1_screen.dart';
 import 'package:app_pickleball/screens/menu_function_screen/bloc/menu_function_screen_bloc.dart';
 import 'package:app_pickleball/screens/scanQrCode_screen/View/scanQr_screen.dart';
+import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
 
 class MenuFunctionScreen extends StatelessWidget {
   const MenuFunctionScreen({super.key});
@@ -53,7 +54,7 @@ class MenuFunctionScreen extends StatelessWidget {
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(),
+                      CustomLoadingIndicator(size: 40.0),
                       SizedBox(height: 16),
                       Text("Loading data..."),
                     ],

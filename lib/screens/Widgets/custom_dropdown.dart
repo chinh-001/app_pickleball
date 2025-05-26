@@ -26,6 +26,19 @@ class CustomDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Xử lý trường hợp options rỗng
+    final List<String> safeOptions =
+        options.isEmpty ? ['Default channel'] : options;
+
+    // Đảm bảo selectedValue có trong danh sách options
+    String safeSelectedValue = selectedValue;
+    if (selectedValue.isEmpty) {
+      safeSelectedValue = safeOptions.first;
+    } else if (!safeOptions.contains(selectedValue)) {
+      // Nếu giá trị được chọn không có trong danh sách, thêm vào
+      safeOptions.add(selectedValue);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -48,13 +61,13 @@ class CustomDropdown extends StatelessWidget {
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                value: selectedValue,
+                value: safeSelectedValue,
                 isExpanded: true,
                 onChanged: onChanged,
                 menuMaxHeight: menuMaxHeight ?? 200,
                 itemHeight: 50,
                 items:
-                    options.map((String value) {
+                    safeOptions.map((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(

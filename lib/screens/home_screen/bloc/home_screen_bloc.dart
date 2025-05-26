@@ -54,24 +54,36 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
     log.log('\n***** HOME SCREEN BLOC: _onSyncChannel *****');
     log.log('Syncing to channel: ${event.channelName}');
 
+    // Ensure channelName is not empty
+    final channelName =
+        event.channelName.isNotEmpty ? event.channelName : 'Default channel';
+
+    // Đảm bảo danh sách available channels không rỗng
+    List<String> availableChannels = state.availableChannels;
+    if (availableChannels.isEmpty) {
+      availableChannels = ['Default channel'];
+    }
+
+    // Đảm bảo channel được chọn có trong danh sách
+    if (!availableChannels.contains(channelName) &&
+        !fallbackChannels.contains(channelName)) {
+      availableChannels.add(channelName);
+    }
+
     // Only update if the channel is different and is in available channels
-    if (state.selectedChannel != event.channelName &&
-        (state.availableChannels.contains(event.channelName) ||
-            fallbackChannels.contains(event.channelName))) {
+    if (state.selectedChannel != channelName) {
       emit(
         HomeScreenLoading(
-          selectedChannel: event.channelName,
-          availableChannels: state.availableChannels,
+          selectedChannel: channelName,
+          availableChannels: availableChannels,
         ),
       );
 
       // Lấy token từ UserPermissionsRepository
-      _permissionsRepository.getChannelToken(event.channelName).then((token) {
+      _permissionsRepository.getChannelToken(channelName).then((token) {
         if (token.isEmpty) {
           // Use fallback token if needed
-          final fallbackToken = bookingRepository.getChannelToken(
-            event.channelName,
-          );
+          final fallbackToken = bookingRepository.getChannelToken(channelName);
           add(FetchOrdersEvent(channelToken: fallbackToken));
         } else {
           add(FetchOrdersEvent(channelToken: token));
@@ -157,7 +169,12 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
   ) async {
     try {
       log.log('Initializing HomeScreen...');
-      emit(HomeScreenLoading(selectedChannel: '', availableChannels: []));
+      emit(
+        HomeScreenLoading(
+          selectedChannel: 'Default channel',
+          availableChannels: ['Default channel'],
+        ),
+      );
 
       // Lấy danh sách channel từ quyền hạn người dùng
       final userChannels = await _permissionsRepository.getAvailableChannels();
@@ -215,6 +232,17 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
         log.log('Setting synchronized channel: $selectedChannel');
       }
 
+      // Đảm bảo selectedChannel không rỗng
+      if (selectedChannel.isEmpty && userChannels.isNotEmpty) {
+        selectedChannel = userChannels.first;
+      } else if (selectedChannel.isEmpty) {
+        selectedChannel = 'Default channel';
+        // Đảm bảo availableChannels có Default channel
+        if (!userChannels.contains(selectedChannel)) {
+          userChannels.add(selectedChannel);
+        }
+      }
+
       // Lấy token của channel
       final channelToken = await _permissionsRepository.getChannelToken(
         selectedChannel,
@@ -232,11 +260,16 @@ class HomeScreenBloc extends Bloc<HomeScreenEvent, HomeScreenState> {
       add(FetchOrdersEvent(channelToken: channelToken));
     } catch (e) {
       log.log('Lỗi khi khởi tạo HomeScreen: $e');
+
+      // Sử dụng giá trị mặc định an toàn
+      final safeChannels =
+          fallbackChannels.isEmpty ? ['Default channel'] : fallbackChannels;
+
       emit(
         HomeScreenError(
           message: 'Không thể khởi tạo màn hình chính',
-          selectedChannel: '',
-          availableChannels: fallbackChannels,
+          selectedChannel: safeChannels.first,
+          availableChannels: safeChannels,
         ),
       );
     }

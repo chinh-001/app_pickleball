@@ -6,6 +6,7 @@ import 'package:app_pickleball/screens/login_screen/View/login_screen.dart';
 import 'package:app_pickleball/screens/widgets/custom_confirm_logout_dialog.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'dart:developer' as log;
+import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -232,7 +233,7 @@ class ProfileScreen extends StatelessWidget {
                     );
                   }
 
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CustomLoadingIndicator());
                 },
               ),
             ),

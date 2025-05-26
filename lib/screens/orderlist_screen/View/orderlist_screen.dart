@@ -13,6 +13,7 @@ import 'package:app_pickleball/services/repositories/bookingList_repository.dart
 import 'package:app_pickleball/utils/auth_helper.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'dart:developer' as log;
+import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
 // import 'dart:convert';
 
 class OrderListScreen extends StatefulWidget {
@@ -175,7 +176,7 @@ class _OrderListScreenState extends State<OrderListScreen>
                 child: BlocBuilder<OrderListScreenBloc, OrderListScreenState>(
                   builder: (context, state) {
                     if (state is OrderListScreenLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(child: CustomLoadingIndicator());
                     }
 
                     if (state is OrderListScreenError) {

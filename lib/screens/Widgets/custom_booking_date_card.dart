@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:app_pickleball/models/available_cour_for_booking_model.dart';
 import 'package:app_pickleball/screens/widgets/custom_available_court_buttons.dart';
+import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
 
 class CustomBookingDateCard extends StatelessWidget {
   final int index;
@@ -62,7 +63,7 @@ class CustomBookingDateCard extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   children: [
-                    CircularProgressIndicator(),
+                    CustomLoadingIndicator(size: 30.0),
                     SizedBox(height: 8),
                     Text('Đang kiểm tra sân có sẵn...'),
                   ],

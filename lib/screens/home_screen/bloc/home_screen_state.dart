@@ -7,7 +7,7 @@ abstract class HomeScreenState extends Equatable {
 
   const HomeScreenState({
     this.selectedChannel = 'Default channel',
-    this.availableChannels = const [],
+    this.availableChannels = const ['Default channel'],
     this.selectedDates,
   });
 

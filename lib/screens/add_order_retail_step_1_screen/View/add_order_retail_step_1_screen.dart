@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/widgets/custom_calendar_add_booking.dart';
-import 'package:app_pickleball/screens/widgets/custom_button.dart';
 import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
 import 'package:app_pickleball/screens/widgets/custom_step_indicator.dart';
 import 'package:app_pickleball/screens/widgets/custom_court_count_selector.dart';
 import 'package:app_pickleball/screens/widgets/custom_booking_date_card.dart';
 import 'package:app_pickleball/screens/widgets/custom_booking_summary.dart';
+import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_1_screen/bloc/add_order_retail_step_1_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/work_time_repository.dart';
 import 'package:app_pickleball/services/repositories/choose_repository.dart';
@@ -18,6 +18,7 @@ import 'package:app_pickleball/models/available_cour_for_booking_model.dart';
 // import 'package:app_pickleball/models/productWithCourts_Model.dart';
 import 'package:intl/intl.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/View/add_order_retail_step_2_view.dart';
+import 'package:app_pickleball/screens/widgets/custom_action_button.dart';
 
 class AddOrderRetailStep1Screen extends StatefulWidget {
   const AddOrderRetailStep1Screen({Key? key}) : super(key: key);
@@ -91,7 +92,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
             ),
             body:
                 state.isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const CustomLoadingIndicator()
                     : SingleChildScrollView(
                       child: Column(
                         children: [
@@ -416,19 +417,17 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
       child: Row(
         children: [
           Expanded(
-            child: CustomElevatedButton(
+            child: CustomActionButton(
               text: AppLocalizations.of(context).translate('cancel'),
               onPressed: () {
                 Navigator.pop(context);
               },
-              backgroundColor: Colors.white,
-              textColor: Colors.black,
-              borderColor: Colors.black,
+              isPrimary: false,
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: CustomElevatedButton(
+            child: CustomActionButton(
               text: AppLocalizations.of(context).translate('next'),
               onPressed: () {
                 if (state.isFormComplete) {
@@ -476,10 +475,8 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                   );
                 }
               },
-              backgroundColor:
-                  state.isFormComplete ? Colors.green : Colors.grey,
-              textColor: Colors.white,
-              borderColor: state.isFormComplete ? Colors.green : Colors.grey,
+              isPrimary: true,
+              isEnabled: state.isFormComplete,
             ),
           ),
         ],
