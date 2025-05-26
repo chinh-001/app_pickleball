@@ -9,7 +9,6 @@ import 'package:app_pickleball/screens/widgets/custom_step_circle.dart';
 import 'package:app_pickleball/screens/widgets/custom_option_item.dart';
 import 'package:app_pickleball/screens/widgets/custom_options_container.dart';
 import 'package:app_pickleball/screens/widgets/custom_payment_summary.dart';
-import 'package:app_pickleball/screens/widgets/custom_button.dart';
 import 'package:app_pickleball/utils/number_format.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {

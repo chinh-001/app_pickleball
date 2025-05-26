@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/login_screen/View/login_screen.dart';
 import 'package:app_pickleball/screens/home_screen/View/home_screen.dart';
 import '../bloc/splash_screen_bloc.dart';
-import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -56,8 +55,6 @@ class SplashScreenView extends StatelessWidget {
               height: 200,
               fit: BoxFit.contain,
             ),
-            const SizedBox(height: 20),
-            const CustomLoadingIndicator(),
           ],
         ),
       ),

@@ -45,20 +45,16 @@ class MenuFunctionScreen extends StatelessWidget {
               MaterialPageRoute(builder: (context) => const ScanQrScreen()),
             );
           } else if (state is MenuFunctionScreenLoading) {
-            // Show loading dialog
+            // Show loading dialog without background and text
             showDialog(
               context: context,
               barrierDismissible: false,
+              barrierColor: Colors.transparent,
               builder: (BuildContext context) {
-                return const AlertDialog(
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CustomLoadingIndicator(size: 40.0),
-                      SizedBox(height: 16),
-                      Text("Loading data..."),
-                    ],
-                  ),
+                return Dialog(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  child: Center(child: CustomLoadingIndicator(size: 40.0)),
                 );
               },
             );
