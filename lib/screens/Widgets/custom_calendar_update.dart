@@ -57,6 +57,9 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
   final Color _mediumGrayColor = Color(0xFFE0E0E0);
   final Color _todayHighlightColor = Colors.green.withOpacity(0.15);
 
+  // Tên các ngày trong tuần theo ngôn ngữ
+  late List<String> _localizedWeekdays;
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +86,34 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
     // Nếu có ngày được chọn, focus vào ngày gần đây nhất
     if (_selectedDays.isNotEmpty) {
       _focusedDay = _selectedDays.reduce((a, b) => a.isAfter(b) ? a : b);
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Khởi tạo tên ngày địa phương hóa khi context sẵn sàng
+    _initializeLocalizedWeekdays();
+  }
+
+  // Khởi tạo các tên ngày trong tuần theo ngôn ngữ
+  void _initializeLocalizedWeekdays() {
+    final locale = Localizations.localeOf(context).languageCode;
+    if (locale == 'vi') {
+      _localizedWeekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    } else {
+      _localizedWeekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    }
+  }
+
+  // Lấy định dạng tháng/năm theo ngôn ngữ
+  String _getLocalizedMonthYear(DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+    if (locale == 'vi') {
+      return 'Tháng ${date.month}/${date.year}';
+    } else {
+      // Sử dụng định dạng giống như trong cách hiển thị hiện tại
+      return 'Month ${DateFormat('MM yyyy').format(date)}';
     }
   }
 
@@ -387,12 +418,7 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
                       color: _primaryLightColor,
                     ),
                     child: Text(
-                      AppLocalizations.of(context)
-                          .translate('monthFormat')
-                          .replaceAll(
-                            '{month}',
-                            DateFormat('MM yyyy').format(_focusedDay),
-                          ),
+                      _getLocalizedMonthYear(_focusedDay),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -424,6 +450,9 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
           ),
         ),
 
+        // Tiêu đề các ngày trong tuần tùy chỉnh
+        _buildCustomWeekdaysHeader(),
+
         // Lịch
         Expanded(
           child: TableCalendar(
@@ -449,6 +478,9 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
               ),
             ),
 
+            // Thay đổi hiển thị tên ngày trong tuần để sử dụng đa ngôn ngữ
+            daysOfWeekVisible:
+                false, // Ẩn tiêu đề ngày mặc định của TableCalendar
             // Style calendar
             calendarStyle: CalendarStyle(
               // Text styles
@@ -522,6 +554,9 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
   }
 
   Widget _buildListTab() {
+    final locale = Localizations.localeOf(context).languageCode;
+    final dateFormat = locale == 'vi' ? 'dd/MM/yyyy, EEEE' : 'dd/MM/yyyy, EEEE';
+
     return ListView(
       padding: EdgeInsets.symmetric(vertical: 4),
       physics: BouncingScrollPhysics(),
@@ -531,10 +566,7 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
           index: 0,
           icon: Icons.today,
           title: AppLocalizations.of(context).translate('today'),
-          subtitle: DateFormat(
-            'dd/MM/yyyy, EEEE',
-            'vi_VN',
-          ).format(DateTime.now()),
+          subtitle: DateFormat(dateFormat, locale).format(DateTime.now()),
           onTap: () {
             setState(() {
               // Chỉ đánh dấu là đang chờ, chưa áp dụng ngay
@@ -611,6 +643,32 @@ class _CustomCalendarUpdateState extends State<CustomCalendarUpdate>
       onTap: onTap,
       primaryColor: _primaryColor,
       textColor: _textColor,
+    );
+  }
+
+  Widget _buildCustomWeekdaysHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(7, (index) {
+          // Xác định màu sắc: cuối tuần (thứ 7, chủ nhật) có màu đỏ
+          final isWeekend = index >= 5;
+          final textColor = isWeekend ? Colors.red.shade400 : _textColor;
+
+          return Expanded(
+            child: Text(
+              _localizedWeekdays[index],
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: textColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }),
+      ),
     );
   }
 }
