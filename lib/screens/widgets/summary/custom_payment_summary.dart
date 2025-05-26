@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:app_pickleball/screens/widgets/custom_summary_row.dart';
+import 'package:app_pickleball/screens/widgets/summary/custom_summary_row.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 
 class CustomPaymentSummary extends StatelessWidget {

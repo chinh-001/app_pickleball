@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
-import 'package:app_pickleball/screens/widgets/custom_menu_item.dart';
+import 'package:app_pickleball/screens/widgets/cards/custom_menu_item.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_1_screen/View/add_order_retail_step_1_screen.dart';
 import 'package:app_pickleball/screens/menu_function_screen/bloc/menu_function_screen_bloc.dart';
 import 'package:app_pickleball/screens/scanQrCode_screen/View/scanQr_screen.dart';
-import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
+import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
 
 class MenuFunctionScreen extends StatelessWidget {
   const MenuFunctionScreen({super.key});

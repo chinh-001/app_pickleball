@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../screens/widgets/custom_choice_item.dart';
+import '../../widgets/cards/custom_choice_item.dart';
 import '../bloc/language_screen_bloc.dart';
 import '../../../services/localization/app_localizations.dart';
 import '../../../services/localization/language_provider.dart';

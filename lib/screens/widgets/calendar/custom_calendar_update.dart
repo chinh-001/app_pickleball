@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
-import 'package:app_pickleball/screens/widgets/custom_tab_button.dart';
-import 'package:app_pickleball/screens/widgets/custom_selection_tile.dart';
+import 'package:app_pickleball/screens/widgets/buttons/custom_tab_button.dart';
+import 'package:app_pickleball/screens/widgets/cards/custom_selection_tile.dart';
 
 class CustomCalendarUpdate extends StatefulWidget {
   final Function(List<DateTime>) onDatesSelected;

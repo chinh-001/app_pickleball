@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:app_pickleball/screens/widgets/custom_action_button.dart';
+import 'package:app_pickleball/screens/widgets/buttons/custom_action_button.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/bloc/add_order_retail_step_2_screen_bloc.dart';
-import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
+import 'package:app_pickleball/screens/widgets/input/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/View/complete_booking_screen.dart';
-import 'package:app_pickleball/screens/widgets/custom_step_circle.dart';
-import 'package:app_pickleball/screens/widgets/custom_option_item.dart';
-import 'package:app_pickleball/screens/widgets/custom_options_container.dart';
-import 'package:app_pickleball/screens/widgets/custom_payment_summary.dart';
+import 'package:app_pickleball/screens/widgets/indicators/custom_step_circle.dart';
+import 'package:app_pickleball/screens/widgets/cards/custom_option_item.dart';
+import 'package:app_pickleball/screens/widgets/cards/custom_options_container.dart';
+import 'package:app_pickleball/screens/widgets/summary/custom_payment_summary.dart';
 import 'package:app_pickleball/utils/number_format.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {

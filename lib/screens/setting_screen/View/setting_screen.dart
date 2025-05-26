@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../screens/widgets/custom_setting_item.dart';
-import '../../../screens/widgets/custom_bottom_navigation_bar.dart';
+import '../../widgets/cards/custom_setting_item.dart';
+import '../../widgets/lists/custom_bottom_navigation_bar.dart';
 import '../../../screens/language_screen/View/language_screen.dart';
 import '../bloc/setting_screen_bloc.dart';
 import '../../../services/localization/app_localizations.dart';

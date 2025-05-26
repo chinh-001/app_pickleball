@@ -1,8 +1,8 @@
 import 'package:app_pickleball/screens/login_screen/View/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:app_pickleball/screens/widgets/custom_button.dart'; // Import CustomElevatedButton
+import 'package:app_pickleball/screens/widgets/buttons/custom_button.dart'; // Import CustomElevatedButton
 import 'package:app_pickleball/Screens/Widgets/custom_textfield.dart'; // Import CustomTextField
-import 'package:app_pickleball/screens/widgets/custom_Text_tap.dart';
+import 'package:app_pickleball/screens/widgets/text/custom_Text_tap.dart';
 
 class RegisterScreen extends StatelessWidget {
   // Controller để lấy giá trị nhập từ các TextField

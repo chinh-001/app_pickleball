@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:app_pickleball/models/available_cour_for_booking_model.dart';
-import 'package:app_pickleball/screens/widgets/custom_available_court_buttons.dart';
-import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
+import 'package:app_pickleball/screens/widgets/buttons/custom_available_court_buttons.dart';
+import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
 
 class CustomBookingDateCard extends StatelessWidget {
   final int index;

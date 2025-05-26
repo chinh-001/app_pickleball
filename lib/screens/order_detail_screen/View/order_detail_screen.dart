@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
+import 'package:app_pickleball/screens/widgets/input/custom_dropdown.dart';
 import 'package:app_pickleball/screens/order_detail_screen/bloc/order_detail_screen_bloc.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'dart:developer' as log;
-import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
+import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final Map<String, String> item;

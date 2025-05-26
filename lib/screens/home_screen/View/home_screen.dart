@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
-import 'package:app_pickleball/screens/widgets/custom_bottom_navigation_bar.dart';
-import 'package:app_pickleball/screens/widgets/custom_floating_action_button.dart';
-import 'package:app_pickleball/screens/widgets/custom_dropdown.dart';
-import 'package:app_pickleball/screens/widgets/custom_calendar_update.dart';
+import 'package:app_pickleball/screens/widgets/input/custom_search_text_field.dart';
+import 'package:app_pickleball/screens/widgets/lists/custom_bottom_navigation_bar.dart';
+import 'package:app_pickleball/screens/widgets/buttons/custom_floating_action_button.dart';
+import 'package:app_pickleball/screens/widgets/input/custom_dropdown.dart';
+import 'package:app_pickleball/screens/widgets/calendar/custom_calendar_update.dart';
 import 'package:app_pickleball/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:app_pickleball/services/repositories/booking_repository.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
@@ -13,7 +13,7 @@ import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/utils/number_format.dart';
 import 'dart:developer' as log;
 import 'package:intl/intl.dart';
-import 'package:app_pickleball/screens/widgets/custom_loading_indicator.dart';
+import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
