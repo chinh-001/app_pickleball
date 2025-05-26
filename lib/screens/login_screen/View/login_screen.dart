@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/home_screen/View/home_screen.dart';
-import 'package:app_pickleball/screens/register_screen.dart';
 import 'package:app_pickleball/screens/widgets/text/custom_Text_tap.dart';
 import 'package:app_pickleball/screens/widgets/buttons/custom_button.dart';
 import 'package:app_pickleball/enum/call_api_status.dart';
@@ -128,9 +127,12 @@ class _LoginScreenState extends State<LoginWidget> {
               CustomText(
                 text: 'Chưa có tài khoản, đăng kí!',
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                  // Hiển thị thông báo chức năng đăng ký đang phát triển
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Chức năng đăng ký đang được phát triển'),
+                      duration: Duration(seconds: 2),
+                    ),
                   );
                 },
               ),
