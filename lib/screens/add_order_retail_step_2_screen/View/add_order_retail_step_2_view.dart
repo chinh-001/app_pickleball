@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:app_pickleball/screens/widgets/custom_action_button.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/bloc/add_order_retail_step_2_screen_bloc.dart';
 import 'package:app_pickleball/screens/widgets/custom_search_text_field.dart';
@@ -669,18 +670,17 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                   Row(
                     children: [
                       Expanded(
-                        child: CustomElevatedButton(
+                        child: CustomActionButton(
                           text: AppLocalizations.of(
                             context,
                           ).translate('clearForm'),
                           onPressed: _resetForm,
-                          backgroundColor: Colors.grey.shade100,
-                          textColor: Colors.black,
+                          isPrimary: false,
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: CustomElevatedButton(
+                        child: CustomActionButton(
                           text: AppLocalizations.of(
                             context,
                           ).translate('addNewCustomer'),
@@ -688,8 +688,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                             // Reset form và ẩn form hiện tại (để có thể nhập lại từ đầu)
                             _resetForm();
                           },
-                          backgroundColor: Colors.green,
-                          textColor: Colors.white,
+                          isPrimary: true,
                         ),
                       ),
                     ],
@@ -857,22 +856,13 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          OutlinedButton(
+          CustomActionButton(
+            text: AppLocalizations.of(context).translate('cancel'),
             onPressed: () {
               // Handle Cancel
               Navigator.of(context).pop();
             },
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.grey.shade400),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              AppLocalizations.of(context).translate('cancel'),
-              style: const TextStyle(color: Colors.black87),
-            ),
+            isPrimary: false,
           ),
           const SizedBox(width: 12),
           BlocBuilder<
@@ -882,26 +872,11 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             builder: (context, state) {
               bool areRequiredFieldsFilled = _areRequiredFieldsFilled(state);
 
-              return ElevatedButton(
-                onPressed:
-                    areRequiredFieldsFilled
-                        ? () => _navigateToCompleteBooking(context, state)
-                        : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  disabledBackgroundColor: Colors.grey.shade400,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  AppLocalizations.of(context).translate('confirm'),
-                  style: const TextStyle(color: Colors.white),
-                ),
+              return CustomActionButton(
+                text: AppLocalizations.of(context).translate('confirm'),
+                onPressed: () => _navigateToCompleteBooking(context, state),
+                isPrimary: true,
+                isEnabled: areRequiredFieldsFilled,
               );
             },
           ),
