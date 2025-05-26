@@ -4,6 +4,7 @@ import 'dart:async';
 class CustomSearchTextField extends StatefulWidget {
   final String hintText;
   final Widget? prefixIcon;
+  final Widget? suffixIcon;
   final double height;
   final double width;
   final EdgeInsets margin;
@@ -16,6 +17,7 @@ class CustomSearchTextField extends StatefulWidget {
     super.key,
     required this.hintText,
     required this.prefixIcon,
+    this.suffixIcon,
     required this.height,
     required this.width,
     required this.margin,
@@ -64,6 +66,7 @@ class _CustomSearchTextFieldState extends State<CustomSearchTextField> {
           hintText: widget.hintText,
           hintStyle: const TextStyle(fontSize: 14),
           prefixIcon: widget.prefixIcon,
+          suffixIcon: widget.suffixIcon,
           prefixIconConstraints: const BoxConstraints(
             minWidth: 40,
             minHeight: 40,

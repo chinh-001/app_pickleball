@@ -247,6 +247,16 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                 context,
               ).translate('searchCustomer'),
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              suffixIcon: GestureDetector(
+                onTap: () {
+                  _bloc.add(const ShowAddCustomerForm());
+                },
+                child: const Icon(
+                  Icons.add_circle,
+                  color: Colors.grey,
+                  size: 24,
+                ),
+              ),
               height: 40,
               width: double.infinity,
               margin: EdgeInsets.zero,
@@ -385,30 +395,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             child: Text(
               AppLocalizations.of(context).translate('noResultsFound'),
               style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-            ),
-          ),
-        ],
-        if (!state.showAddCustomerForm) ...[
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () {
-              _bloc.add(const ShowAddCustomerForm());
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.add_circle, color: Colors.green, size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    AppLocalizations.of(context).translate('addCustomer'),
-                    style: const TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ],
