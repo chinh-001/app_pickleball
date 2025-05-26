@@ -7,10 +7,13 @@ part 'search_screen_event.dart';
 part 'search_screen_state.dart';
 
 class SearchScreenBloc extends Bloc<SearchScreenEvent, SearchScreenState> {
-  SearchScreenBloc() : super(SearchScreenInitial());
+  SearchScreenBloc() : super(SearchScreenInitial()) {
+    on<ClearSearch>((event, emit) {
+      emit(SearchScreenInitial());
+    });
 
-  @override
-  Stream<SearchScreenState> mapEventToState(SearchScreenEvent event) async* {
-    // TODO: implement mapEventToState
+    on<SearchItemsFound>((event, emit) {
+      emit(SearchResults(event.results));
+    });
   }
 }

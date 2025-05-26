@@ -8,3 +8,14 @@ abstract class SearchScreenState extends Equatable {
 }
 
 class SearchScreenInitial extends SearchScreenState {}
+
+class SearchLoading extends SearchScreenState {}
+
+class SearchResults extends SearchScreenState {
+  final List<String> results;
+
+  const SearchResults(this.results);
+
+  @override
+  List<Object> get props => [results];
+}

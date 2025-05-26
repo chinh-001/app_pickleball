@@ -10,6 +10,7 @@ import 'package:app_pickleball/screens/widgets/cards/custom_option_item.dart';
 import 'package:app_pickleball/screens/widgets/cards/custom_options_container.dart';
 import 'package:app_pickleball/screens/widgets/summary/custom_payment_summary.dart';
 import 'package:app_pickleball/utils/number_format.dart';
+import 'package:app_pickleball/screens/search_screen/View/search_screen.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
   final double totalPayment;
@@ -232,10 +233,19 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         const SizedBox(height: 8),
         GestureDetector(
           onTap: () {
-            // Hiển thị form thêm khách hàng khi nhấn vào thanh tìm kiếm
-            if (!state.showAddCustomerForm) {
-              _bloc.add(const ShowAddCustomerForm());
-            }
+            // Chuyển đến màn hình tìm kiếm khi nhấn vào thanh tìm kiếm
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) =>
+                        SearchScreen(initialQuery: _searchController.text),
+              ),
+            ).then((selectedItem) {
+              if (selectedItem != null) {
+                _searchController.text = selectedItem;
+              }
+            });
           },
           child: Container(
             decoration: BoxDecoration(
@@ -246,7 +256,25 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
               hintText: AppLocalizations.of(
                 context,
               ).translate('searchCustomer'),
-              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              prefixIcon: GestureDetector(
+                onTap: () {
+                  // Chuyển đến màn hình tìm kiếm khi nhấn vào icon tìm kiếm
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => SearchScreen(
+                            initialQuery: _searchController.text,
+                          ),
+                    ),
+                  ).then((selectedItem) {
+                    if (selectedItem != null) {
+                      _searchController.text = selectedItem;
+                    }
+                  });
+                },
+                child: const Icon(Icons.search, color: Colors.grey),
+              ),
               suffixIcon: GestureDetector(
                 onTap: () {
                   _bloc.add(const ShowAddCustomerForm());

@@ -6,3 +6,16 @@ abstract class SearchScreenEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
+
+class ClearSearch extends SearchScreenEvent {
+  const ClearSearch();
+}
+
+class SearchItemsFound extends SearchScreenEvent {
+  final List<String> results;
+
+  const SearchItemsFound(this.results);
+
+  @override
+  List<Object> get props => [results];
+}
