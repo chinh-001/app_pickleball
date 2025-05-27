@@ -146,6 +146,7 @@
   "enterAtLeast3Chars": "Nhập ít nhất 3 ký tự để tìm kiếm",
   "searching": "Đang tìm kiếm...",
   "noResultsFound": "Không tìm thấy kết quả",
+  "startSearching": "Nhập từ khóa để bắt đầu tìm kiếm",
   "selectCustomer": "Chọn một khách hàng",
   "clearForm": "Xóa mẫu",
   "addNewCustomer": "Thêm khách ",
@@ -198,5 +199,6 @@
   "pleaseSelectDate": "Vui lòng chọn ngày đặt sân",
   "pleaseSelectService": "Vui lòng chọn một dịch vụ",
   "pleaseSelectCourt": "Vui lòng chọn ít nhất một sân",
-  "pleaseCompleteAllInfo": "Vui lòng điền đầy đủ các thông tin bắt buộc"
+  "pleaseCompleteAllInfo": "Vui lòng điền đầy đủ các thông tin bắt buộc",
+  "noChannelSelected": "Chưa chọn kênh. Vui lòng chọn kênh trước."
 } 

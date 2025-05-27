@@ -146,6 +146,7 @@
   "enterAtLeast3Chars": "Enter at least 3 characters to search",
   "searching": "Searching...",
   "noResultsFound": "No results found",
+  "startSearching": "Enter keywords to start searching",
   "selectCustomer": "Select a customer",
   "clearForm": "Clear Form",
   "addNewCustomer": "  New Customer",
@@ -198,5 +199,6 @@
   "pleaseSelectDate": "Please select booking date",
   "pleaseSelectService": "Please select a service",
   "pleaseSelectCourt": "Please select at least one court",
-  "pleaseCompleteAllInfo": "Please complete all required information"
+  "pleaseCompleteAllInfo": "Please complete all required information",
+  "noChannelSelected": "No channel selected. Please select a channel first."
 } 

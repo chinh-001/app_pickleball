@@ -12,6 +12,8 @@ class CustomSearchTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final Color? backgroundColor;
   final Duration debounceTime;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const CustomSearchTextField({
     super.key,
@@ -25,6 +27,8 @@ class CustomSearchTextField extends StatefulWidget {
     this.onChanged,
     this.backgroundColor,
     this.debounceTime = const Duration(milliseconds: 400),
+    this.readOnly = false,
+    this.onTap,
   });
 
   @override
@@ -62,6 +66,8 @@ class _CustomSearchTextFieldState extends State<CustomSearchTextField> {
       child: TextField(
         controller: widget.controller,
         style: const TextStyle(fontSize: 14),
+        readOnly: widget.readOnly,
+        onTap: widget.onTap,
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: const TextStyle(fontSize: 14),

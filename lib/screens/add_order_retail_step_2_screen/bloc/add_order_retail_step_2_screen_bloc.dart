@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'dart:developer' as log;
@@ -242,5 +243,41 @@ class AddOrderRetailStep2ScreenBloc
         notes: '',
       ),
     );
+  }
+
+  Future<String?> getChannelToken() async {
+    try {
+      // Lấy channel hiện tại từ ChannelSyncService
+      final currentChannel = ChannelSyncService.instance.selectedChannel;
+      log.log('Lấy channel từ ChannelSyncService: "$currentChannel"');
+
+      if (currentChannel.isEmpty) {
+        log.log('Không có kênh nào được chọn!');
+        return null;
+      }
+
+      // Lấy token từ UserPermissionsRepository
+      final userPermissionsRepository = UserPermissionsRepository();
+      final channelToken = await userPermissionsRepository.getChannelToken(
+        currentChannel,
+      );
+
+      // Log token đã che một phần
+      if (channelToken.isNotEmpty) {
+        String maskedToken = channelToken;
+        if (channelToken.length > 10) {
+          maskedToken =
+              "${channelToken.substring(0, 5)}...${channelToken.substring(channelToken.length - 5)}";
+        }
+        log.log('Channel token đã lấy được: $maskedToken');
+      } else {
+        log.log('Không thể lấy token cho kênh!');
+      }
+
+      return channelToken;
+    } catch (e) {
+      log.log('Lỗi khi lấy channel token: $e');
+      return null;
+    }
   }
 }

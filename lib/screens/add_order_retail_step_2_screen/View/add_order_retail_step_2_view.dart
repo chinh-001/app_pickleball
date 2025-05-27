@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/screens/widgets/buttons/custom_action_button.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/bloc/add_order_retail_step_2_screen_bloc.dart';
-import 'package:app_pickleball/screens/widgets/input/custom_search_text_field.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/View/complete_booking_screen.dart';
 import 'package:app_pickleball/screens/widgets/indicators/custom_step_circle.dart';
 import 'package:app_pickleball/screens/widgets/cards/custom_option_item.dart';
@@ -11,6 +10,8 @@ import 'package:app_pickleball/screens/widgets/cards/custom_options_container.da
 import 'package:app_pickleball/screens/widgets/summary/custom_payment_summary.dart';
 import 'package:app_pickleball/utils/number_format.dart';
 import 'package:app_pickleball/screens/search_screen/View/search_screen.dart';
+import 'package:app_pickleball/models/customer_model.dart';
+import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
   final double totalPayment;
@@ -114,26 +115,11 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
       >(
         builder: (context, state) {
           return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Colors.green,
-              title: Text(
-                AppLocalizations.of(context).translate('addNew'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              elevation: 1,
-            ),
+            appBar: _buildAppBar(context),
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  height: _showStepper ? null : 0,
-                  child:
-                      _showStepper ? _buildStepper(context) : const SizedBox(),
-                ),
+                _buildAnimatedStepper(context),
                 Expanded(
                   child: SingleChildScrollView(
                     controller: _scrollController,
@@ -156,6 +142,30 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           );
         },
       ),
+    );
+  }
+
+  // App Bar
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.green,
+      title: Text(
+        AppLocalizations.of(context).translate('addNew'),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      elevation: 1,
+    );
+  }
+
+  // Animated Stepper
+  Widget _buildAnimatedStepper(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height: _showStepper ? null : 0,
+      child: _showStepper ? _buildStepper(context) : const SizedBox(),
     );
   }
 
@@ -201,12 +211,162 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
   ) {
-    final salutationOptions = [
-      AppLocalizations.of(context).translate('mr'),
-      AppLocalizations.of(context).translate('ms'),
-    ];
-
     // Set initial values if available
+    _updateControllerValuesFromState(state);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${AppLocalizations.of(context).translate('customer')} *',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        _buildSearchBar(context),
+
+        // Hiển thị thông báo nhập 3 ký tự
+        if (state.searchQuery.isNotEmpty && state.searchQuery.length < 3)
+          _buildMinimumCharsNotice(context),
+
+        // Hiển thị kết quả tìm kiếm
+        if (state.searchQuery.length >= 3 && state.searchResults.isNotEmpty)
+          _buildSearchResults(context, state),
+
+        // Hiển thị thông báo không tìm thấy kết quả
+        if (state.searchQuery.length >= 3 &&
+            !state.isSearching &&
+            state.searchResults.isEmpty)
+          _buildNoResultsFound(context),
+
+        if (state.showAddCustomerForm) ...[
+          const SizedBox(height: 16),
+          _buildAddCustomerForm(context, state),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _navigateToSearchScreen(context),
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.white),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _navigateToSearchScreen(context),
+              child: const Icon(Icons.search, color: Colors.grey),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context).translate('searchCustomer'),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                _bloc.add(const ShowAddCustomerForm());
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Icon(Icons.add_circle, color: Colors.grey, size: 24),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults(
+    BuildContext context,
+    AddOrderRetailStep2ScreenState state,
+  ) {
+    if (state.searchQuery.isEmpty || state.searchResults.isEmpty)
+      return const SizedBox();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              state.isSearching
+                  ? AppLocalizations.of(context).translate('searching')
+                  : '${state.searchResults.length} ${AppLocalizations.of(context).translate('resultsFound')}',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: state.searchResults.length,
+                itemBuilder: (context, index) {
+                  final customer = state.searchResults[index] as Customer;
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      '${customer.firstName} ${customer.lastName}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle:
+                        customer.phoneNumber != null
+                            ? Text(
+                              customer.phoneNumber!,
+                              style: const TextStyle(fontSize: 13),
+                            )
+                            : null,
+                    onTap: () {
+                      // Cập nhật thông tin khách hàng khi chọn
+                      _lastNameController.text = customer.lastName;
+                      _firstNameController.text = customer.firstName;
+                      _emailController.text = customer.emailAddress ?? '';
+                      _phoneController.text = customer.phoneNumber ?? '';
+
+                      // Hiển thị form thông tin khách hàng
+                      _bloc.add(const ShowAddCustomerForm());
+
+                      // Clear search field and results
+                      _searchController.clear();
+                      context.read<AddOrderRetailStep2ScreenBloc>().add(
+                        const SearchCustomers(''),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _updateControllerValuesFromState(AddOrderRetailStep2ScreenState state) {
     if (state.lastName.isNotEmpty && _lastNameController.text.isEmpty) {
       _lastNameController.text = state.lastName;
     }
@@ -222,223 +382,63 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     if (state.phone.isNotEmpty && _phoneController.text.isEmpty) {
       _phoneController.text = state.phone;
     }
+  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '${AppLocalizations.of(context).translate('customer')} *',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () {
-            // Chuyển đến màn hình tìm kiếm khi nhấn vào thanh tìm kiếm
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) =>
-                        SearchScreen(initialQuery: _searchController.text),
-              ),
-            ).then((selectedItem) {
-              if (selectedItem != null) {
-                _searchController.text = selectedItem;
-              }
-            });
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.transparent),
-            ),
-            child: CustomSearchTextField(
-              hintText: AppLocalizations.of(
-                context,
-              ).translate('searchCustomer'),
-              prefixIcon: GestureDetector(
-                onTap: () {
-                  // Chuyển đến màn hình tìm kiếm khi nhấn vào icon tìm kiếm
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => SearchScreen(
-                            initialQuery: _searchController.text,
-                          ),
-                    ),
-                  ).then((selectedItem) {
-                    if (selectedItem != null) {
-                      _searchController.text = selectedItem;
-                    }
-                  });
-                },
-                child: const Icon(Icons.search, color: Colors.grey),
-              ),
-              suffixIcon: GestureDetector(
-                onTap: () {
-                  _bloc.add(const ShowAddCustomerForm());
-                },
-                child: const Icon(
-                  Icons.add_circle,
-                  color: Colors.grey,
-                  size: 24,
-                ),
-              ),
-              height: 40,
-              width: double.infinity,
-              margin: EdgeInsets.zero,
-              controller: _searchController,
-              debounceTime: const Duration(milliseconds: 400),
-              onChanged: (value) {
-                // Gửi sự kiện tìm kiếm khi người dùng nhập ít nhất 3 ký tự
-                context.read<AddOrderRetailStep2ScreenBloc>().add(
-                  SearchCustomers(value),
-                );
-              },
-            ),
-          ),
-        ),
-        // Hiển thị thông báo nhập 3 ký tự
-        if (state.searchQuery.isNotEmpty && state.searchQuery.length < 3) ...[
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Text(
-              AppLocalizations.of(context).translate('enterAtLeast3Chars'),
-              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-            ),
+  Widget _buildMinimumCharsNotice(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
-        // Hiển thị kết quả tìm kiếm
-        if (state.searchQuery.length >= 3 &&
-            state.searchResults.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    state.isSearching
-                        ? AppLocalizations.of(context).translate('searching')
-                        : '${state.searchResults.length} ${AppLocalizations.of(context).translate('resultsFound')}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    constraints: const BoxConstraints(maxHeight: 200),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: state.searchResults.length,
-                      itemBuilder: (context, index) {
-                        final customer = state.searchResults[index];
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            '${customer.firstName} ${customer.lastName}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle:
-                              customer.phoneNumber != null
-                                  ? Text(
-                                    '${customer.phoneNumber!}',
-                                    style: const TextStyle(fontSize: 13),
-                                  )
-                                  : null,
-                          onTap: () {
-                            // Cập nhật thông tin khách hàng khi chọn
-                            _lastNameController.text = customer.lastName;
-                            _firstNameController.text = customer.firstName;
-                            _emailController.text = customer.emailAddress ?? '';
-                            _phoneController.text = customer.phoneNumber ?? '';
+      ),
+      child: Text(
+        AppLocalizations.of(context).translate('enterAtLeast3Chars'),
+        style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+      ),
+    );
+  }
 
-                            // Hiển thị form thông tin khách hàng
-                            _bloc.add(const ShowAddCustomerForm());
-
-                            // Clear search field and results
-                            _searchController.clear();
-                            context.read<AddOrderRetailStep2ScreenBloc>().add(
-                              const SearchCustomers(''),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
+  Widget _buildNoResultsFound(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
-        // Hiển thị thông báo không tìm thấy kết quả
-        if (state.searchQuery.length >= 3 &&
-            !state.isSearching &&
-            state.searchResults.isEmpty) ...[
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Text(
-              AppLocalizations.of(context).translate('noResultsFound'),
-              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-            ),
-          ),
-        ],
-        if (state.showAddCustomerForm) ...[
-          const SizedBox(height: 16),
-          _buildAddCustomerForm(context, state, salutationOptions),
-        ],
-      ],
+      ),
+      child: Text(
+        AppLocalizations.of(context).translate('noResultsFound'),
+        style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+      ),
     );
   }
 
   Widget _buildAddCustomerForm(
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
-    List<String> salutationOptions,
   ) {
+    final salutationOptions = [
+      AppLocalizations.of(context).translate('mr'),
+      AppLocalizations.of(context).translate('ms'),
+    ];
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -747,60 +747,85 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        CustomOptionsContainer(
-          children: [
-            CustomOptionItem(
-              icon: Icons.money,
-              title: AppLocalizations.of(context).translate('cash'),
-              isSelected:
-                  state.paymentMethod ==
-                  AppLocalizations.of(context).translate('cash'),
-              iconColor: Colors.green,
-              onTap:
-                  () => _bloc.add(
-                    PaymentMethodChanged(
-                      AppLocalizations.of(context).translate('cash'),
-                    ),
-                  ),
-            ),
-            CustomOptionItem(
-              icon: Icons.account_balance_wallet,
-              title: AppLocalizations.of(context).translate('eWallet'),
-              isSelected:
-                  state.paymentMethod ==
-                  AppLocalizations.of(context).translate('eWallet'),
-              iconColor: const Color(0xFF0068FF),
-              onTap:
-                  () => _bloc.add(
-                    PaymentMethodChanged(
-                      AppLocalizations.of(context).translate('eWallet'),
-                    ),
-                  ),
-            ),
-            CustomOptionItem(
-              icon: Icons.account_balance,
-              title: AppLocalizations.of(context).translate('bankTransfer'),
-              isSelected:
-                  state.paymentMethod ==
-                  AppLocalizations.of(context).translate('bankTransfer'),
-              iconColor: const Color(0xFF1B7146),
-              onTap:
-                  () => _bloc.add(
-                    PaymentMethodChanged(
-                      AppLocalizations.of(context).translate('bankTransfer'),
-                    ),
-                  ),
-            ),
-          ],
-        ),
+        _buildPaymentMethodOptions(context, state),
         const SizedBox(height: 20),
-        CustomPaymentSummary(
-          bookingPrice: bookingPrice.toCurrency(context),
-          serviceFee: serviceFee.toCurrency(context),
-          discount: discount.toCurrency(context),
-          totalPayment: totalPayment.toCurrency(context),
+        _buildPaymentSummary(
+          context,
+          bookingPrice,
+          serviceFee,
+          discount,
+          totalPayment,
         ),
       ],
+    );
+  }
+
+  // Widget hiển thị tùy chọn phương thức thanh toán
+  Widget _buildPaymentMethodOptions(
+    BuildContext context,
+    AddOrderRetailStep2ScreenState state,
+  ) {
+    return CustomOptionsContainer(
+      children: [
+        CustomOptionItem(
+          icon: Icons.money,
+          title: AppLocalizations.of(context).translate('cash'),
+          isSelected:
+              state.paymentMethod ==
+              AppLocalizations.of(context).translate('cash'),
+          iconColor: Colors.green,
+          onTap:
+              () => _bloc.add(
+                PaymentMethodChanged(
+                  AppLocalizations.of(context).translate('cash'),
+                ),
+              ),
+        ),
+        CustomOptionItem(
+          icon: Icons.account_balance_wallet,
+          title: AppLocalizations.of(context).translate('eWallet'),
+          isSelected:
+              state.paymentMethod ==
+              AppLocalizations.of(context).translate('eWallet'),
+          iconColor: const Color(0xFF0068FF),
+          onTap:
+              () => _bloc.add(
+                PaymentMethodChanged(
+                  AppLocalizations.of(context).translate('eWallet'),
+                ),
+              ),
+        ),
+        CustomOptionItem(
+          icon: Icons.account_balance,
+          title: AppLocalizations.of(context).translate('bankTransfer'),
+          isSelected:
+              state.paymentMethod ==
+              AppLocalizations.of(context).translate('bankTransfer'),
+          iconColor: const Color(0xFF1B7146),
+          onTap:
+              () => _bloc.add(
+                PaymentMethodChanged(
+                  AppLocalizations.of(context).translate('bankTransfer'),
+                ),
+              ),
+        ),
+      ],
+    );
+  }
+
+  // Widget hiển thị tổng kết thanh toán
+  Widget _buildPaymentSummary(
+    BuildContext context,
+    double bookingPrice,
+    double serviceFee,
+    double discount,
+    double totalPayment,
+  ) {
+    return CustomPaymentSummary(
+      bookingPrice: bookingPrice.toCurrency(context),
+      serviceFee: serviceFee.toCurrency(context),
+      discount: discount.toCurrency(context),
+      totalPayment: totalPayment.toCurrency(context),
     );
   }
 
@@ -816,56 +841,65 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        CustomOptionsContainer(
-          children: [
-            CustomOptionItem(
-              icon: Icons.error_outline,
-              title: AppLocalizations.of(context).translate('unpaid'),
-              isSelected:
-                  state.paymentStatus ==
+        _buildPaymentStatusOptions(context, state),
+      ],
+    );
+  }
+
+  // Widget hiển thị tùy chọn trạng thái thanh toán
+  Widget _buildPaymentStatusOptions(
+    BuildContext context,
+    AddOrderRetailStep2ScreenState state,
+  ) {
+    return CustomOptionsContainer(
+      children: [
+        CustomOptionItem(
+          icon: Icons.error_outline,
+          title: AppLocalizations.of(context).translate('unpaid'),
+          isSelected:
+              state.paymentStatus ==
+              AppLocalizations.of(context).translate('unpaid'),
+          iconColor: Colors.red,
+          onTap:
+              () => _bloc.add(
+                PaymentStatusChanged(
                   AppLocalizations.of(context).translate('unpaid'),
-              iconColor: Colors.red,
-              onTap:
-                  () => _bloc.add(
-                    PaymentStatusChanged(
-                      AppLocalizations.of(context).translate('unpaid'),
-                    ),
-                  ),
-            ),
-            CustomOptionItem(
-              icon: Icons.check_circle_outline,
-              title: AppLocalizations.of(context).translate('paid'),
-              isSelected:
-                  state.paymentStatus ==
+                ),
+              ),
+        ),
+        CustomOptionItem(
+          icon: Icons.check_circle_outline,
+          title: AppLocalizations.of(context).translate('paid'),
+          isSelected:
+              state.paymentStatus ==
+              AppLocalizations.of(context).translate('paid'),
+          iconColor: Colors.green,
+          onTap:
+              () => _bloc.add(
+                PaymentStatusChanged(
                   AppLocalizations.of(context).translate('paid'),
-              iconColor: Colors.green,
-              onTap:
-                  () => _bloc.add(
-                    PaymentStatusChanged(
-                      AppLocalizations.of(context).translate('paid'),
-                    ),
-                  ),
-            ),
-            CustomOptionItem(
-              icon: Icons.account_balance_wallet_outlined,
-              title: AppLocalizations.of(context).translate('deposit'),
-              isSelected:
-                  state.paymentStatus ==
+                ),
+              ),
+        ),
+        CustomOptionItem(
+          icon: Icons.account_balance_wallet_outlined,
+          title: AppLocalizations.of(context).translate('deposit'),
+          isSelected:
+              state.paymentStatus ==
+              AppLocalizations.of(context).translate('deposit'),
+          iconColor: Colors.orange,
+          onTap:
+              () => _bloc.add(
+                PaymentStatusChanged(
                   AppLocalizations.of(context).translate('deposit'),
-              iconColor: Colors.orange,
-              onTap:
-                  () => _bloc.add(
-                    PaymentStatusChanged(
-                      AppLocalizations.of(context).translate('deposit'),
-                    ),
-                  ),
-            ),
-          ],
+                ),
+              ),
         ),
       ],
     );
   }
 
+  // Bottom Navigation Bar
   Widget _buildBottomBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -956,5 +990,86 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
 
     // Gửi event reset form đến bloc
     _bloc.add(const ResetForm());
+  }
+
+  void _navigateToSearchScreen(BuildContext context) async {
+    // Lưu lại một tham chiếu đến AppLocalizations để sử dụng sau khi async
+    final appLocalizations = AppLocalizations.of(context);
+
+    // Show loading indicator
+    _showLoadingDialog(context);
+
+    // Lấy channel token từ bloc
+    final String? channelToken = await _bloc.getChannelToken();
+
+    // Kiểm tra xem context còn hợp lệ không
+    if (!mounted) return;
+
+    // Đóng hộp thoại loading
+    Navigator.pop(context);
+
+    if (channelToken == null || channelToken.isEmpty) {
+      // Sử dụng appLocalizations đã lưu trữ thay vì context trực tiếp
+      _showErrorSnackbar(
+        context,
+        appLocalizations.translate('noChannelSelected'),
+      );
+      return;
+    }
+
+    // Mở màn hình tìm kiếm với context hiện tại
+    if (mounted) {
+      _openSearchScreen(context, channelToken);
+    }
+  }
+
+  // Hiển thị loading dialog
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(child: CustomLoadingIndicator(size: 30.0));
+      },
+    );
+  }
+
+  // Hiển thị thông báo lỗi khi không có token
+  void _showErrorSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  // Mở màn hình tìm kiếm
+  void _openSearchScreen(BuildContext context, String channelToken) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => SearchScreen(
+              initialQuery: _searchController.text,
+              channelToken: channelToken,
+            ),
+      ),
+    ).then(_handleSearchResult);
+  }
+
+  // Xử lý kết quả trả về từ màn hình tìm kiếm
+  void _handleSearchResult(dynamic selectedCustomer) {
+    if (selectedCustomer == null) return;
+
+    if (selectedCustomer is Customer) {
+      _lastNameController.text = selectedCustomer.lastName;
+      _firstNameController.text = selectedCustomer.firstName;
+      _emailController.text = selectedCustomer.emailAddress ?? '';
+      _phoneController.text = selectedCustomer.phoneNumber ?? '';
+
+      // Hiển thị form thông tin khách hàng
+      _bloc.add(const ShowAddCustomerForm());
+    } else {
+      // Xử lý trường hợp nhận String từ phiên bản SearchScreen cũ
+      _searchController.text = selectedCustomer.toString();
+    }
   }
 }
