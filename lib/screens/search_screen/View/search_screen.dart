@@ -321,12 +321,12 @@ class _SearchScreenState extends State<SearchScreen> {
   String _getInitials(String firstName, String lastName) {
     String initials = '';
 
-    if (lastName.isNotEmpty) {
-      initials += lastName[0].toUpperCase();
-    }
-
     if (firstName.isNotEmpty) {
       initials += firstName[0].toUpperCase();
+    }
+
+    if (lastName.isNotEmpty) {
+      initials += lastName[0].toUpperCase();
     }
 
     // Nếu không có chữ cái nào, trả về "?"
