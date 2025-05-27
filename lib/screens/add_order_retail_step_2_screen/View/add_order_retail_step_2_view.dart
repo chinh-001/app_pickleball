@@ -703,6 +703,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                           ).translate('clearForm'),
                           onPressed: _resetForm,
                           isPrimary: false,
+                          fontSize: 12.0,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -716,6 +717,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                             _resetForm();
                           },
                           isPrimary: true,
+                          fontSize: 12.0,
                         ),
                       ),
                     ],
@@ -924,6 +926,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
               Navigator.of(context).pop();
             },
             isPrimary: false,
+            fontSize: 13.0,
           ),
           const SizedBox(width: 12),
           BlocBuilder<
@@ -938,6 +941,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                 onPressed: () => _navigateToCompleteBooking(context, state),
                 isPrimary: true,
                 isEnabled: areRequiredFieldsFilled,
+                fontSize: 13.0,
               );
             },
           ),

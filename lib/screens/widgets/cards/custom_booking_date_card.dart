@@ -65,7 +65,6 @@ class CustomBookingDateCard extends StatelessWidget {
                   children: [
                     CustomLoadingIndicator(size: 30.0),
                     SizedBox(height: 8),
-                    Text('Đang kiểm tra sân có sẵn...'),
                   ],
                 ),
               ),
