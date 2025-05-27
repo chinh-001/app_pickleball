@@ -7,6 +7,7 @@ import 'package:app_pickleball/models/customer_model.dart';
 import 'package:app_pickleball/services/channel_sync_service.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
+import 'package:app_pickleball/screens/widgets/cards/custom_contact_item.dart';
 import 'dart:developer' as log;
 
 class SearchScreen extends StatefulWidget {
@@ -140,109 +141,120 @@ class _SearchScreenState extends State<SearchScreen> {
       value: _bloc,
       child: BlocBuilder<SearchScreenBloc, SearchScreenState>(
         builder: (context, state) {
-          return Scaffold(
-            appBar: PreferredSize(
-              preferredSize: const Size.fromHeight(56),
-              child: AppBar(
-                backgroundColor: Colors.green,
-                elevation: 0,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                title: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 8),
-                      const Icon(Icons.search, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          style: const TextStyle(fontSize: 14),
-                          decoration: InputDecoration(
-                            hintText: AppLocalizations.of(
-                              context,
-                            ).translate('searchCustomer'),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10,
-                            ),
-                            isDense: true,
-                          ),
-                          // Không cần xử lý onChanged vì đã có listener trong initState
-                        ),
-                      ),
-                      if (_searchController.text.isNotEmpty)
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              _searchController.clear();
-                              _performSearch('');
-                            });
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(
-                              Icons.close,
-                              color: Colors.grey,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                ),
-                actions: const [],
+          return Theme(
+            // Ghi đè theme để loại bỏ các divider mặc định
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+              dividerTheme: const DividerThemeData(
+                color: Colors.transparent,
+                space: 0,
+                thickness: 0,
               ),
             ),
-            body: Column(
-              children: [
-                if (_channelToken == null && _isInitialized)
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade100,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: Colors.red),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.error_outline, color: Colors.red),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              AppLocalizations.of(
+            child: Scaffold(
+              appBar: PreferredSize(
+                preferredSize: const Size.fromHeight(56),
+                child: AppBar(
+                  backgroundColor: Colors.green,
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  title: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 8),
+                        const Icon(Icons.search, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            style: const TextStyle(fontSize: 14),
+                            decoration: InputDecoration(
+                              hintText: AppLocalizations.of(
                                 context,
-                              ).translate('noChannelSelected'),
-                              style: const TextStyle(color: Colors.red),
+                              ).translate('searchCustomer'),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                              ),
+                              isDense: true,
+                            ),
+                            // Không cần xử lý onChanged vì đã có listener trong initState
+                          ),
+                        ),
+                        if (_searchController.text.isNotEmpty)
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                _searchController.clear();
+                                _performSearch('');
+                              });
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(
+                                Icons.close,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
+                        const SizedBox(width: 8),
+                      ],
                     ),
                   ),
-                Expanded(
-                  child:
-                      state is SearchResults
-                          ? _buildSearchResults(state.results)
-                          : state is SearchLoading
-                          ? const Center(
-                            child: CustomLoadingIndicator(size: 30.0),
-                          )
-                          : state is SearchErrorState
-                          ? _buildErrorState(state.message)
-                          : _buildEmptyState(),
+                  actions: const [],
                 ),
-              ],
+              ),
+              body: Column(
+                children: [
+                  if (_channelToken == null && _isInitialized)
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade100,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.red),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('noChannelSelected'),
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  Expanded(
+                    child:
+                        state is SearchResults
+                            ? _buildSearchResults(state.results)
+                            : state is SearchLoading
+                            ? const Center(
+                              child: CustomLoadingIndicator(size: 30.0),
+                            )
+                            : state is SearchErrorState
+                            ? _buildErrorState(state.message)
+                            : _buildEmptyState(),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -257,36 +269,68 @@ class _SearchScreenState extends State<SearchScreen> {
 
     log.log('Hiển thị ${results.length} kết quả tìm kiếm');
 
-    return ListView.separated(
-      itemCount: results.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final customer = results[index] as Customer;
-        log.log('Kết quả #$index: ${customer.firstName} ${customer.lastName}');
-
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-          title: Text(
-            '${customer.firstName} ${customer.lastName}',
-            style: const TextStyle(fontSize: 16),
+    // Sử dụng một container bao bọc để kiểm soát tốt hơn hiển thị
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header hiển thị số kết quả tìm thấy
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            '${results.length} ${AppLocalizations.of(context).translate('resultsFound')}',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
-          subtitle:
-              customer.phoneNumber != null
-                  ? Text(
-                    customer.phoneNumber!,
-                    style: const TextStyle(fontSize: 14),
-                  )
-                  : null,
-          onTap: () {
-            // Return the selected customer to previous screen
-            log.log(
-              'Đã chọn khách hàng: ${customer.firstName} ${customer.lastName}',
-            );
-            Navigator.pop(context, customer);
-          },
-        );
-      },
+        ),
+        Expanded(
+          child: Container(
+            color: Colors.white,
+            child: ListView.builder(
+              itemCount: results.length,
+              // Loại bỏ padding mặc định
+              padding: EdgeInsets.zero,
+              itemBuilder: (context, index) {
+                final customer = results[index] as Customer;
+
+                // Lấy chữ cái đầu của tên và họ để tạo avatar text
+                final String avatarText = _getInitials(
+                  customer.firstName,
+                  customer.lastName,
+                );
+
+                return CustomContactItem(
+                  avatarText: avatarText,
+                  name: '${customer.firstName} ${customer.lastName}',
+                  phone: customer.phoneNumber ?? '',
+                  removeDivider: true,
+                  onTap: () {
+                    log.log(
+                      'Đã chọn khách hàng: ${customer.firstName} ${customer.lastName}',
+                    );
+                    Navigator.pop(context, customer);
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
+  }
+
+  // Hàm lấy chữ cái đầu tiên của tên và họ
+  String _getInitials(String firstName, String lastName) {
+    String initials = '';
+
+    if (lastName.isNotEmpty) {
+      initials += lastName[0].toUpperCase();
+    }
+
+    if (firstName.isNotEmpty) {
+      initials += firstName[0].toUpperCase();
+    }
+
+    // Nếu không có chữ cái nào, trả về "?"
+    return initials.isNotEmpty ? initials : '?';
   }
 
   Widget _buildErrorState(String message) {
