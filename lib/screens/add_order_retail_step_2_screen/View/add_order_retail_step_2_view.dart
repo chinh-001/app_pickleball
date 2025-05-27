@@ -12,6 +12,7 @@ import 'package:app_pickleball/utils/number_format.dart';
 import 'package:app_pickleball/screens/search_screen/View/search_screen.dart';
 import 'package:app_pickleball/models/customer_model.dart';
 import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
+import 'package:app_pickleball/screens/add_customer_screen/View/add_customer_screen.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
   final double totalPayment;
@@ -272,7 +273,8 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             ),
             GestureDetector(
               onTap: () {
-                _bloc.add(const ShowAddCustomerForm());
+                // Chuyển đến trang add_customer_screen thay vì hiển thị form
+                _navigateToAddCustomerScreen(context);
               },
               child: const Padding(
                 padding: EdgeInsets.all(8.0),
@@ -706,20 +708,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                           fontSize: 12.0,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: CustomActionButton(
-                          text: AppLocalizations.of(
-                            context,
-                          ).translate('addNewCustomer'),
-                          onPressed: () {
-                            // Reset form và ẩn form hiện tại (để có thể nhập lại từ đầu)
-                            _resetForm();
-                          },
-                          isPrimary: true,
-                          fontSize: 12.0,
-                        ),
-                      ),
                     ],
                   ),
                 ],
@@ -1074,6 +1062,50 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     } else {
       // Xử lý trường hợp nhận String từ phiên bản SearchScreen cũ
       _searchController.text = selectedCustomer.toString();
+    }
+  }
+
+  void _navigateToAddCustomerScreen(BuildContext context) async {
+    // Lấy thông tin state hiện tại
+    final state = _bloc.state;
+
+    // Tạo đối tượng Customer từ dữ liệu hiện tại (nếu có)
+    Customer? currentCustomer;
+    if (state.lastName.isNotEmpty || state.firstName.isNotEmpty) {
+      currentCustomer = Customer(
+        id: '', // Không có ID vì đây là khách hàng mới
+        firstName: state.firstName,
+        lastName: state.lastName,
+        emailAddress: state.email,
+        phoneNumber: state.phone,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    }
+
+    final customer = await Navigator.push<Customer>(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => AddCustomerScreen(initialCustomer: currentCustomer),
+      ),
+    );
+
+    // Nếu có customer trả về, cập nhật thông tin trong form
+    if (customer != null) {
+      _lastNameController.text = customer.lastName;
+      _firstNameController.text = customer.firstName;
+      _emailController.text = customer.emailAddress ?? '';
+      _phoneController.text = customer.phoneNumber ?? '';
+
+      // Cập nhật bloc
+      _bloc.add(LastNameChanged(_lastNameController.text));
+      _bloc.add(FirstNameChanged(_firstNameController.text));
+      _bloc.add(EmailChanged(_emailController.text));
+      _bloc.add(PhoneChanged(_phoneController.text));
+
+      // Hiển thị form điền thông tin khách
+      _bloc.add(const ShowAddCustomerForm());
     }
   }
 }
