@@ -11,6 +11,10 @@ class LoadPaymentMethods extends AddOrderRetailStep2ScreenEvent {
   const LoadPaymentMethods();
 }
 
+class LoadPaymentStatus extends AddOrderRetailStep2ScreenEvent {
+  const LoadPaymentStatus();
+}
+
 class SalutationChanged extends AddOrderRetailStep2ScreenEvent {
   final String? salutation;
 

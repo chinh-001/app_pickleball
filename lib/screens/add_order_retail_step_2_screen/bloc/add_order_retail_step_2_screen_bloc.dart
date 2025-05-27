@@ -8,6 +8,8 @@ import 'package:app_pickleball/services/repositories/userPermissions_repository.
 import 'package:app_pickleball/services/channel_sync_service.dart';
 import 'package:app_pickleball/models/payment_methods_model.dart';
 import 'package:app_pickleball/services/repositories/payment_methods_repository.dart';
+import 'package:app_pickleball/models/payment_status_model.dart';
+import 'package:app_pickleball/services/repositories/payment_status_repository.dart';
 
 part 'add_order_retail_step_2_screen_event.dart';
 part 'add_order_retail_step_2_screen_state.dart';
@@ -21,6 +23,8 @@ class AddOrderRetailStep2ScreenBloc
   final ChannelSyncService _channelSyncService = ChannelSyncService.instance;
   final PaymentMethodsRepository _paymentMethodsRepository =
       PaymentMethodsRepository();
+  final PaymentStatusRepository _paymentStatusRepository =
+      PaymentStatusRepository();
 
   AddOrderRetailStep2ScreenBloc()
     : super(
@@ -52,6 +56,44 @@ class AddOrderRetailStep2ScreenBloc
     on<ResetForm>(_onResetForm);
     on<SetTotalPayment>(_onSetTotalPayment);
     on<LoadPaymentMethods>(_onLoadPaymentMethods);
+    on<LoadPaymentStatus>(_onLoadPaymentStatus);
+  }
+
+  Future<void> _onLoadPaymentStatus(
+    LoadPaymentStatus event,
+    Emitter<AddOrderRetailStep2ScreenState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(isLoadingPaymentStatus: true));
+
+      log.log('Đang tải trạng thái thanh toán...');
+
+      final PaymentStatusResult result =
+          await _paymentStatusRepository.getAllPaymentStatus();
+
+      log.log('Đã tải ${result.items.length} trạng thái thanh toán');
+
+      emit(
+        state.copyWith(
+          paymentStatusList: result.items,
+          isLoadingPaymentStatus: false,
+        ),
+      );
+
+      // Nếu có trạng thái thanh toán và đang sử dụng trạng thái mặc định
+      if (result.items.isNotEmpty && state.paymentStatus == 'Chưa thanh toán') {
+        // Tìm trạng thái 'Chưa thanh toán' hoặc trạng thái tương đương trong API
+        final unpaidStatus = result.items.firstWhere((item) {
+          return item.name.toLowerCase().contains('chưa') ||
+              item.code.toLowerCase().contains('unpaid');
+        }, orElse: () => result.items.first);
+
+        emit(state.copyWith(paymentStatus: unpaidStatus.name));
+      }
+    } catch (e) {
+      log.log('Lỗi khi tải trạng thái thanh toán: $e');
+      emit(state.copyWith(isLoadingPaymentStatus: false));
+    }
   }
 
   Future<void> _onLoadPaymentMethods(
@@ -174,6 +216,7 @@ class AddOrderRetailStep2ScreenBloc
     );
 
     add(const LoadPaymentMethods());
+    add(const LoadPaymentStatus());
   }
 
   void _onSetTotalPayment(

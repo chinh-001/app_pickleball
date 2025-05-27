@@ -14,6 +14,7 @@ import 'package:app_pickleball/models/customer_model.dart';
 import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
 import 'package:app_pickleball/screens/add_customer_screen/View/add_customer_screen.dart';
 import 'package:app_pickleball/models/payment_methods_model.dart';
+import 'package:app_pickleball/models/payment_status_model.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
   final double totalPayment;
@@ -463,7 +464,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    AppLocalizations.of(context).translate('addCustomer'),
+                    AppLocalizations.of(context).translate('customer'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -759,7 +760,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
           child: SizedBox(
             height: 30,
             width: 30,
-            child: CircularProgressIndicator(strokeWidth: 2.0),
+            child: CustomLoadingIndicator(size: 30.0),
           ),
         ),
       );
@@ -896,51 +897,122 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
   ) {
+    // Nếu đang tải dữ liệu, hiển thị loading indicator
+    if (state.isLoadingPaymentStatus) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: SizedBox(
+            height: 30,
+            width: 30,
+            child: CustomLoadingIndicator(size: 30.0),
+          ),
+        ),
+      );
+    }
+
+    // Nếu không có trạng thái thanh toán nào, sử dụng dữ liệu mặc định
+    if (state.paymentStatusList.isEmpty) {
+      return CustomOptionsContainer(
+        children: [
+          CustomOptionItem(
+            icon: Icons.error_outline,
+            title: AppLocalizations.of(context).translate('unpaid'),
+            isSelected:
+                state.paymentStatus ==
+                AppLocalizations.of(context).translate('unpaid'),
+            iconColor: Colors.red,
+            onTap:
+                () => _bloc.add(
+                  PaymentStatusChanged(
+                    AppLocalizations.of(context).translate('unpaid'),
+                  ),
+                ),
+          ),
+          CustomOptionItem(
+            icon: Icons.check_circle_outline,
+            title: AppLocalizations.of(context).translate('paid'),
+            isSelected:
+                state.paymentStatus ==
+                AppLocalizations.of(context).translate('paid'),
+            iconColor: Colors.green,
+            onTap:
+                () => _bloc.add(
+                  PaymentStatusChanged(
+                    AppLocalizations.of(context).translate('paid'),
+                  ),
+                ),
+          ),
+          CustomOptionItem(
+            icon: Icons.account_balance_wallet_outlined,
+            title: AppLocalizations.of(context).translate('deposit'),
+            isSelected:
+                state.paymentStatus ==
+                AppLocalizations.of(context).translate('deposit'),
+            iconColor: Colors.orange,
+            onTap:
+                () => _bloc.add(
+                  PaymentStatusChanged(
+                    AppLocalizations.of(context).translate('deposit'),
+                  ),
+                ),
+          ),
+        ],
+      );
+    }
+
+    // Lọc danh sách trạng thái thanh toán để loại bỏ các mục có id = '3', '5', hoặc '6'
+    final filteredStatusList =
+        state.paymentStatusList.where((status) {
+          final paymentStatus = status as PaymentStatus;
+          return paymentStatus.id != '3' &&
+              paymentStatus.id != '5' &&
+              paymentStatus.id != '6';
+        }).toList();
+
+    // Render danh sách trạng thái thanh toán từ API (đã lọc)
     return CustomOptionsContainer(
-      children: [
-        CustomOptionItem(
-          icon: Icons.error_outline,
-          title: AppLocalizations.of(context).translate('unpaid'),
-          isSelected:
-              state.paymentStatus ==
-              AppLocalizations.of(context).translate('unpaid'),
-          iconColor: Colors.red,
-          onTap:
-              () => _bloc.add(
-                PaymentStatusChanged(
-                  AppLocalizations.of(context).translate('unpaid'),
-                ),
-              ),
-        ),
-        CustomOptionItem(
-          icon: Icons.check_circle_outline,
-          title: AppLocalizations.of(context).translate('paid'),
-          isSelected:
-              state.paymentStatus ==
-              AppLocalizations.of(context).translate('paid'),
-          iconColor: Colors.green,
-          onTap:
-              () => _bloc.add(
-                PaymentStatusChanged(
-                  AppLocalizations.of(context).translate('paid'),
-                ),
-              ),
-        ),
-        CustomOptionItem(
-          icon: Icons.account_balance_wallet_outlined,
-          title: AppLocalizations.of(context).translate('deposit'),
-          isSelected:
-              state.paymentStatus ==
-              AppLocalizations.of(context).translate('deposit'),
-          iconColor: Colors.orange,
-          onTap:
-              () => _bloc.add(
-                PaymentStatusChanged(
-                  AppLocalizations.of(context).translate('deposit'),
-                ),
-              ),
-        ),
-      ],
+      children:
+          filteredStatusList.map<Widget>((status) {
+            final paymentStatus = status as PaymentStatus;
+
+            // Xác định icon và màu sắc dựa trên code và tên
+            IconData icon;
+            Color iconColor;
+
+            // Phân loại trạng thái thanh toán để chọn icon và màu phù hợp
+            final lowerCode = paymentStatus.code.toLowerCase();
+            final lowerName = paymentStatus.name.toLowerCase();
+
+            if (lowerCode.contains('unpaid') ||
+                lowerName.contains('chưa') ||
+                lowerName.contains('unpaid')) {
+              icon = Icons.error_outline;
+              iconColor = Colors.red;
+            } else if (lowerCode.contains('paid') ||
+                lowerName.contains('đã') ||
+                lowerName.contains('paid')) {
+              icon = Icons.check_circle_outline;
+              iconColor = Colors.green;
+            } else if (lowerCode.contains('deposit') ||
+                lowerName.contains('cọc') ||
+                lowerName.contains('deposit')) {
+              icon = Icons.account_balance_wallet_outlined;
+              iconColor = Colors.orange;
+            } else {
+              // Trạng thái khác
+              icon = Icons.help_outline;
+              iconColor = Colors.blue;
+            }
+
+            return CustomOptionItem(
+              icon: icon,
+              title: paymentStatus.name,
+              isSelected: state.paymentStatus == paymentStatus.name,
+              iconColor: iconColor,
+              onTap: () => _bloc.add(PaymentStatusChanged(paymentStatus.name)),
+            );
+          }).toList(),
     );
   }
 
