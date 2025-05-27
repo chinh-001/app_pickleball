@@ -94,7 +94,7 @@ class CustomerRepository implements ICustomerService {
       }
 
       // Ghi log query để debug
-      log.log('CustomerRepository - GraphQL query: $query');
+      // log.log('CustomerRepository - GraphQL query: $query');
 
       // Log token để debug (ẩn một phần của token)
       String maskedToken = channelToken;

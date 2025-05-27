@@ -15,6 +15,8 @@ class AddOrderRetailStep2ScreenState extends Equatable {
   final List<dynamic> searchResults;
   final bool isSearching;
   final double totalPayment;
+  final List<dynamic> paymentMethods;
+  final bool isLoadingPaymentMethods;
 
   const AddOrderRetailStep2ScreenState({
     required this.selectedSalutation,
@@ -31,6 +33,8 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     this.searchResults = const [],
     this.isSearching = false,
     this.totalPayment = 0.0,
+    this.paymentMethods = const [],
+    this.isLoadingPaymentMethods = false,
   });
 
   AddOrderRetailStep2ScreenState copyWith({
@@ -48,6 +52,8 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     List<dynamic>? searchResults,
     bool? isSearching,
     double? totalPayment,
+    List<dynamic>? paymentMethods,
+    bool? isLoadingPaymentMethods,
   }) {
     return AddOrderRetailStep2ScreenState(
       selectedSalutation: selectedSalutation ?? this.selectedSalutation,
@@ -64,6 +70,9 @@ class AddOrderRetailStep2ScreenState extends Equatable {
       searchResults: searchResults ?? this.searchResults,
       isSearching: isSearching ?? this.isSearching,
       totalPayment: totalPayment ?? this.totalPayment,
+      paymentMethods: paymentMethods ?? this.paymentMethods,
+      isLoadingPaymentMethods:
+          isLoadingPaymentMethods ?? this.isLoadingPaymentMethods,
     );
   }
 
@@ -83,5 +92,7 @@ class AddOrderRetailStep2ScreenState extends Equatable {
     searchResults,
     isSearching,
     totalPayment,
+    paymentMethods,
+    isLoadingPaymentMethods,
   ];
 }

@@ -7,6 +7,10 @@ abstract class AddOrderRetailStep2ScreenEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class LoadPaymentMethods extends AddOrderRetailStep2ScreenEvent {
+  const LoadPaymentMethods();
+}
+
 class SalutationChanged extends AddOrderRetailStep2ScreenEvent {
   final String? salutation;
 
@@ -98,12 +102,12 @@ class HideAddCustomerForm extends AddOrderRetailStep2ScreenEvent {
 
 class InitializeForm extends AddOrderRetailStep2ScreenEvent {
   final String? defaultSalutation;
-  final String defaultPaymentMethod;
+  final String? defaultPaymentMethod;
   final double? totalPayment;
 
   const InitializeForm({
     this.defaultSalutation,
-    required this.defaultPaymentMethod,
+    this.defaultPaymentMethod,
     this.totalPayment,
   });
 

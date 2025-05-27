@@ -100,7 +100,7 @@ class ApiClient {
         body: requestBody,
       );
 
-      log.log('Response Status Code: ${response.statusCode}');
+      // log.log('Response Status Code: ${response.statusCode}');
 
       await _saveCookies(response);
       final jsonResponse = _handleResponse(response);

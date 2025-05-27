@@ -6,6 +6,8 @@ import 'package:app_pickleball/models/customer_model.dart';
 import 'package:app_pickleball/services/repositories/customer_repository.dart';
 import 'package:app_pickleball/services/repositories/userPermissions_repository.dart';
 import 'package:app_pickleball/services/channel_sync_service.dart';
+import 'package:app_pickleball/models/payment_methods_model.dart';
+import 'package:app_pickleball/services/repositories/payment_methods_repository.dart';
 
 part 'add_order_retail_step_2_screen_event.dart';
 part 'add_order_retail_step_2_screen_state.dart';
@@ -17,6 +19,8 @@ class AddOrderRetailStep2ScreenBloc
   final UserPermissionsRepository _permissionsRepository =
       UserPermissionsRepository();
   final ChannelSyncService _channelSyncService = ChannelSyncService.instance;
+  final PaymentMethodsRepository _paymentMethodsRepository =
+      PaymentMethodsRepository();
 
   AddOrderRetailStep2ScreenBloc()
     : super(
@@ -47,6 +51,37 @@ class AddOrderRetailStep2ScreenBloc
     on<SearchCustomers>(_onSearchCustomers);
     on<ResetForm>(_onResetForm);
     on<SetTotalPayment>(_onSetTotalPayment);
+    on<LoadPaymentMethods>(_onLoadPaymentMethods);
+  }
+
+  Future<void> _onLoadPaymentMethods(
+    LoadPaymentMethods event,
+    Emitter<AddOrderRetailStep2ScreenState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(isLoadingPaymentMethods: true));
+
+      log.log('Đang tải phương thức thanh toán...');
+
+      final PaymentMethodsResult result =
+          await _paymentMethodsRepository.getPaymentMethods();
+
+      log.log('Đã tải ${result.items.length} phương thức thanh toán');
+
+      emit(
+        state.copyWith(
+          paymentMethods: result.items,
+          isLoadingPaymentMethods: false,
+        ),
+      );
+
+      if (result.items.isNotEmpty && state.paymentMethod == null) {
+        emit(state.copyWith(paymentMethod: result.items.first.name));
+      }
+    } catch (e) {
+      log.log('Lỗi khi tải phương thức thanh toán: $e');
+      emit(state.copyWith(isLoadingPaymentMethods: false));
+    }
   }
 
   void _onSalutationChanged(
@@ -137,6 +172,8 @@ class AddOrderRetailStep2ScreenBloc
         totalPayment: event.totalPayment,
       ),
     );
+
+    add(const LoadPaymentMethods());
   }
 
   void _onSetTotalPayment(
@@ -152,20 +189,16 @@ class AddOrderRetailStep2ScreenBloc
   ) async {
     final String searchQuery = event.searchQuery;
 
-    // Cập nhật query vào state
     emit(state.copyWith(searchQuery: searchQuery));
 
-    // Chỉ tìm kiếm khi nhập ít nhất 3 ký tự
     if (searchQuery.length < 3) {
       emit(state.copyWith(searchResults: [], isSearching: false));
       return;
     }
 
-    // Cập nhật trạng thái đang tìm kiếm
     emit(state.copyWith(isSearching: true));
 
     try {
-      // Lấy channel hiện tại từ ChannelSyncService
       final currentChannel = _channelSyncService.selectedChannel;
       log.log(
         'SearchCustomers - Kênh hiện tại từ ChannelSyncService: "$currentChannel"',
@@ -179,13 +212,11 @@ class AddOrderRetailStep2ScreenBloc
         return;
       }
 
-      // Lấy token từ UserPermissionsRepository dựa vào channel
       log.log('SearchCustomers - Đang lấy token cho kênh: "$currentChannel"');
       final channelToken = await _permissionsRepository.getChannelToken(
         currentChannel,
       );
 
-      // Log token (đã che một phần)
       String maskedToken = channelToken;
       if (channelToken.length > 10) {
         maskedToken =
@@ -195,7 +226,6 @@ class AddOrderRetailStep2ScreenBloc
       }
       log.log('SearchCustomers - Token đã lấy được: $maskedToken');
 
-      // Nếu không có token, hiển thị lỗi
       if (channelToken.isEmpty) {
         log.log(
           'SearchCustomers - ERROR: Không tìm thấy token cho kênh "$currentChannel". Vui lòng đăng nhập lại',
@@ -206,13 +236,11 @@ class AddOrderRetailStep2ScreenBloc
 
       log.log('SearchCustomers - Đang tìm kiếm với từ khóa: "$searchQuery"');
 
-      // Gọi repository để thực hiện tìm kiếm với searchQuery
       final CustomerResponse response = await _customerRepository.getCustomers(
         channelToken: channelToken,
         searchQuery: searchQuery,
       );
 
-      // Log kết quả tìm kiếm
       log.log(
         'SearchCustomers result: ${response.items.length} customers found for query "$searchQuery"',
       );
@@ -220,7 +248,6 @@ class AddOrderRetailStep2ScreenBloc
         log.log('Customer details: ${response.items}');
       }
 
-      // Cập nhật state với kết quả tìm kiếm
       emit(state.copyWith(searchResults: response.items, isSearching: false));
     } catch (e) {
       log.log('SearchCustomers - ERROR: Lỗi khi tìm kiếm khách hàng: $e');
@@ -232,7 +259,6 @@ class AddOrderRetailStep2ScreenBloc
     ResetForm event,
     Emitter<AddOrderRetailStep2ScreenState> emit,
   ) {
-    // Giữ lại thông tin thanh toán và trạng thái, chỉ reset thông tin khách hàng
     emit(
       state.copyWith(
         selectedSalutation: null,
@@ -247,7 +273,6 @@ class AddOrderRetailStep2ScreenBloc
 
   Future<String?> getChannelToken() async {
     try {
-      // Lấy channel hiện tại từ ChannelSyncService
       final currentChannel = ChannelSyncService.instance.selectedChannel;
       log.log('Lấy channel từ ChannelSyncService: "$currentChannel"');
 
@@ -256,13 +281,11 @@ class AddOrderRetailStep2ScreenBloc
         return null;
       }
 
-      // Lấy token từ UserPermissionsRepository
       final userPermissionsRepository = UserPermissionsRepository();
       final channelToken = await userPermissionsRepository.getChannelToken(
         currentChannel,
       );
 
-      // Log token đã che một phần
       if (channelToken.isNotEmpty) {
         String maskedToken = channelToken;
         if (channelToken.length > 10) {

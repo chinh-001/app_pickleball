@@ -13,6 +13,7 @@ import 'package:app_pickleball/screens/search_screen/View/search_screen.dart';
 import 'package:app_pickleball/models/customer_model.dart';
 import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
 import 'package:app_pickleball/screens/add_customer_screen/View/add_customer_screen.dart';
+import 'package:app_pickleball/models/payment_methods_model.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
   final double totalPayment;
@@ -44,12 +45,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     _scrollController.addListener(_scrollListener);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _bloc.add(
-        InitializeForm(
-          defaultPaymentMethod: AppLocalizations.of(context).translate('cash'),
-          totalPayment: widget.totalPayment,
-        ),
-      );
+      _bloc.add(InitializeForm(totalPayment: widget.totalPayment));
 
       // Listen for text field changes to update bloc state
       _lastNameController.addListener(() {
@@ -755,51 +751,110 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
   ) {
+    // Nếu đang tải dữ liệu, hiển thị loading indicator
+    if (state.isLoadingPaymentMethods) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: SizedBox(
+            height: 30,
+            width: 30,
+            child: CircularProgressIndicator(strokeWidth: 2.0),
+          ),
+        ),
+      );
+    }
+
+    // Nếu không có phương thức thanh toán nào, hiển thị thông báo
+    if (state.paymentMethods.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          AppLocalizations.of(context).translate('noPaymentMethodsAvailable'),
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
+    // Render danh sách phương thức thanh toán từ API
     return CustomOptionsContainer(
-      children: [
-        CustomOptionItem(
-          icon: Icons.money,
-          title: AppLocalizations.of(context).translate('cash'),
-          isSelected:
-              state.paymentMethod ==
-              AppLocalizations.of(context).translate('cash'),
-          iconColor: Colors.green,
-          onTap:
-              () => _bloc.add(
-                PaymentMethodChanged(
-                  AppLocalizations.of(context).translate('cash'),
-                ),
-              ),
-        ),
-        CustomOptionItem(
-          icon: Icons.account_balance_wallet,
-          title: AppLocalizations.of(context).translate('eWallet'),
-          isSelected:
-              state.paymentMethod ==
-              AppLocalizations.of(context).translate('eWallet'),
-          iconColor: const Color(0xFF0068FF),
-          onTap:
-              () => _bloc.add(
-                PaymentMethodChanged(
-                  AppLocalizations.of(context).translate('eWallet'),
-                ),
-              ),
-        ),
-        CustomOptionItem(
-          icon: Icons.account_balance,
-          title: AppLocalizations.of(context).translate('bankTransfer'),
-          isSelected:
-              state.paymentMethod ==
-              AppLocalizations.of(context).translate('bankTransfer'),
-          iconColor: const Color(0xFF1B7146),
-          onTap:
-              () => _bloc.add(
-                PaymentMethodChanged(
-                  AppLocalizations.of(context).translate('bankTransfer'),
-                ),
-              ),
-        ),
-      ],
+      children:
+          state.paymentMethods.map<Widget>((method) {
+            final paymentMethod = method as PaymentMethod;
+
+            // Xác định icon và màu sắc dựa trên mã và tên phương thức
+            IconData icon;
+            Color iconColor;
+
+            // Xác định icon và màu sắc dựa trên thông tin phương thức
+            switch (paymentMethod.code.toLowerCase()) {
+              case 'cash':
+              case 'tien-mat':
+                icon = Icons.money;
+                iconColor = Colors.green;
+                break;
+              case 'bank-transfer':
+              case 'chuyen-khoan':
+                icon = Icons.account_balance;
+                iconColor = const Color(0xFF1B7146);
+                break;
+              case 'momo':
+              case 'zalopay':
+              case 'vnpay':
+                icon = Icons.account_balance_wallet;
+                iconColor = const Color(0xFF0068FF);
+                break;
+              case 'visa':
+              case 'mastercard':
+              case 'credit-card':
+              case 'the-tin-dung':
+                icon = Icons.credit_card;
+                iconColor = Colors.orange;
+                break;
+              default:
+                // Fallback dựa vào tên nếu code không khớp với bất kỳ trường hợp nào
+                final lowerName = paymentMethod.name.toLowerCase();
+                if (lowerName.contains('cash') ||
+                    lowerName.contains('tiền mặt')) {
+                  icon = Icons.money;
+                  iconColor = Colors.green;
+                } else if (lowerName.contains('bank') ||
+                    lowerName.contains('chuyển khoản') ||
+                    lowerName.contains('ngân hàng')) {
+                  icon = Icons.account_balance;
+                  iconColor = const Color(0xFF1B7146);
+                } else if (lowerName.contains('wallet') ||
+                    lowerName.contains('ví') ||
+                    lowerName.contains('momo') ||
+                    lowerName.contains('zalo')) {
+                  icon = Icons.account_balance_wallet;
+                  iconColor = const Color(0xFF0068FF);
+                } else if (lowerName.contains('card') ||
+                    lowerName.contains('thẻ') ||
+                    lowerName.contains('visa') ||
+                    lowerName.contains('master')) {
+                  icon = Icons.credit_card;
+                  iconColor = Colors.orange;
+                } else {
+                  // Nếu không có trường hợp nào khớp
+                  icon = Icons.payment;
+                  iconColor = Colors.blue;
+                }
+                break;
+            }
+
+            // Trả về widget tùy chỉnh cho mỗi phương thức thanh toán
+            return CustomOptionItem(
+              icon: icon,
+              title: paymentMethod.name,
+              isSelected: state.paymentMethod == paymentMethod.name,
+              iconColor: iconColor,
+              onTap: () => _bloc.add(PaymentMethodChanged(paymentMethod.name)),
+            );
+          }).toList(),
     );
   }
 
