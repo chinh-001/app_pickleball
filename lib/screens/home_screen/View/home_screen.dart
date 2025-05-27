@@ -322,16 +322,7 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                             ),
                             if (state is HomeScreenLoading)
-                              Center(
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black45,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const CustomLoadingIndicator(),
-                                ),
-                              ),
+                              const Center(child: CustomLoadingIndicator()),
                           ],
                         ),
                       ),
