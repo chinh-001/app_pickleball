@@ -66,6 +66,44 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     return productItems.map((item) => item.name).toList();
   }
 
+  int get maxCourtCount {
+    // Nếu chưa có ngày nào được chọn hoặc chưa có dữ liệu từ API, giới hạn mặc định là 10
+    if (selectedDates.isEmpty || availableCourtsByDate.isEmpty) {
+      return 10;
+    }
+
+    // Tìm số lượng sân tối đa có thể chọn cho tất cả các ngày đã chọn
+    int maxCourts = 100; // Giá trị ban đầu đủ lớn
+
+    for (var selectedDate in selectedDates) {
+      final String dateKey = DateFormat('yyyy-MM-dd').format(selectedDate);
+      bool foundDate = false;
+
+      // Tìm thông tin cho ngày này từ danh sách kết quả API
+      for (var item in availableCourtsByDate) {
+        if (item.bookingDate == dateKey) {
+          // Đếm số sân có trạng thái "available"
+          final availableCount =
+              item.courts.where((court) => court.status == "available").length;
+
+          // Lấy giá trị tối thiểu giữa maxCourts hiện tại và số sân có sẵn trong ngày này
+          maxCourts = availableCount < maxCourts ? availableCount : maxCourts;
+          foundDate = true;
+          break;
+        }
+      }
+
+      // Nếu không tìm thấy thông tin cho ngày này, đặt maxCourts = 0 để thể hiện rằng không có sân nào
+      if (!foundDate) {
+        maxCourts = 0;
+        break; // Dừng lại vì nếu một ngày không có sân, thì không thể chọn sân cho tất cả các ngày
+      }
+    }
+
+    // Trả về tối thiểu là 1 sân
+    return maxCourts > 0 ? maxCourts : 1;
+  }
+
   AddOrderRetailStep1ScreenState copyWith({
     String? selectedService,
     String? selectedServiceId,

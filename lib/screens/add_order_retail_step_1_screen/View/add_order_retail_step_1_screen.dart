@@ -58,18 +58,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
 
   // Helper method to get localized product name
   String getLocalizedProductName(String productId, String originalName) {
-    // List of product IDs that need localization
-    List<String> localizedProductIds = ['73', '75', '77', '78'];
-
-    if (localizedProductIds.contains(productId)) {
-      final localKey = 'product_$productId';
-      final localizedName = AppLocalizations.of(context).translate(localKey);
-
-      // If translation exists, return it; otherwise, return original name
-      return localizedName != localKey ? localizedName : originalName;
-    }
-
-    return originalName;
+    return _bloc.getLocalizedProductName(productId, originalName);
   }
 
   @override
@@ -129,6 +118,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                                     ),
                                     CustomCourtCountSelector(
                                       value: state.courtCount,
+                                      maxValue: state.maxCourtCount,
                                       onChanged: (value) {
                                         context
                                             .read<
@@ -496,20 +486,6 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
     AddOrderRetailStep1ScreenState state,
     DateTime date,
   ) {
-    // Định dạng ngày để so sánh (YYYY-MM-DD)
-    final dateString = DateFormat('yyyy-MM-dd').format(date);
-
-    // Tìm dữ liệu cho ngày cụ thể trong danh sách kết quả từ API
-    for (var item in state.availableCourtsByDate) {
-      if (item.bookingDate == dateString) {
-        // Lọc sân chỉ lấy những sân có status là "available"
-        return item.courts
-            .where((court) => court.status == "available")
-            .toList();
-      }
-    }
-
-    // Nếu không tìm thấy, trả về danh sách rỗng
-    return [];
+    return _bloc.getAvailableCourtsForDate(date);
   }
 }

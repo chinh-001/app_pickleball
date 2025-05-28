@@ -10,7 +10,7 @@ import 'package:app_pickleball/models/productWithCourts_Model.dart'
 import 'package:app_pickleball/models/courtsForProduct_model.dart'
     show CourtItem;
 import 'package:app_pickleball/models/available_cour_for_booking_model.dart'
-    show AvailableCourForBookingModel, AvailableCourInputModel;
+    show AvailableCourForBookingModel, AvailableCourInputModel, Court;
 import 'package:app_pickleball/services/repositories/available_cour_for_booking_repository.dart';
 import 'dart:developer' as log;
 import 'package:app_pickleball/services/localization/app_localizations.dart';
@@ -848,5 +848,38 @@ class AddOrderRetailStep1ScreenBloc
 
     log.log('Tổng giá tiền đã tính: $total VND');
     return total;
+  }
+
+  // Lấy danh sách sân có sẵn cho một ngày cụ thể
+  List<Court> getAvailableCourtsForDate(DateTime date) {
+    // Định dạng ngày để so sánh (YYYY-MM-DD)
+    final dateString = DateFormat('yyyy-MM-dd').format(date);
+
+    // Tìm dữ liệu cho ngày cụ thể trong danh sách kết quả từ API
+    for (var item in state.availableCourtsByDate) {
+      if (item.bookingDate == dateString) {
+        // Lọc sân chỉ lấy những sân có status là "available"
+        return item.courts
+            .where((court) => court.status == "available")
+            .toList();
+      }
+    }
+
+    // Nếu không tìm thấy, trả về danh sách rỗng
+    return [];
+  }
+
+  // Phương thức localize tên sản phẩm cho người dùng sử dụng từ bên ngoài bloc
+  String getLocalizedProductName(String productId, String originalName) {
+    // Kiểm tra xem ID sản phẩm có nằm trong danh sách cần localize không
+    if (_context != null && state.localizedProductIds.contains(productId)) {
+      final localKey = 'product_$productId';
+      final localizedName = AppLocalizations.of(_context!).translate(localKey);
+
+      // Nếu có bản dịch, trả về bản dịch; nếu không, trả về tên gốc
+      return localizedName != localKey ? localizedName : originalName;
+    }
+
+    return originalName;
   }
 }
