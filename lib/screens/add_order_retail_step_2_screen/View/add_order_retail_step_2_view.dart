@@ -7,7 +7,7 @@ import 'package:app_pickleball/screens/complete_booking_screen/View/complete_boo
 import 'package:app_pickleball/screens/widgets/indicators/custom_step_circle.dart';
 import 'package:app_pickleball/screens/widgets/cards/custom_option_item.dart';
 import 'package:app_pickleball/screens/widgets/cards/custom_options_container.dart';
-import 'package:app_pickleball/screens/widgets/summary/custom_payment_summary.dart';
+import 'package:app_pickleball/screens/widgets/summary/custom_summary_row.dart';
 import 'package:app_pickleball/utils/number_format.dart';
 import 'package:app_pickleball/screens/search_screen/View/search_screen.dart';
 import 'package:app_pickleball/models/customer_model.dart';
@@ -130,6 +130,8 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                         _buildPaymentMethodSection(context, state),
                         const SizedBox(height: 24),
                         _buildPaymentStatusSection(context, state),
+                        const SizedBox(height: 24),
+                        _buildPaymentDetailsSection(context, state),
                       ],
                     ),
                   ),
@@ -235,11 +237,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             !state.isSearching &&
             state.searchResults.isEmpty)
           _buildNoResultsFound(context),
-
-        if (state.showAddCustomerForm) ...[
-          const SizedBox(height: 16),
-          _buildAddCustomerForm(context, state),
-        ],
       ],
     );
   }
@@ -429,294 +426,25 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     );
   }
 
-  Widget _buildAddCustomerForm(
+  Widget _buildPaymentMethodSection(
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
   ) {
-    final salutationOptions = [
-      AppLocalizations.of(context).translate('mr'),
-      AppLocalizations.of(context).translate('ms'),
-    ];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      // Sử dụng ClipRRect để cắt nội dung nếu vượt quá
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppLocalizations.of(context).translate('customer'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      _bloc.add(const HideAddCustomerForm());
-                    },
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context).translate('salutation'),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value:
-                            state.selectedSalutation ?? salutationOptions.first,
-                        isExpanded: true,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        items:
-                            salutationOptions.map((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            context.read<AddOrderRetailStep2ScreenBloc>().add(
-                              SalutationChanged(value),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            text: AppLocalizations.of(
-                              context,
-                            ).translate('firstName'),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
-                            children: const [
-                              TextSpan(
-                                text: ' *',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: TextField(
-                            controller: _firstNameController,
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            text: AppLocalizations.of(
-                              context,
-                            ).translate('lastName'),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
-                            children: const [
-                              TextSpan(
-                                text: ' *',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: TextField(
-                            controller: _lastNameController,
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.email_outlined,
-                        size: 16,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        AppLocalizations.of(context).translate('email'),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        border: InputBorder.none,
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.phone_outlined,
-                        size: 16,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        AppLocalizations.of(context).translate('phoneNumber'),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: TextField(
-                      controller: _phoneController,
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        border: InputBorder.none,
-                      ),
-                      keyboardType: TextInputType.phone,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomActionButton(
-                          text: AppLocalizations.of(
-                            context,
-                          ).translate('clearForm'),
-                          onPressed: _resetForm,
-                          isPrimary: false,
-                          fontSize: 12.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('paymentMethod'),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-      ),
+        const SizedBox(height: 10),
+        _buildPaymentMethodOptions(context, state),
+      ],
     );
   }
 
-  Widget _buildPaymentMethodSection(
+  // Widget hiển thị tổng kết thanh toán thành một phần riêng biệt
+  Widget _buildPaymentDetailsSection(
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
   ) {
@@ -730,18 +458,109 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context).translate('paymentMethod'),
+          AppLocalizations.of(context).translate('paymentDetails'),
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        _buildPaymentMethodOptions(context, state),
-        const SizedBox(height: 20),
-        _buildPaymentSummary(
-          context,
-          bookingPrice,
-          serviceFee,
-          discount,
-          totalPayment,
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 3,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Phần thông tin khách hàng
+                  if (state.showAddCustomerForm) ...[
+                    _buildCustomerInfoSection(context, state),
+                    const Divider(height: 24),
+                  ],
+
+                  // Phần thông tin thanh toán
+                  CustomSummaryRow(
+                    label: AppLocalizations.of(
+                      context,
+                    ).translate('bookingPrice'),
+                    value: bookingPrice.toCurrency(context),
+                  ),
+                  const SizedBox(height: 8),
+                  CustomSummaryRow(
+                    label: AppLocalizations.of(context).translate('serviceFee'),
+                    value: serviceFee.toCurrency(context),
+                  ),
+                  const SizedBox(height: 8),
+                  CustomSummaryRow(
+                    label: AppLocalizations.of(context).translate('discount'),
+                    value: discount.toCurrency(context),
+                    valueColor: Colors.red,
+                  ),
+                  const Divider(height: 24),
+                  CustomSummaryRow(
+                    label: AppLocalizations.of(
+                      context,
+                    ).translate('totalPayment'),
+                    value: totalPayment.toCurrency(context),
+                    isTotal: true,
+                    valueColor: Colors.green,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomerInfoSection(
+    BuildContext context,
+    AddOrderRetailStep2ScreenState state,
+  ) {
+    final String customerName = '${state.firstName} ${state.lastName}'.trim();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('customer'),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+
+        // Tên khách hàng
+        CustomSummaryRow(
+          label: AppLocalizations.of(context).translate('name'),
+          value: customerName.isEmpty ? '---' : customerName,
+          valueColor: Colors.black,
+        ),
+        const SizedBox(height: 8),
+
+        // Email
+        CustomSummaryRow(
+          label: AppLocalizations.of(context).translate('email'),
+          value: state.email.isEmpty ? '---' : state.email,
+          valueColor: Colors.black,
+        ),
+        const SizedBox(height: 8),
+
+        // Số điện thoại
+        CustomSummaryRow(
+          label: AppLocalizations.of(context).translate('phoneNumber'),
+          value: state.phone.isEmpty ? '---' : state.phone,
+          valueColor: Colors.black,
         ),
       ],
     );
@@ -798,6 +617,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                 iconColor = Colors.green;
                 break;
               case 'bank-transfer':
+              case 'transfer':
               case 'chuyen-khoan':
                 icon = Icons.account_balance;
                 iconColor = const Color(0xFF1B7146);
@@ -823,6 +643,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                   icon = Icons.money;
                   iconColor = Colors.green;
                 } else if (lowerName.contains('bank') ||
+                    lowerName.contains('transfer') ||
                     lowerName.contains('chuyển khoản') ||
                     lowerName.contains('ngân hàng')) {
                   icon = Icons.account_balance;
@@ -847,31 +668,28 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                 break;
             }
 
+            // Xác định tiêu đề hiển thị dựa trên id hoặc code
+            String title;
+            if (paymentMethod.id == '2') {
+              // Nếu là Cash (id=2), sử dụng bản dịch
+              title = AppLocalizations.of(context).translate('cash');
+            } else if (paymentMethod.id == '4') {
+              // Nếu là Transfer (id=4), sử dụng bản dịch
+              title = AppLocalizations.of(context).translate('bankTransfer');
+            } else {
+              // Các trường hợp khác, sử dụng tên từ API
+              title = paymentMethod.name;
+            }
+
             // Trả về widget tùy chỉnh cho mỗi phương thức thanh toán
             return CustomOptionItem(
               icon: icon,
-              title: paymentMethod.name,
+              title: title,
               isSelected: state.paymentMethod == paymentMethod.name,
               iconColor: iconColor,
               onTap: () => _bloc.add(PaymentMethodChanged(paymentMethod.name)),
             );
           }).toList(),
-    );
-  }
-
-  // Widget hiển thị tổng kết thanh toán
-  Widget _buildPaymentSummary(
-    BuildContext context,
-    double bookingPrice,
-    double serviceFee,
-    double discount,
-    double totalPayment,
-  ) {
-    return CustomPaymentSummary(
-      bookingPrice: bookingPrice.toCurrency(context),
-      serviceFee: serviceFee.toCurrency(context),
-      discount: discount.toCurrency(context),
-      totalPayment: totalPayment.toCurrency(context),
     );
   }
 
@@ -1005,12 +823,34 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
               iconColor = Colors.blue;
             }
 
+            // Xác định tiêu đề hiển thị dựa trên id
+            String title;
+            String statusNameForBloc; // Tên trạng thái sẽ được lưu vào bloc
+
+            if (paymentStatus.id == '1') {
+              // Nếu là Chưa thanh toán (id=1), sử dụng bản dịch
+              title = AppLocalizations.of(context).translate('unpaid');
+              statusNameForBloc = title;
+            } else if (paymentStatus.id == '2') {
+              // Nếu là Đã thanh toán (id=2), sử dụng bản dịch
+              title = AppLocalizations.of(context).translate('paid');
+              statusNameForBloc = title;
+            } else if (paymentStatus.id == '4') {
+              // Nếu là Đặt cọc (id=4), sử dụng bản dịch
+              title = AppLocalizations.of(context).translate('deposit');
+              statusNameForBloc = title;
+            } else {
+              // Các trường hợp khác, sử dụng tên từ API
+              title = paymentStatus.name;
+              statusNameForBloc = paymentStatus.name;
+            }
+
             return CustomOptionItem(
               icon: icon,
-              title: paymentStatus.name,
-              isSelected: state.paymentStatus == paymentStatus.name,
+              title: title,
+              isSelected: state.paymentStatus == statusNameForBloc,
               iconColor: iconColor,
-              onTap: () => _bloc.add(PaymentStatusChanged(paymentStatus.name)),
+              onTap: () => _bloc.add(PaymentStatusChanged(statusNameForBloc)),
             );
           }).toList(),
     );
@@ -1097,18 +937,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             ),
       ),
     );
-  }
-
-  void _resetForm() {
-    // Xóa tất cả dữ liệu form
-    _lastNameController.clear();
-    _firstNameController.clear();
-    _emailController.clear();
-    _phoneController.clear();
-    _notesController.clear();
-
-    // Gửi event reset form đến bloc
-    _bloc.add(const ResetForm());
   }
 
   void _navigateToSearchScreen(BuildContext context) async {
