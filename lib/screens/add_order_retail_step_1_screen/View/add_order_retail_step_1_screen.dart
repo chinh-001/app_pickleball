@@ -437,6 +437,14 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                       builder:
                           (context) => AddOrderRetailStep2View(
                             totalPayment: state.totalPayment,
+                            serviceName: state.selectedService,
+                            selectedDates: state.selectedDates,
+                            fromTime: state.selectedFromTime,
+                            toTime: state.selectedToTime,
+                            numberOfHours: state.numberOfHours,
+                            selectedCourtsByDate: state.selectedCourtsByDate,
+                            courtCount: state.courtCount,
+                            courtNamesById: state.courtNamesById,
                           ),
                     ),
                   );

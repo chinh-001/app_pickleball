@@ -200,5 +200,8 @@
   "pleaseSelectService": "Please select a service",
   "pleaseSelectCourt": "Please select at least one court",
   "pleaseCompleteAllInfo": "Please complete all required information",
-  "noChannelSelected": "No channel selected. Please select a channel first."
+  "noChannelSelected": "No channel selected. Please select a channel first.",
+  
+  "selectedDates": "Selected Dates",
+  "noCourt": "No court selected"
 } 

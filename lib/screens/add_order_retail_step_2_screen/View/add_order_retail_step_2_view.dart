@@ -15,11 +15,31 @@ import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicat
 import 'package:app_pickleball/screens/add_customer_screen/View/add_customer_screen.dart';
 import 'package:app_pickleball/models/payment_methods_model.dart';
 import 'package:app_pickleball/models/payment_status_model.dart';
+import 'package:intl/intl.dart';
 
 class AddOrderRetailStep2View extends StatefulWidget {
   final double totalPayment;
+  final String serviceName;
+  final List<DateTime> selectedDates;
+  final String fromTime;
+  final String toTime;
+  final double numberOfHours;
+  final Map<String, List<String>> selectedCourtsByDate;
+  final int courtCount;
+  final Map<String, String> courtNamesById;
 
-  const AddOrderRetailStep2View({super.key, this.totalPayment = 0.0});
+  const AddOrderRetailStep2View({
+    super.key,
+    this.totalPayment = 0.0,
+    this.serviceName = '',
+    this.selectedDates = const [],
+    this.fromTime = '',
+    this.toTime = '',
+    this.numberOfHours = 0.0,
+    this.selectedCourtsByDate = const {},
+    this.courtCount = 1,
+    this.courtNamesById = const {},
+  });
 
   @override
   State<AddOrderRetailStep2View> createState() =>
@@ -488,6 +508,10 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                     _buildCustomerInfoSection(context, state),
                     const Divider(height: 24),
                   ],
+
+                  // Phần thông tin đặt sân
+                  _buildCourtBookingInfoSection(context),
+                  const Divider(height: 24),
 
                   // Phần thông tin thanh toán
                   CustomSummaryRow(
@@ -1062,5 +1086,105 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
       // Hiển thị form điền thông tin khách
       _bloc.add(const ShowAddCustomerForm());
     }
+  }
+
+  Widget _buildCourtBookingInfoSection(BuildContext context) {
+    final dateFormatter = DateFormat('dd/MM/yyyy');
+
+    // Nếu không có ngày nào được chọn
+    if (widget.selectedDates.isEmpty) {
+      return Container();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('courtInformation'),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+
+        // Hiển thị từng booking riêng biệt theo ngày
+        ...widget.selectedDates.map((date) {
+          final dateKey = DateFormat('yyyy-MM-dd').format(date);
+          final selectedCourts = widget.selectedCourtsByDate[dateKey] ?? [];
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Hiển thị ngày
+                CustomSummaryRow(
+                  label: AppLocalizations.of(
+                    context,
+                  ).translate('selectedDates'),
+                  value: dateFormatter.format(date),
+                  valueColor: Colors.black,
+                  isTotal: true,
+                ),
+                const SizedBox(height: 8),
+                const Divider(height: 1),
+                const SizedBox(height: 8),
+
+                // Hiển thị tên dịch vụ
+                CustomSummaryRow(
+                  label: AppLocalizations.of(context).translate('serviceName'),
+                  value: widget.serviceName,
+                  valueColor: Colors.black,
+                ),
+                const SizedBox(height: 8),
+
+                // Hiển thị thời gian
+                CustomSummaryRow(
+                  label: AppLocalizations.of(context).translate('time'),
+                  value: "${widget.fromTime} - ${widget.toTime}",
+                  valueColor: Colors.black,
+                ),
+                const SizedBox(height: 8),
+
+                // Hiển thị số giờ
+                CustomSummaryRow(
+                  label: AppLocalizations.of(context).translate('hours'),
+                  value: "${widget.numberOfHours}",
+                  valueColor: Colors.black,
+                ),
+                const SizedBox(height: 8),
+
+                // Hiển thị số lượng sân
+                CustomSummaryRow(
+                  label: AppLocalizations.of(context).translate('courtCount'),
+                  value: widget.courtCount.toString(),
+                  valueColor: Colors.black,
+                ),
+                const SizedBox(height: 8),
+
+                // Hiển thị sân đã chọn
+                CustomSummaryRow(
+                  label: AppLocalizations.of(context).translate('court'),
+                  value:
+                      selectedCourts.isEmpty
+                          ? AppLocalizations.of(context).translate('noCourt')
+                          : selectedCourts
+                              .map(
+                                (courtId) =>
+                                    widget.courtNamesById[courtId] ?? courtId,
+                              )
+                              .join(", "),
+                  valueColor: Colors.black,
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
+    );
   }
 }

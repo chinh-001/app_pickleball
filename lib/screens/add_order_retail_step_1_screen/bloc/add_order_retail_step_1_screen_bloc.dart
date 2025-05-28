@@ -718,6 +718,11 @@ class AddOrderRetailStep1ScreenBloc
     Map<String, List<String>> updatedSelectedCourtsByDate =
         Map<String, List<String>>.from(state.selectedCourtsByDate);
 
+    // Tạo một bản sao của Map lưu tên sân theo ID
+    Map<String, String> updatedCourtNames = Map<String, String>.from(
+      state.courtNamesById,
+    );
+
     // Lấy danh sách sân hiện tại cho ngày này (hoặc tạo mới nếu chưa có)
     List<String> courtsForDate = List.from(
       updatedSelectedCourtsByDate[dateKey] ?? [],
@@ -726,6 +731,20 @@ class AddOrderRetailStep1ScreenBloc
     // Biến để kiểm tra xem có thay đổi gì không
     bool hasChanges = false;
 
+    // Tìm tên sân từ ID trong danh sách sân có sẵn
+    String courtName = '';
+    for (var dateData in state.availableCourtsByDate) {
+      if (dateData.bookingDate == dateKey) {
+        for (var court in dateData.courts) {
+          if (court.id == event.courtId) {
+            courtName = court.name;
+            break;
+          }
+        }
+        break;
+      }
+    }
+
     if (event.isSelected) {
       // Nếu là chọn sân và ID chưa có trong danh sách
       if (!courtsForDate.contains(event.courtId)) {
@@ -733,9 +752,15 @@ class AddOrderRetailStep1ScreenBloc
         if (courtsForDate.length < state.courtCount) {
           // Nếu chưa đạt giới hạn thì thêm sân mới
           courtsForDate.add(event.courtId);
+
+          // Lưu tên sân theo ID
+          if (courtName.isNotEmpty) {
+            updatedCourtNames[event.courtId] = courtName;
+          }
+
           hasChanges = true;
           log.log(
-            'Thêm sân ${event.courtId} vào ngày $dateKey (${courtsForDate.length}/${state.courtCount} sân)',
+            'Thêm sân ${courtName.isNotEmpty ? courtName : event.courtId} vào ngày $dateKey (${courtsForDate.length}/${state.courtCount} sân)',
           );
         } else {
           // Đã đạt giới hạn, log thông báo
@@ -750,7 +775,7 @@ class AddOrderRetailStep1ScreenBloc
         courtsForDate.remove(event.courtId);
         hasChanges = true;
         log.log(
-          'Bỏ chọn sân ${event.courtId} khỏi ngày $dateKey (${courtsForDate.length}/${state.courtCount} sân)',
+          'Bỏ chọn sân ${courtName.isNotEmpty ? courtName : event.courtId} khỏi ngày $dateKey (${courtsForDate.length}/${state.courtCount} sân)',
         );
       }
     }
@@ -763,20 +788,24 @@ class AddOrderRetailStep1ScreenBloc
       // Log thông tin để debug
       log.log('Cập nhật sân cho ngày $dateKey:');
       log.log(
-        '- Sân ID: ${event.courtId}, Trạng thái: ${event.isSelected ? 'Đã chọn' : 'Đã bỏ chọn'}',
+        '- Sân ID: ${event.courtId}, Tên: ${courtName}, Trạng thái: ${event.isSelected ? 'Đã chọn' : 'Đã bỏ chọn'}',
       );
       log.log('- Danh sách sân hiện tại: ${courtsForDate.join(', ')}');
 
       // Cập nhật state với Map mới và tính lại tổng tiền
       emit(
         _updateFormCompleteness(
-          state.copyWith(selectedCourtsByDate: updatedSelectedCourtsByDate),
+          state.copyWith(
+            selectedCourtsByDate: updatedSelectedCourtsByDate,
+            courtNamesById: updatedCourtNames,
+          ),
         ),
       );
 
       // Tính và cập nhật tổng tiền
       final updatedState = state.copyWith(
         selectedCourtsByDate: updatedSelectedCourtsByDate,
+        courtNamesById: updatedCourtNames,
       );
       final double newTotalPayment = _calculateTotalPaymentForState(
         updatedState,

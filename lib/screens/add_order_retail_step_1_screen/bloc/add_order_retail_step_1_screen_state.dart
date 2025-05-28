@@ -13,6 +13,7 @@ class AddOrderRetailStep1ScreenState extends Equatable {
   final bool isLoading;
   final List<CourtItem> availableCourts;
   final Map<String, List<String>> selectedCourtsByDate;
+  final Map<String, String> courtNamesById;
   final List<AvailableCourForBookingModel> availableCourtsByDate;
   final bool isCheckingAvailability;
   final double totalPayment;
@@ -31,6 +32,7 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     this.isLoading = false,
     this.availableCourts = const [],
     this.selectedCourtsByDate = const {},
+    this.courtNamesById = const {},
     this.availableCourtsByDate = const [],
     this.isCheckingAvailability = false,
     this.totalPayment = 0.0,
@@ -77,6 +79,7 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     bool? isLoading,
     List<CourtItem>? availableCourts,
     Map<String, List<String>>? selectedCourtsByDate,
+    Map<String, String>? courtNamesById,
     List<AvailableCourForBookingModel>? availableCourtsByDate,
     bool? isCheckingAvailability,
     double? totalPayment,
@@ -95,6 +98,7 @@ class AddOrderRetailStep1ScreenState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
       availableCourts: availableCourts ?? this.availableCourts,
       selectedCourtsByDate: selectedCourtsByDate ?? this.selectedCourtsByDate,
+      courtNamesById: courtNamesById ?? this.courtNamesById,
       availableCourtsByDate:
           availableCourtsByDate ?? this.availableCourtsByDate,
       isCheckingAvailability:
@@ -118,6 +122,7 @@ class AddOrderRetailStep1ScreenState extends Equatable {
     isLoading,
     availableCourts,
     selectedCourtsByDate,
+    courtNamesById,
     availableCourtsByDate,
     isCheckingAvailability,
     totalPayment,

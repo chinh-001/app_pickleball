@@ -200,5 +200,8 @@
   "pleaseSelectService": "Vui lòng chọn một dịch vụ",
   "pleaseSelectCourt": "Vui lòng chọn ít nhất một sân",
   "pleaseCompleteAllInfo": "Vui lòng điền đầy đủ các thông tin bắt buộc",
-  "noChannelSelected": "Chưa chọn kênh. Vui lòng chọn kênh trước."
+  "noChannelSelected": "Chưa chọn kênh. Vui lòng chọn kênh trước.",
+  
+  "selectedDates": "Ngày đã chọn",
+  "noCourt": "Chưa chọn sân"
 } 
