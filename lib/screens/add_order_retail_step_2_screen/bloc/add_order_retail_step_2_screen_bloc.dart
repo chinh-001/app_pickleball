@@ -10,6 +10,8 @@ import 'package:app_pickleball/models/payment_methods_model.dart';
 import 'package:app_pickleball/services/repositories/payment_methods_repository.dart';
 import 'package:app_pickleball/models/payment_status_model.dart';
 import 'package:app_pickleball/services/repositories/payment_status_repository.dart';
+import 'package:app_pickleball/models/multiple_bookings_model.dart';
+import 'package:app_pickleball/services/repositories/multiple_bookings_repository.dart';
 
 part 'add_order_retail_step_2_screen_event.dart';
 part 'add_order_retail_step_2_screen_state.dart';
@@ -57,6 +59,7 @@ class AddOrderRetailStep2ScreenBloc
     on<SetTotalPayment>(_onSetTotalPayment);
     on<LoadPaymentMethods>(_onLoadPaymentMethods);
     on<LoadPaymentStatus>(_onLoadPaymentStatus);
+    on<CustomerIdChanged>(_onCustomerIdChanged);
   }
 
   Future<void> _onLoadPaymentStatus(
@@ -345,5 +348,109 @@ class AddOrderRetailStep2ScreenBloc
       log.log('Lỗi khi lấy channel token: $e');
       return null;
     }
+  }
+
+  Future<MultipleBookingsResponse?> createMultipleBookings({
+    required String customerId,
+    required String productId,
+    required Map<String, List<String>> selectedCourtsByDate,
+    required String startTime,
+    required String endTime,
+    required double totalPrice,
+    required String paymentMethodName,
+    required String paymentStatusId,
+  }) async {
+    try {
+      // Lấy channel token
+      final channelToken = await getChannelToken();
+      if (channelToken == null || channelToken.isEmpty) {
+        log.log('Không thể tạo booking: Không có channel token');
+        return null;
+      }
+
+      // Log các tham số input
+      log.log('===== THÔNG TIN INPUT CREATE MULTIPLE BOOKINGS =====');
+      log.log('1. start_time: $startTime');
+      log.log('2. end_time: $endTime');
+      log.log('3. status: 1 (mặc định)');
+      log.log('4. customer ID: $customerId');
+      log.log('5. booking_date: ${selectedCourtsByDate.keys.join(", ")}');
+      log.log('6. total_price: $totalPrice');
+      log.log('7. product ID: $productId');
+      log.log(
+        '8. court IDs: ${selectedCourtsByDate.values.expand((courts) => courts).toList()}',
+      );
+      log.log('9. payment_method: $paymentMethodName');
+      log.log('10. payment_status ID: $paymentStatusId');
+      log.log('=================================================');
+
+      // Tính số lượng sân để phân chia giá
+      int totalCourts = 0;
+      selectedCourtsByDate.forEach((date, courts) {
+        totalCourts += courts.length;
+      });
+
+      final pricePerCourt =
+          totalCourts > 0 ? totalPrice / totalCourts : totalPrice;
+      log.log('Tổng số sân: $totalCourts, Giá mỗi sân: $pricePerCourt');
+
+      // Tạo danh sách các booking cần thực hiện
+      final List<BookingInput> bookings = [];
+
+      // Tạo một booking cho mỗi ngày và mỗi sân
+      selectedCourtsByDate.forEach((dateString, courtIds) {
+        for (final courtId in courtIds) {
+          final booking = BookingInput(
+            startTime: startTime,
+            product: productId,
+            endTime: endTime,
+            totalPrice: pricePerCourt, // Giá đã được tính toán đúng
+            paymentStatus: paymentStatusId,
+            bookingDate: dateString,
+            court: courtId,
+            paymentMethod: paymentMethodName,
+            status: "1", // Mặc định là "1"
+            customer: customerId,
+          );
+          bookings.add(booking);
+          log.log('Đã thêm booking: ${booking.toJson()}');
+        }
+      });
+
+      final input = MultipleBookingsInput(bookings: bookings);
+      log.log('Input cuối cùng: ${input.toJson()}');
+
+      // Sử dụng repository để thực hiện mutation
+      final repository = MultipleBookingsRepository();
+      final result = await repository.createMultipleBookings(
+        channelToken: channelToken,
+        input: input,
+      );
+
+      // Log kết quả
+      log.log('===== KẾT QUẢ TẠO MULTIPLE BOOKINGS =====');
+      log.log('ID: ${result.id}');
+      log.log('Code: ${result.code}');
+      log.log('Booking date: ${result.bookingDate}');
+      log.log('Thời gian: ${result.startTime} - ${result.endTime}');
+      log.log('Tổng tiền: ${result.totalPrice}');
+      log.log('Sân: ${result.court.name}');
+      log.log('Sản phẩm: ${result.product.name}');
+      log.log('Phương thức thanh toán: ${result.paymentMethod}');
+      log.log('Khách hàng: $customerId');
+      log.log('=====================================');
+
+      return result;
+    } catch (e) {
+      log.log('Lỗi khi tạo multiple bookings: $e');
+      return null;
+    }
+  }
+
+  void _onCustomerIdChanged(
+    CustomerIdChanged event,
+    Emitter<AddOrderRetailStep2ScreenState> emit,
+  ) {
+    emit(state.copyWith(customerId: event.customerId));
   }
 }

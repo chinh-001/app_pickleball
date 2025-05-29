@@ -51,6 +51,15 @@ class OrderStatusChanged extends AddOrderRetailStep2ScreenEvent {
   List<Object> get props => [orderStatus];
 }
 
+class CustomerIdChanged extends AddOrderRetailStep2ScreenEvent {
+  final String customerId;
+
+  const CustomerIdChanged(this.customerId);
+
+  @override
+  List<Object> get props => [customerId];
+}
+
 class LastNameChanged extends AddOrderRetailStep2ScreenEvent {
   final String lastName;
 

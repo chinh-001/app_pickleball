@@ -15,7 +15,9 @@ import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicat
 import 'package:app_pickleball/screens/add_customer_screen/View/add_customer_screen.dart';
 import 'package:app_pickleball/models/payment_methods_model.dart';
 import 'package:app_pickleball/models/payment_status_model.dart';
+import 'package:app_pickleball/models/multiple_bookings_model.dart';
 import 'package:intl/intl.dart';
+import 'dart:developer' as log;
 
 class AddOrderRetailStep2View extends StatefulWidget {
   final double totalPayment;
@@ -27,6 +29,7 @@ class AddOrderRetailStep2View extends StatefulWidget {
   final Map<String, List<String>> selectedCourtsByDate;
   final int courtCount;
   final Map<String, String> courtNamesById;
+  final String? productId;
 
   const AddOrderRetailStep2View({
     super.key,
@@ -39,6 +42,7 @@ class AddOrderRetailStep2View extends StatefulWidget {
     this.selectedCourtsByDate = const {},
     this.courtCount = 1,
     this.courtNamesById = const {},
+    this.productId,
   });
 
   @override
@@ -564,6 +568,16 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         ),
         const SizedBox(height: 16),
 
+        // ID khách hàng (nếu có)
+        if (state.customerId.isNotEmpty) ...[
+          CustomSummaryRow(
+            label: 'ID',
+            value: state.customerId,
+            valueColor: Colors.black,
+          ),
+          const SizedBox(height: 8),
+        ],
+
         // Tên khách hàng
         CustomSummaryRow(
           label: AppLocalizations.of(context).translate('name'),
@@ -936,7 +950,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
   void _navigateToCompleteBooking(
     BuildContext context,
     AddOrderRetailStep2ScreenState state,
-  ) {
+  ) async {
     // Khởi tạo các giá trị
     final String name = '${state.firstName} ${state.lastName}'.trim();
     final String displayName = name.isEmpty ? 'Khách hàng' : name;
@@ -944,23 +958,172 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         state.email.isEmpty ? '0123456789@gmail.com' : state.email;
     final String phone = state.phone.isEmpty ? '0123456789' : state.phone;
 
-    // Chuyển đến màn hình hoàn tất đặt sân
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => CompleteBookingScreen(
-              customerName: displayName,
-              customerEmail: email,
-              customerPhone: phone,
-              bookingCode: 'TD/TD/D25050059',
-              court: 'Demo 1',
-              bookingTime: '08:00 - 09:30 (1.5h)',
-              bookingDate: 'T7, 10/05/2025',
-              price: '90,000VND',
+    // Hiển thị loading dialog
+    _showLoadingDialog(context);
+
+    try {
+      // 1. Lấy start_time từ fromTime
+      final String startTime = widget.fromTime;
+
+      // 2. Lấy end_time từ toTime
+      final String endTime = widget.toTime;
+
+      // 3. status mặc định là "1" (được thiết lập trong BookingInput)
+
+      // 4. Lấy customerId từ state (đã lưu khi chọn khách hàng)
+      final String customerId = state.customerId;
+
+      if (customerId.isEmpty) {
+        log.log('Không tìm thấy ID khách hàng, không thể tạo booking');
+        Navigator.pop(context); // Đóng loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).translate('customerNotFound'),
             ),
-      ),
-    );
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // 5. booking_date từ selectedDates (đã chuyển đổi sang format chuỗi trong selectedCourtsByDate)
+      final Map<String, List<String>> selectedCourtsByDate =
+          widget.selectedCourtsByDate;
+      if (selectedCourtsByDate.isEmpty) {
+        log.log('Không có ngày đặt sân được chọn');
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Vui lòng chọn ngày đặt sân'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // 6. total_price từ state.totalPayment
+      final double totalPayment = state.totalPayment;
+
+      // 7. Lấy productId từ widget.productId
+      final String productId = widget.productId ?? '';
+      if (productId.isEmpty) {
+        log.log('Không có productId, không thể tạo booking');
+        Navigator.pop(context); // Đóng loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).translate('productNotFound'),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // 8. court IDs đã có trong selectedCourtsByDate
+
+      // 9. Lấy paymentMethod từ state
+      final String paymentMethodName = state.paymentMethod ?? '';
+
+      // 10. Lấy paymentStatusId từ state.paymentStatusList
+      String paymentStatusId = '';
+      if (state.paymentStatusList.isNotEmpty) {
+        for (final status in state.paymentStatusList) {
+          if (status is PaymentStatus && status.name == state.paymentStatus) {
+            paymentStatusId = status.id;
+            break;
+          }
+        }
+      }
+
+      if (paymentMethodName.isEmpty || paymentStatusId.isEmpty) {
+        log.log('Thiếu thông tin payment method hoặc payment status');
+        Navigator.pop(context); // Đóng loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).translate('paymentInfoMissing'),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Sử dụng bloc để gọi createMultipleBookings
+      final result = await _bloc.createMultipleBookings(
+        customerId: customerId,
+        productId: productId,
+        selectedCourtsByDate: selectedCourtsByDate,
+        startTime: startTime,
+        endTime: endTime,
+        totalPrice: totalPayment,
+        paymentMethodName: paymentMethodName,
+        paymentStatusId: paymentStatusId,
+      );
+
+      // Đóng loading dialog
+      if (mounted) Navigator.pop(context);
+
+      if (result != null) {
+        log.log('===== NHẬN KẾT QUẢ TỪ API =====');
+        log.log('ID: ${result.id}');
+        log.log('Code: ${result.code}');
+        log.log('Tổng tiền: ${result.totalPrice}');
+        log.log('Sân: ${result.court.name}');
+        log.log('Ngày đặt: ${result.bookingDate}');
+        log.log('===== KẾT THÚC NHẬN KẾT QUẢ =====');
+
+        // Chuyển đến màn hình hoàn tất đặt sân với kết quả thành công
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => CompleteBookingScreen(
+                    customerName: displayName,
+                    customerEmail: email,
+                    customerPhone: phone,
+                    bookingCode: result.code,
+                    court: result.court.name,
+                    bookingTime: '${result.startTime} - ${result.endTime}',
+                    bookingDate: result.bookingDate,
+                    price: '${result.totalPrice} VND',
+                  ),
+            ),
+          );
+        }
+      } else {
+        // Hiển thị thông báo lỗi
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context).translate('bookingFailed'),
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      log.log('Lỗi khi tạo booking: $e');
+      // Đóng loading dialog
+      if (mounted) Navigator.pop(context);
+
+      // Hiển thị thông báo lỗi
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${AppLocalizations.of(context).translate('bookingError')}: $e',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _navigateToSearchScreen(BuildContext context) async {
@@ -1035,6 +1198,9 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
       _firstNameController.text = selectedCustomer.firstName;
       _emailController.text = selectedCustomer.emailAddress ?? '';
       _phoneController.text = selectedCustomer.phoneNumber ?? '';
+
+      // Lưu ID của khách hàng
+      _bloc.add(CustomerIdChanged(selectedCustomer.id));
 
       // Hiển thị form thông tin khách hàng
       _bloc.add(const ShowAddCustomerForm());

@@ -86,12 +86,10 @@ class ApiClient {
       log.log('Thực hiện truy vấn GraphQL');
 
       final requestBody = json.encode({'query': query, 'variables': variables});
-      // log.log('Request Body: $requestBody');
+      log.log('Variables: $variables');
 
       // Lấy headers
       final headers = await _getHeaders(channelToken: channelToken);
-      log.log('Channel Token: $channelToken');
-      // log.log('Request Headers: $headers');
 
       log.log('Gửi request đến: ${ApiEndpoints.graphql}');
       final response = await _client.post(
@@ -100,10 +98,34 @@ class ApiClient {
         body: requestBody,
       );
 
-      // log.log('Response Status Code: ${response.statusCode}');
+      log.log('Response Status Code: ${response.statusCode}');
 
       await _saveCookies(response);
       final jsonResponse = _handleResponse(response);
+
+      // Check for authentication errors
+      if (jsonResponse != null &&
+          jsonResponse.containsKey('errors') &&
+          jsonResponse['errors'] is List &&
+          (jsonResponse['errors'] as List).isNotEmpty) {
+        final errors = jsonResponse['errors'] as List;
+        for (var error in errors) {
+          if (error is Map<String, dynamic> &&
+              error.containsKey('extensions') &&
+              error['extensions'] is Map<String, dynamic>) {
+            final extensions = error['extensions'] as Map<String, dynamic>;
+            if (extensions.containsKey('code') &&
+                extensions['code'] == 'FORBIDDEN') {
+              log.log('FORBIDDEN ERROR: Lỗi xác thực khi truy cập API');
+              log.log('Error message: ${error['message']}');
+
+              // Có thể thử làm mới token ở đây nếu cần
+              // await refreshToken();
+              // return retry query...
+            }
+          }
+        }
+      }
 
       if (jsonResponse != null) {
         log.log('Truy vấn thành công, chuyển đổi response');
@@ -175,20 +197,38 @@ class ApiClient {
     // Add channel token if provided
     if (channelToken != null) {
       headers['vendure-token'] = channelToken;
+      final maskToken =
+          channelToken.length > 10
+              ? '${channelToken.substring(0, 5)}...${channelToken.substring(channelToken.length - 5)}'
+              : channelToken;
+      log.log('Thêm channel token: $maskToken');
     } else {
       // Default channel token
       headers['vendure-token'] = 'demo-channel';
+      log.log('Sử dụng channel token mặc định: demo-channel');
     }
 
     // Add auth token if available
     if (_authToken != null && _authToken!.isNotEmpty) {
       headers['Authorization'] = 'Bearer $_authToken';
+      final maskToken =
+          _authToken!.length > 10
+              ? '${_authToken!.substring(0, 5)}...${_authToken!.substring(_authToken!.length - 5)}'
+              : _authToken!;
+      log.log('Thêm auth token: $maskToken');
     } else {
       // Try to get token from AuthHelper
       final token = await AuthHelper.getUserToken();
       if (token.isNotEmpty) {
         headers['Authorization'] = 'Bearer $token';
         _authToken = token; // Update token for future requests
+        final maskToken =
+            token.length > 10
+                ? '${token.substring(0, 5)}...${token.substring(token.length - 5)}'
+                : token;
+        log.log('Thêm auth token từ AuthHelper: $maskToken');
+      } else {
+        log.log('CẢNH BÁO: Không tìm thấy token xác thực!');
       }
     }
 
@@ -199,8 +239,10 @@ class ApiClient {
 
     if (cookies.isNotEmpty) {
       headers['Cookie'] = cookies.map((c) => '${c.name}=${c.value}').join('; ');
+      log.log('Thêm cookies: ${cookies.length} cookies');
     }
 
+    log.log('Headers đầy đủ: $headers');
     return headers;
   }
 

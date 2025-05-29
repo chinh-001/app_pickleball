@@ -13,9 +13,7 @@ import 'package:app_pickleball/services/repositories/work_time_repository.dart';
 import 'package:app_pickleball/services/repositories/choose_repository.dart';
 import 'package:app_pickleball/services/repositories/courts_for_product_repository.dart';
 import 'package:app_pickleball/services/repositories/available_cour_for_booking_repository.dart';
-// import 'package:app_pickleball/models/courtsForProduct_model.dart';
 import 'package:app_pickleball/models/available_cour_for_booking_model.dart';
-// import 'package:app_pickleball/models/productWithCourts_Model.dart';
 import 'package:intl/intl.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/View/add_order_retail_step_2_view.dart';
 import 'package:app_pickleball/screens/widgets/buttons/custom_action_button.dart';
@@ -435,6 +433,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                             selectedCourtsByDate: state.selectedCourtsByDate,
                             courtCount: state.courtCount,
                             courtNamesById: state.courtNamesById,
+                            productId: state.selectedServiceId,
                           ),
                     ),
                   );

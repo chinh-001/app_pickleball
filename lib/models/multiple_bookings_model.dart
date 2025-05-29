@@ -121,28 +121,88 @@ class MultipleBookingsResponse {
   });
 
   factory MultipleBookingsResponse.fromJson(Map<String, dynamic> json) {
+    // Tiện ích để chuyển đổi kiểu dữ liệu
+    double _parseDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) {
+        try {
+          return double.parse(value);
+        } catch (_) {
+          return 0.0;
+        }
+      }
+      return 0.0;
+    }
+
+    String _parseString(dynamic value) {
+      if (value == null) return '';
+      if (value is String) return value;
+      return value.toString();
+    }
+
+    bool _parseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is int) return value != 0;
+      if (value is String) {
+        return value.toLowerCase() == 'true' || value == '1';
+      }
+      return false;
+    }
+
     return MultipleBookingsResponse(
-      id: json['id'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
-      code: json['code'],
-      qrCode: json['qr_code'],
-      bookingDate: json['booking_date'],
-      startTime: json['start_time'],
-      endTime: json['end_time'],
-      totalPrice: json['total_price'],
-      startDate: json['start_date'],
-      depositAmount: json['deposit_amount'],
-      depositPaid: json['deposit_paid'],
-      endDate: json['end_date'],
-      noteAdmin: json['noteAdmin'],
-      noteCustomer: json['noteCustomer'],
-      hexCode: json['hex_code'],
-      source: json['source'],
-      type: json['type'],
-      paymentMethod: json['payment_method'],
-      product: ProductResponse.fromJson(json['product']),
-      court: CourtResponse.fromJson(json['court']),
+      id: _parseString(json['id']),
+      createdAt: _parseString(json['createdAt']),
+      updatedAt: _parseString(json['updatedAt']),
+      code: _parseString(json['code']),
+      qrCode: _parseString(json['qr_code']),
+      bookingDate: _parseString(json['booking_date']),
+      startTime: _parseString(json['start_time']),
+      endTime: _parseString(json['end_time']),
+      totalPrice: _parseDouble(json['total_price']),
+      startDate: _parseString(json['start_date']),
+      depositAmount: _parseDouble(json['deposit_amount']),
+      depositPaid: _parseBool(json['deposit_paid']),
+      endDate: _parseString(json['end_date']),
+      noteAdmin: _parseString(json['noteAdmin']),
+      noteCustomer: _parseString(json['noteCustomer']),
+      hexCode: _parseString(json['hex_code']),
+      source: _parseString(json['source']),
+      type: _parseString(json['type']),
+      paymentMethod: _parseString(json['payment_method']),
+      product:
+          json['product'] != null
+              ? ProductResponse.fromJson(json['product'])
+              : ProductResponse(
+                id: '',
+                createdAt: '',
+                updatedAt: '',
+                languageCode: '',
+                name: '',
+                slug: '',
+                description: '',
+                enabled: false,
+              ),
+      court:
+          json['court'] != null
+              ? CourtResponse.fromJson(json['court'])
+              : CourtResponse(
+                id: '',
+                createdAt: '',
+                updatedAt: '',
+                name: '',
+                addressCourt: '',
+                phoneCourt: '',
+                slug: '',
+                description: '',
+                startTime: '',
+                endTime: '',
+                hexCode: '',
+                qrCode: '',
+                enabled: false,
+              ),
     );
   }
 }
@@ -169,15 +229,31 @@ class ProductResponse {
   });
 
   factory ProductResponse.fromJson(Map<String, dynamic> json) {
+    String _parseString(dynamic value) {
+      if (value == null) return '';
+      if (value is String) return value;
+      return value.toString();
+    }
+
+    bool _parseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is int) return value != 0;
+      if (value is String) {
+        return value.toLowerCase() == 'true' || value == '1';
+      }
+      return false;
+    }
+
     return ProductResponse(
-      id: json['id'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
-      languageCode: json['languageCode'],
-      name: json['name'],
-      slug: json['slug'],
-      description: json['description'],
-      enabled: json['enabled'],
+      id: _parseString(json['id']),
+      createdAt: _parseString(json['createdAt']),
+      updatedAt: _parseString(json['updatedAt']),
+      languageCode: _parseString(json['languageCode']),
+      name: _parseString(json['name']),
+      slug: _parseString(json['slug']),
+      description: _parseString(json['description']),
+      enabled: _parseBool(json['enabled']),
     );
   }
 }
@@ -214,20 +290,36 @@ class CourtResponse {
   });
 
   factory CourtResponse.fromJson(Map<String, dynamic> json) {
+    String _parseString(dynamic value) {
+      if (value == null) return '';
+      if (value is String) return value;
+      return value.toString();
+    }
+
+    bool _parseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is int) return value != 0;
+      if (value is String) {
+        return value.toLowerCase() == 'true' || value == '1';
+      }
+      return false;
+    }
+
     return CourtResponse(
-      id: json['id'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
-      name: json['name'],
-      addressCourt: json['addressCourt'],
-      phoneCourt: json['phoneCourt'],
-      slug: json['slug'],
-      description: json['description'],
-      startTime: json['start_time'],
-      endTime: json['end_time'],
-      hexCode: json['hex_code'],
-      qrCode: json['qr_code'],
-      enabled: json['enabled'],
+      id: _parseString(json['id']),
+      createdAt: _parseString(json['createdAt']),
+      updatedAt: _parseString(json['updatedAt']),
+      name: _parseString(json['name']),
+      addressCourt: _parseString(json['addressCourt']),
+      phoneCourt: _parseString(json['phoneCourt']),
+      slug: _parseString(json['slug']),
+      description: _parseString(json['description']),
+      startTime: _parseString(json['start_time']),
+      endTime: _parseString(json['end_time']),
+      hexCode: _parseString(json['hex_code']),
+      qrCode: _parseString(json['qr_code']),
+      enabled: _parseBool(json['enabled']),
     );
   }
 }
