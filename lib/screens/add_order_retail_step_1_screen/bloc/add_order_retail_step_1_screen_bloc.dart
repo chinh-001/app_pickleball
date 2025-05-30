@@ -687,12 +687,21 @@ class AddOrderRetailStep1ScreenBloc
   AddOrderRetailStep1ScreenState _updateFormCompleteness(
     AddOrderRetailStep1ScreenState state,
   ) {
-    // Kiểm tra nếu có ít nhất một sân được chọn
-    bool hasSelectedCourts = false;
-    if (state.selectedCourtsByDate.isNotEmpty) {
-      for (var courtsList in state.selectedCourtsByDate.values) {
-        if (courtsList.isNotEmpty) {
-          hasSelectedCourts = true;
+    // Kiểm tra nếu TẤT CẢ các ngày được chọn đều có ít nhất một sân
+    bool allDatesHaveSelectedCourts = true;
+
+    if (state.selectedDates.isEmpty) {
+      allDatesHaveSelectedCourts = false;
+    } else {
+      for (final DateTime date in state.selectedDates) {
+        final String dateKey = DateFormat('yyyy-MM-dd').format(date);
+        final List<String>? courtsForThisDate =
+            state.selectedCourtsByDate[dateKey];
+
+        // Nếu không có sân nào được chọn cho ngày này
+        if (courtsForThisDate == null || courtsForThisDate.isEmpty) {
+          log.log('Ngày $dateKey chưa có sân nào được chọn');
+          allDatesHaveSelectedCourts = false;
           break;
         }
       }
@@ -701,7 +710,7 @@ class AddOrderRetailStep1ScreenBloc
     final bool isComplete =
         state.selectedDates.isNotEmpty &&
         state.selectedService.isNotEmpty &&
-        hasSelectedCourts;
+        allDatesHaveSelectedCourts;
 
     return state.copyWith(isFormComplete: isComplete);
   }

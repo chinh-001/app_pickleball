@@ -449,17 +449,45 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
                     errorMessage = AppLocalizations.of(
                       context,
                     ).translate('pleaseSelectService');
-                  } else if (state.selectedCourtsByDate.isEmpty ||
-                      !state.selectedCourtsByDate.values.any(
-                        (courts) => courts.isNotEmpty,
-                      )) {
-                    errorMessage = AppLocalizations.of(
-                      context,
-                    ).translate('pleaseSelectCourt');
                   } else {
-                    errorMessage = AppLocalizations.of(
-                      context,
-                    ).translate('pleaseCompleteAllInfo');
+                    // Kiểm tra xem có ngày nào chưa chọn sân hay không
+                    List<String> datesWithoutCourts = [];
+
+                    for (final DateTime date in state.selectedDates) {
+                      final String dateKey = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(date);
+                      final List<String>? courtsForThisDate =
+                          state.selectedCourtsByDate[dateKey];
+
+                      if (courtsForThisDate == null ||
+                          courtsForThisDate.isEmpty) {
+                        // Thêm ngày vào danh sách ngày chưa chọn sân
+                        String formattedDate = DateFormat(
+                          'dd/MM/yyyy',
+                        ).format(date);
+                        datesWithoutCourts.add(formattedDate);
+                      }
+                    }
+
+                    if (datesWithoutCourts.isNotEmpty) {
+                      if (datesWithoutCourts.length == 1) {
+                        errorMessage = AppLocalizations.of(context)
+                            .translate('pleaseSelectCourtForDate')
+                            .replaceAll('{date}', datesWithoutCourts.first);
+                      } else {
+                        errorMessage = AppLocalizations.of(context)
+                            .translate('pleaseSelectCourtForDates')
+                            .replaceAll(
+                              '{dates}',
+                              datesWithoutCourts.join(', '),
+                            );
+                      }
+                    } else {
+                      errorMessage = AppLocalizations.of(
+                        context,
+                      ).translate('pleaseCompleteAllInfo');
+                    }
                   }
 
                   // Hiển thị SnackBar thông báo
