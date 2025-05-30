@@ -14,9 +14,7 @@ class CompleteBookingScreenLoaded extends CompleteBookingScreenState {
   final String customerEmail;
   final String customerPhone;
   final String bookingCode;
-  final String court;
-  final String bookingTime;
-  final String bookingDate;
+  final List<BookingDetail> bookingDetails;
   final String price;
 
   const CompleteBookingScreenLoaded({
@@ -24,9 +22,7 @@ class CompleteBookingScreenLoaded extends CompleteBookingScreenState {
     required this.customerEmail,
     required this.customerPhone,
     required this.bookingCode,
-    required this.court,
-    required this.bookingTime,
-    required this.bookingDate,
+    required this.bookingDetails,
     required this.price,
   });
 
@@ -36,9 +32,38 @@ class CompleteBookingScreenLoaded extends CompleteBookingScreenState {
     customerEmail,
     customerPhone,
     bookingCode,
-    court,
-    bookingTime,
-    bookingDate,
+    bookingDetails,
     price,
   ];
+}
+
+class BookingDetail {
+  final String court;
+  final String bookingTime;
+  final String bookingDate;
+  final String price;
+
+  const BookingDetail({
+    required this.court,
+    required this.bookingTime,
+    required this.bookingDate,
+    required this.price,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BookingDetail &&
+          runtimeType == other.runtimeType &&
+          court == other.court &&
+          bookingTime == other.bookingTime &&
+          bookingDate == other.bookingDate &&
+          price == other.price;
+
+  @override
+  int get hashCode =>
+      court.hashCode ^
+      bookingTime.hashCode ^
+      bookingDate.hashCode ^
+      price.hashCode;
 }

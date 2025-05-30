@@ -350,7 +350,7 @@ class AddOrderRetailStep2ScreenBloc
     }
   }
 
-  Future<MultipleBookingsResponse?> createMultipleBookings({
+  Future<List<MultipleBookingsResponse>> createMultipleBookings({
     required String customerId,
     required String productId,
     required Map<String, List<String>> selectedCourtsByDate,
@@ -365,7 +365,7 @@ class AddOrderRetailStep2ScreenBloc
       final channelToken = await getChannelToken();
       if (channelToken == null || channelToken.isEmpty) {
         log.log('Không thể tạo booking: Không có channel token');
-        return null;
+        return [];
       }
 
       // Log các tham số input
@@ -394,17 +394,24 @@ class AddOrderRetailStep2ScreenBloc
           totalCourts > 0 ? totalPrice / totalCourts : totalPrice;
       log.log('Tổng số sân: $totalCourts, Giá mỗi sân: $pricePerCourt');
 
-      // Tạo danh sách các booking cần thực hiện
-      final List<BookingInput> bookings = [];
+      // Danh sách lưu tất cả các booking đã tạo
+      final List<MultipleBookingsResponse> allBookings = [];
 
-      // Tạo một booking cho mỗi ngày và mỗi sân
-      selectedCourtsByDate.forEach((dateString, courtIds) {
+      // Repository để thực hiện mutation
+      final repository = MultipleBookingsRepository();
+
+      // Tạo booking cho từng ngày và sân riêng biệt
+      for (final entry in selectedCourtsByDate.entries) {
+        final String dateString = entry.key;
+        final List<String> courtIds = entry.value;
+
         for (final courtId in courtIds) {
+          // Tạo input cho một booking
           final booking = BookingInput(
             startTime: startTime,
             product: productId,
             endTime: endTime,
-            totalPrice: pricePerCourt, // Giá đã được tính toán đúng
+            totalPrice: pricePerCourt,
             paymentStatus: paymentStatusId,
             bookingDate: dateString,
             court: courtId,
@@ -412,38 +419,48 @@ class AddOrderRetailStep2ScreenBloc
             status: "1", // Mặc định là "1"
             customer: customerId,
           );
-          bookings.add(booking);
-          log.log('Đã thêm booking: ${booking.toJson()}');
+
+          // Log thông tin booking
+          log.log('Tạo booking mới:');
+          log.log('- Ngày: $dateString');
+          log.log('- Sân: $courtId');
+          log.log('- Giá: $pricePerCourt VND');
+
+          // Tạo input cho mutation
+          final input = MultipleBookingsInput(bookings: [booking]);
+
+          // Thực hiện mutation cho một booking
+          try {
+            final result = await repository.createMultipleBookings(
+              channelToken: channelToken,
+              input: input,
+            );
+
+            // Log kết quả
+            log.log('===== KẾT QUẢ TẠO BOOKING =====');
+            log.log('ID: ${result.id}');
+            log.log('Code: ${result.code}');
+            log.log('Booking date: ${result.bookingDate}');
+            log.log('Thời gian: ${result.startTime} - ${result.endTime}');
+            log.log('Sân: ${result.court.name}');
+            log.log('===============================');
+
+            // Thêm vào danh sách kết quả
+            allBookings.add(result);
+          } catch (e) {
+            log.log(
+              'Lỗi khi tạo booking cho ngày $dateString và sân $courtId: $e',
+            );
+          }
         }
-      });
+      }
 
-      final input = MultipleBookingsInput(bookings: bookings);
-      log.log('Input cuối cùng: ${input.toJson()}');
+      log.log('Đã tạo thành công ${allBookings.length}/${totalCourts} booking');
 
-      // Sử dụng repository để thực hiện mutation
-      final repository = MultipleBookingsRepository();
-      final result = await repository.createMultipleBookings(
-        channelToken: channelToken,
-        input: input,
-      );
-
-      // Log kết quả
-      log.log('===== KẾT QUẢ TẠO MULTIPLE BOOKINGS =====');
-      log.log('ID: ${result.id}');
-      log.log('Code: ${result.code}');
-      log.log('Booking date: ${result.bookingDate}');
-      log.log('Thời gian: ${result.startTime} - ${result.endTime}');
-      log.log('Tổng tiền: ${result.totalPrice}');
-      log.log('Sân: ${result.court.name}');
-      log.log('Sản phẩm: ${result.product.name}');
-      log.log('Phương thức thanh toán: ${result.paymentMethod}');
-      log.log('Khách hàng: $customerId');
-      log.log('=====================================');
-
-      return result;
+      return allBookings;
     } catch (e) {
       log.log('Lỗi khi tạo multiple bookings: $e');
-      return null;
+      return [];
     }
   }
 

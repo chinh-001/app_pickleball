@@ -4,6 +4,7 @@ import 'package:app_pickleball/screens/widgets/buttons/custom_action_button.dart
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/bloc/add_order_retail_step_2_screen_bloc.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/View/complete_booking_screen.dart';
+import 'package:app_pickleball/screens/complete_booking_screen/bloc/complete_booking_screen_bloc.dart';
 import 'package:app_pickleball/screens/widgets/indicators/custom_step_circle.dart';
 import 'package:app_pickleball/screens/widgets/cards/custom_option_item.dart';
 import 'package:app_pickleball/screens/widgets/cards/custom_options_container.dart';
@@ -1052,7 +1053,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
       }
 
       // Sử dụng bloc để gọi createMultipleBookings
-      final result = await _bloc.createMultipleBookings(
+      final results = await _bloc.createMultipleBookings(
         customerId: customerId,
         productId: productId,
         selectedCourtsByDate: selectedCourtsByDate,
@@ -1066,16 +1067,25 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
       // Đóng loading dialog
       if (mounted) Navigator.pop(context);
 
-      if (result != null) {
-        log.log('===== NHẬN KẾT QUẢ TỪ API =====');
-        log.log('ID: ${result.id}');
-        log.log('Code: ${result.code}');
-        log.log('Tổng tiền: ${result.totalPrice}');
-        log.log('Sân: ${result.court.name}');
-        log.log('Ngày đặt: ${result.bookingDate}');
-        log.log('===== KẾT THÚC NHẬN KẾT QUẢ =====');
+      if (results.isNotEmpty) {
+        log.log('===== NHẬN DANH SÁCH KẾT QUẢ TỪ API =====');
+        log.log('Số lượng booking: ${results.length}');
 
-        // Chuyển đến màn hình hoàn tất đặt sân với kết quả thành công
+        // Tạo danh sách booking details để hiển thị trên màn hình complete
+        final bookingDetails =
+            results.map((result) {
+              // Format lại giá tiền
+              final formattedPrice = '${result.totalPrice} VND';
+
+              return BookingDetail(
+                court: result.court.name,
+                bookingTime: '${result.startTime} - ${result.endTime}',
+                bookingDate: result.bookingDate,
+                price: formattedPrice,
+              );
+            }).toList();
+
+        // Chuyển đến màn hình hoàn tất đặt sân với danh sách các booking
         if (mounted) {
           Navigator.push(
             context,
@@ -1085,17 +1095,15 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                     customerName: displayName,
                     customerEmail: email,
                     customerPhone: phone,
-                    bookingCode: result.code,
-                    court: result.court.name,
-                    bookingTime: '${result.startTime} - ${result.endTime}',
-                    bookingDate: result.bookingDate,
-                    price: '${result.totalPrice} VND',
+                    bookingCode: results.first.code,
+                    bookingDetails: bookingDetails,
+                    price: '${totalPayment} VND',
                   ),
             ),
           );
         }
       } else {
-        // Hiển thị thông báo lỗi
+        // Hiển thị thông báo lỗi nếu không có booking nào được tạo
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

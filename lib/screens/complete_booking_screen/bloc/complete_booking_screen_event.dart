@@ -12,9 +12,7 @@ class LoadCompleteBookingData extends CompleteBookingScreenEvent {
   final String customerEmail;
   final String customerPhone;
   final String bookingCode;
-  final String court;
-  final String bookingTime;
-  final String bookingDate;
+  final List<BookingDetail> bookingDetails;
   final String price;
 
   const LoadCompleteBookingData({
@@ -22,9 +20,7 @@ class LoadCompleteBookingData extends CompleteBookingScreenEvent {
     required this.customerEmail,
     required this.customerPhone,
     required this.bookingCode,
-    required this.court,
-    required this.bookingTime,
-    required this.bookingDate,
+    required this.bookingDetails,
     required this.price,
   });
 
@@ -34,9 +30,7 @@ class LoadCompleteBookingData extends CompleteBookingScreenEvent {
     customerEmail,
     customerPhone,
     bookingCode,
-    court,
-    bookingTime,
-    bookingDate,
+    bookingDetails,
     price,
   ];
 }

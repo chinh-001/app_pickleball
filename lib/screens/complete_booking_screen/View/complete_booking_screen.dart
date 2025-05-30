@@ -9,9 +9,7 @@ class CompleteBookingScreen extends StatelessWidget {
   final String customerEmail;
   final String customerPhone;
   final String bookingCode;
-  final String court;
-  final String bookingTime;
-  final String bookingDate;
+  final List<BookingDetail> bookingDetails;
   final String price;
 
   const CompleteBookingScreen({
@@ -20,9 +18,7 @@ class CompleteBookingScreen extends StatelessWidget {
     required this.customerEmail,
     required this.customerPhone,
     required this.bookingCode,
-    required this.court,
-    required this.bookingTime,
-    required this.bookingDate,
+    required this.bookingDetails,
     required this.price,
   }) : super(key: key);
 
@@ -37,9 +33,7 @@ class CompleteBookingScreen extends StatelessWidget {
                   customerEmail: customerEmail,
                   customerPhone: customerPhone,
                   bookingCode: bookingCode,
-                  court: court,
-                  bookingTime: bookingTime,
-                  bookingDate: bookingDate,
+                  bookingDetails: bookingDetails,
                   price: price,
                 ),
               ),
@@ -82,7 +76,8 @@ class CompleteBookingScreen extends StatelessWidget {
                           const SizedBox(height: 24),
                           _buildCustomerInfoRow(context, state),
                           const SizedBox(height: 16),
-                          _buildBookingDetailsCard(context, state),
+                          if (state is CompleteBookingScreenLoaded)
+                            _buildMultipleBookingDetails(context, state),
                           const SizedBox(height: 16),
                           _buildPaymentSummary(context, state),
                         ],
@@ -248,24 +243,10 @@ class CompleteBookingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBookingDetailsCard(
+  Widget _buildMultipleBookingDetails(
     BuildContext context,
-    CompleteBookingScreenState state,
+    CompleteBookingScreenLoaded state,
   ) {
-    String displayBookingCode = bookingCode;
-    String displayCourt = court;
-    String displayBookingTime = bookingTime;
-    String displayBookingDate = bookingDate;
-    String displayPrice = price;
-
-    if (state is CompleteBookingScreenLoaded) {
-      displayBookingCode = state.bookingCode;
-      displayCourt = state.court;
-      displayBookingTime = state.bookingTime;
-      displayBookingDate = state.bookingDate;
-      displayPrice = state.price;
-    }
-
     final String bookingDetailsText = AppLocalizations.of(
       context,
     ).translate('orderDetails');
@@ -286,30 +267,54 @@ class CompleteBookingScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _buildDetailRow(
             AppLocalizations.of(context).translate('bookingCode'),
-            displayBookingCode,
+            state.bookingCode,
           ),
           const SizedBox(height: 10),
-          _buildDetailRow(
-            AppLocalizations.of(context).translate('court'),
-            displayCourt,
-          ),
-          const SizedBox(height: 10),
-          _buildDetailRow(
-            AppLocalizations.of(context).translate('time'),
-            displayBookingTime,
-          ),
-          const SizedBox(height: 10),
-          _buildDetailRow(
-            AppLocalizations.of(context).translate('bookingDate'),
-            displayBookingDate,
-          ),
-          const SizedBox(height: 10),
-          _buildDetailRow(
-            AppLocalizations.of(context).translate('price'),
-            displayPrice,
-          ),
+          for (int i = 0; i < state.bookingDetails.length; i++) ...[
+            const SizedBox(height: 10),
+            _buildBookingSeparator(context, i + 1),
+            const SizedBox(height: 10),
+            _buildDetailRow(
+              AppLocalizations.of(context).translate('court'),
+              state.bookingDetails[i].court,
+            ),
+            const SizedBox(height: 10),
+            _buildDetailRow(
+              AppLocalizations.of(context).translate('time'),
+              state.bookingDetails[i].bookingTime,
+            ),
+            const SizedBox(height: 10),
+            _buildDetailRow(
+              AppLocalizations.of(context).translate('bookingDate'),
+              state.bookingDetails[i].bookingDate,
+            ),
+            const SizedBox(height: 10),
+            _buildDetailRow(
+              AppLocalizations.of(context).translate('price'),
+              state.bookingDetails[i].price,
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildBookingSeparator(BuildContext context, int bookingNumber) {
+    return Row(
+      children: [
+        Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            '${AppLocalizations.of(context).translate('booking')} #$bookingNumber',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+      ],
     );
   }
 
@@ -321,9 +326,14 @@ class CompleteBookingScreen extends StatelessWidget {
           label,
           style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
         ),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            textAlign: TextAlign.right,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
@@ -334,9 +344,11 @@ class CompleteBookingScreen extends StatelessWidget {
     CompleteBookingScreenState state,
   ) {
     String displayPrice = price;
+    List<BookingDetail> displayBookingDetails = bookingDetails;
 
     if (state is CompleteBookingScreenLoaded) {
       displayPrice = state.price;
+      displayBookingDetails = state.bookingDetails;
     }
 
     final String paymentSummaryText = AppLocalizations.of(
@@ -357,27 +369,38 @@ class CompleteBookingScreen extends StatelessWidget {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppLocalizations.of(context).translate('court'),
-                style: const TextStyle(fontSize: 14),
-              ),
-              Row(
-                children: [
-                  Text(
-                    '1 x ${displayPrice.split('VND').first}',
+          for (int i = 0; i < displayBookingDetails.length; i++) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    '${displayBookingDetails[i].court} (${displayBookingDetails[i].bookingDate})',
                     style: const TextStyle(fontSize: 14),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                  Text(
-                    'VND/h',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                ),
+                const SizedBox(width: 8),
+                Row(
+                  children: [
+                    Text(
+                      '1 x ${displayBookingDetails[i].price.split('VND').first}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    Text(
+                      'VND/h',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            if (i < displayBookingDetails.length - 1) const SizedBox(height: 8),
+          ],
           const Divider(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

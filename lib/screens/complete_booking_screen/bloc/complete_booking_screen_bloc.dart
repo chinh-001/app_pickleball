@@ -20,9 +20,7 @@ class CompleteBookingScreenBloc
         customerEmail: event.customerEmail,
         customerPhone: event.customerPhone,
         bookingCode: event.bookingCode,
-        court: event.court,
-        bookingTime: event.bookingTime,
-        bookingDate: event.bookingDate,
+        bookingDetails: event.bookingDetails,
         price: event.price,
       ),
     );
