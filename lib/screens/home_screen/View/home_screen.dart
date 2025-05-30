@@ -18,6 +18,11 @@ import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicat
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  // Thêm phương thức static để reset bloc từ bên ngoài
+  static void resetBloc() {
+    _HomeScreenState.resetBloc();
+  }
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }

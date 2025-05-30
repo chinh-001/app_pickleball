@@ -4,6 +4,7 @@ import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/bloc/complete_booking_screen_bloc.dart';
 import 'package:app_pickleball/screens/home_screen/View/home_screen.dart';
 import 'package:app_pickleball/utils/number_format.dart';
+import 'dart:developer' as log;
 
 class CompleteBookingScreen extends StatelessWidget {
   final String customerName;
@@ -523,6 +524,13 @@ class CompleteBookingScreen extends StatelessWidget {
       ),
       child: ElevatedButton(
         onPressed: () {
+          // Reset HomeScreenBloc để buộc nó tải lại dữ liệu khi quay về
+          log.log(
+            'Resetting HomeScreenBloc để tải lại dữ liệu khi quay về màn hình chính',
+          );
+          HomeScreen.resetBloc();
+
+          // Chuyển về màn hình chính và xóa hết stack
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const HomeScreen()),
             (route) => false,
