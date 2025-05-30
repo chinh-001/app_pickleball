@@ -282,7 +282,7 @@ class _AddOrderRetailStep1ScreenState extends State<AddOrderRetailStep1Screen> {
               Container(
                 height: 50,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
+                  horizontal: 35,
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
