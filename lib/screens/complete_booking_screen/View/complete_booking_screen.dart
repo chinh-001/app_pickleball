@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/bloc/complete_booking_screen_bloc.dart';
 import 'package:app_pickleball/screens/home_screen/View/home_screen.dart';
+import 'package:app_pickleball/utils/number_format.dart';
 
 class CompleteBookingScreen extends StatelessWidget {
   final String customerName;
@@ -289,7 +290,8 @@ class CompleteBookingScreen extends StatelessWidget {
               state.bookingDetails[i].bookingDate,
             ),
             const SizedBox(height: 10),
-            _buildDetailRow(
+            _buildPriceDetailRow(
+              context,
               AppLocalizations.of(context).translate('price'),
               state.bookingDetails[i].price,
             ),
@@ -333,6 +335,43 @@ class CompleteBookingScreen extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             textAlign: TextAlign.right,
             overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceDetailRow(
+    BuildContext context,
+    String label,
+    String priceValue,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _formatPrice(context, priceValue),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.right,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                ' VND',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
           ),
         ),
       ],
@@ -385,11 +424,11 @@ class CompleteBookingScreen extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      '1 x ${displayBookingDetails[i].price.split('VND').first}',
+                      '1 x ${_formatPrice(context, displayBookingDetails[i].price)}',
                       style: const TextStyle(fontSize: 14),
                     ),
                     Text(
-                      'VND/h',
+                      ' VND/h',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -412,31 +451,60 @@ class CompleteBookingScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Row(
-                children: [
-                  Text(
-                    displayPrice.split('VND').first.trim(),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                  const Text(
-                    ' VND',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
+              Text(
+                _formatTotalPrice(context, displayPrice),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
               ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  // Helper để chuyển đổi string price thành định dạng toCurrency
+  // Dùng cho giá đơn vị (không kèm VND)
+  String _formatPrice(BuildContext context, String priceString) {
+    try {
+      // Loại bỏ VND và các khoảng trắng
+      String cleanString = priceString.replaceAll('VND', '').trim();
+
+      // Loại bỏ tất cả dấu phẩy để đảm bảo số được parse đúng
+      cleanString = cleanString.replaceAll(',', '');
+
+      // Parse số
+      double priceValue = double.parse(cleanString);
+
+      // Định dạng lại số tiền (không có VND)
+      return priceValue.toCurrency(context).replaceAll(' VND', '');
+    } catch (e) {
+      // Nếu không parse được, trả về giá trị gốc đã xóa VND
+      return priceString.replaceAll('VND', '').trim();
+    }
+  }
+
+  // Helper để định dạng tổng giá - có kèm VND
+  String _formatTotalPrice(BuildContext context, String priceString) {
+    try {
+      // Loại bỏ VND và các khoảng trắng
+      String cleanString = priceString.replaceAll('VND', '').trim();
+
+      // Loại bỏ tất cả dấu phẩy để đảm bảo số được parse đúng
+      cleanString = cleanString.replaceAll(',', '');
+
+      // Parse số
+      double priceValue = double.parse(cleanString);
+
+      // Định dạng lại số tiền (có VND)
+      return priceValue.toCurrency(context);
+    } catch (e) {
+      // Nếu không parse được, trả về giá trị gốc
+      return priceString;
+    }
   }
 
   Widget _buildBottomBar(BuildContext context) {

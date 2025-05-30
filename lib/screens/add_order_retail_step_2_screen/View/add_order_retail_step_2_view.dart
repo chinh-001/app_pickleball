@@ -1073,14 +1073,14 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         // Tạo danh sách booking details để hiển thị trên màn hình complete
         final bookingDetails =
             results.map((result) {
-              // Format lại giá tiền
-              final formattedPrice = '${result.totalPrice} VND';
+              // Chỉ truyền giá trị số nguyên, không định dạng ở đây
+              final String rawPrice = result.totalPrice.toString();
 
               return BookingDetail(
                 court: result.court.name,
                 bookingTime: '${result.startTime} - ${result.endTime}',
                 bookingDate: result.bookingDate,
-                price: formattedPrice,
+                price: rawPrice,
               );
             }).toList();
 
@@ -1096,7 +1096,8 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                     customerPhone: phone,
                     bookingCode: results.first.code,
                     bookingDetails: bookingDetails,
-                    price: '${totalPayment} VND',
+                    // Truyền giá trị nguyên, không định dạng
+                    price: totalPayment.toString(),
                   ),
             ),
           );
