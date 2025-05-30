@@ -203,5 +203,14 @@
   "noChannelSelected": "No channel selected. Please select a channel first.",
   
   "selectedDates": "Selected Dates",
-  "noCourt": "No court selected"
+  "noCourt": "No court selected",
+  
+  "booking": "Booking",
+  "bookings": "bookings",
+  "multipleBookingInfo": "Booking information by date",
+  "customerNotFound": "Customer information not found",
+  "productNotFound": "Service information not found",
+  "paymentInfoMissing": "Payment information missing",
+  "bookingFailed": "Booking failed",
+  "bookingError": "Booking error"
 } 

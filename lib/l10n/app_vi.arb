@@ -203,5 +203,14 @@
   "noChannelSelected": "Chưa chọn kênh. Vui lòng chọn kênh trước.",
   
   "selectedDates": "Ngày đã chọn",
-  "noCourt": "Chưa chọn sân"
+  "noCourt": "Chưa chọn sân",
+  
+  "booking": "Đặt sân",
+  "bookings": "các đặt sân",
+  "multipleBookingInfo": "Thông tin đặt sân theo ngày",
+  "customerNotFound": "Không tìm thấy thông tin khách hàng",
+  "productNotFound": "Không tìm thấy thông tin dịch vụ",
+  "paymentInfoMissing": "Thiếu thông tin thanh toán",
+  "bookingFailed": "Đặt sân thất bại",
+  "bookingError": "Lỗi đặt sân"
 } 

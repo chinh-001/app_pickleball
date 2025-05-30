@@ -16,7 +16,6 @@ import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicat
 import 'package:app_pickleball/screens/add_customer_screen/View/add_customer_screen.dart';
 import 'package:app_pickleball/models/payment_methods_model.dart';
 import 'package:app_pickleball/models/payment_status_model.dart';
-import 'package:app_pickleball/models/multiple_bookings_model.dart';
 import 'package:intl/intl.dart';
 import 'dart:developer' as log;
 
