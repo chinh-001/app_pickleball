@@ -8,7 +8,12 @@ abstract class OrderListScreenEvent extends Equatable {
 }
 
 class LoadOrderListEvent extends OrderListScreenEvent {
-  const LoadOrderListEvent();
+  final String channelToken;
+
+  const LoadOrderListEvent({this.channelToken = ''});
+
+  @override
+  List<Object> get props => [channelToken];
 }
 
 class SearchOrderListEvent extends OrderListScreenEvent {
@@ -39,9 +44,7 @@ class FetchBookingsEvent extends OrderListScreenEvent {
   List<Object> get props => [channelToken, date];
 }
 
-class InitializeOrderListScreenEvent extends OrderListScreenEvent {
-  const InitializeOrderListScreenEvent();
-}
+class InitializeOrderListScreenEvent extends OrderListScreenEvent {}
 
 class SyncChannelEvent extends OrderListScreenEvent {
   final String channelName;
@@ -50,4 +53,17 @@ class SyncChannelEvent extends OrderListScreenEvent {
 
   @override
   List<Object> get props => [channelName];
+}
+
+class FilterByDateRangeEvent extends OrderListScreenEvent {
+  final List<DateTime> selectedDates;
+
+  const FilterByDateRangeEvent({required this.selectedDates});
+
+  @override
+  List<Object> get props => [selectedDates];
+}
+
+class ClearDateFilterEvent extends OrderListScreenEvent {
+  const ClearDateFilterEvent();
 }

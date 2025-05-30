@@ -3,31 +3,44 @@ part of 'orderlist_screen_bloc.dart';
 abstract class OrderListScreenState extends Equatable {
   final String selectedChannel;
   final List<String> availableChannels;
+  final List<DateTime>? selectedDates;
 
   const OrderListScreenState({
-    this.selectedChannel = 'Default channel',
-    this.availableChannels = const ['Default channel'],
+    required this.selectedChannel,
+    required this.availableChannels,
+    this.selectedDates,
   });
 
   @override
-  List<Object> get props => [selectedChannel, availableChannels];
+  List<Object?> get props => [
+    selectedChannel,
+    availableChannels,
+    selectedDates,
+  ];
 }
 
 class OrderListScreenInitial extends OrderListScreenState {
   const OrderListScreenInitial({
     String selectedChannel = 'Default channel',
     List<String> availableChannels = const ['Default channel'],
+    List<DateTime>? selectedDates,
   }) : super(
          selectedChannel: selectedChannel,
          availableChannels: availableChannels,
+         selectedDates: selectedDates,
        );
 }
 
 class OrderListScreenLoading extends OrderListScreenState {
   const OrderListScreenLoading({
-    required super.selectedChannel,
-    required super.availableChannels,
-  });
+    required String selectedChannel,
+    required List<String> availableChannels,
+    List<DateTime>? selectedDates,
+  }) : super(
+         selectedChannel: selectedChannel,
+         availableChannels: availableChannels,
+         selectedDates: selectedDates,
+       );
 }
 
 class OrderListScreenLoaded extends OrderListScreenState {
@@ -35,30 +48,62 @@ class OrderListScreenLoaded extends OrderListScreenState {
   final BookingOrderList? bookingOrderList;
 
   const OrderListScreenLoaded({
-    required super.selectedChannel,
-    required super.availableChannels,
+    required String selectedChannel,
+    required List<String> availableChannels,
     required this.items,
-    this.bookingOrderList,
-  });
+    required this.bookingOrderList,
+    List<DateTime>? selectedDates,
+  }) : super(
+         selectedChannel: selectedChannel,
+         availableChannels: availableChannels,
+         selectedDates: selectedDates,
+       );
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
     selectedChannel,
     availableChannels,
     items,
-    if (bookingOrderList != null) bookingOrderList!,
+    bookingOrderList,
+    selectedDates,
   ];
+
+  OrderListScreenLoaded copyWith({
+    String? selectedChannel,
+    List<String>? availableChannels,
+    List<Map<String, String>>? items,
+    BookingOrderList? bookingOrderList,
+    List<DateTime>? selectedDates,
+  }) {
+    return OrderListScreenLoaded(
+      selectedChannel: selectedChannel ?? this.selectedChannel,
+      availableChannels: availableChannels ?? this.availableChannels,
+      items: items ?? this.items,
+      bookingOrderList: bookingOrderList ?? this.bookingOrderList,
+      selectedDates: selectedDates ?? this.selectedDates,
+    );
+  }
 }
 
 class OrderListScreenError extends OrderListScreenState {
   final String message;
 
   const OrderListScreenError({
-    required super.selectedChannel,
-    required super.availableChannels,
     required this.message,
-  });
+    required String selectedChannel,
+    required List<String> availableChannels,
+    List<DateTime>? selectedDates,
+  }) : super(
+         selectedChannel: selectedChannel,
+         availableChannels: availableChannels,
+         selectedDates: selectedDates,
+       );
 
   @override
-  List<Object> get props => [selectedChannel, availableChannels, message];
+  List<Object?> get props => [
+    selectedChannel,
+    availableChannels,
+    message,
+    selectedDates,
+  ];
 }

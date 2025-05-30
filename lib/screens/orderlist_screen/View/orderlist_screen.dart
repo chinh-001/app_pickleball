@@ -12,8 +12,10 @@ import 'package:app_pickleball/services/repositories/userPermissions_repository.
 import 'package:app_pickleball/services/repositories/bookingList_repository.dart';
 import 'package:app_pickleball/utils/auth_helper.dart';
 import 'package:app_pickleball/services/localization/app_localizations.dart';
+import 'package:app_pickleball/screens/widgets/calendar/custom_calendar_update.dart';
 import 'dart:developer' as log;
 import 'package:app_pickleball/screens/widgets/indicators/custom_loading_indicator.dart';
+import 'package:intl/intl.dart';
 // import 'dart:convert';
 
 class OrderListScreen extends StatefulWidget {
@@ -52,6 +54,37 @@ class _OrderListScreenState extends State<OrderListScreen>
     _bloc?.close();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  // Xử lý khi người dùng chọn ngày từ lịch
+  void _handleDateSelected(List<DateTime> dates) {
+    if (dates.isNotEmpty) {
+      // Gọi event để lọc dữ liệu
+      _bloc?.add(FilterByDateRangeEvent(selectedDates: dates));
+
+      log.log(
+        'Đã chọn ${dates.length} ngày: ${dates.map((d) => DateFormat('dd/MM/yyyy').format(d)).join(", ")}',
+      );
+    } else {
+      // Nếu không có ngày nào được chọn, xóa bộ lọc
+      _bloc?.add(const ClearDateFilterEvent());
+    }
+  }
+
+  // Mở lịch dạng bottom sheet
+  void _showCalendar() {
+    // Lấy danh sách ngày đã chọn từ state hiện tại
+    List<DateTime>? initialSelectedDates;
+    if (_bloc?.state is OrderListScreenLoaded) {
+      initialSelectedDates =
+          (_bloc?.state as OrderListScreenLoaded).selectedDates;
+    }
+
+    CustomCalendarUpdate.show(
+      context,
+      onDatesSelected: _handleDateSelected,
+      initialSelectedDates: initialSelectedDates,
+    );
   }
 
   @override
@@ -116,16 +149,88 @@ class _OrderListScreenState extends State<OrderListScreen>
                 ),
               ),
               const SizedBox(height: 10),
-              Container(
-                alignment: Alignment.centerLeft,
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  AppLocalizations.of(context).translate('bookingList'),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).translate('bookingList'),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.calendar_month,
+                        color: Colors.green,
+                        size: 22,
+                      ),
+                      onPressed: _showCalendar,
+                      tooltip: AppLocalizations.of(context).translate('filter'),
+                    ),
+                  ],
                 ),
+              ),
+              BlocBuilder<OrderListScreenBloc, OrderListScreenState>(
+                builder: (context, state) {
+                  if (state is OrderListScreenLoaded &&
+                      state.selectedDates != null &&
+                      state.selectedDates!.isNotEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16.0,
+                        right: 16.0,
+                        top: 8.0,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.green.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: Colors.green,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                state.selectedDates!.length > 1
+                                    ? '${state.selectedDates!.length} ${AppLocalizations.of(context).translate('daysSelected').replaceAll('{count}', '')}'
+                                    : DateFormat(
+                                      'dd/MM/yyyy',
+                                    ).format(state.selectedDates!.first),
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                _bloc?.add(const ClearDateFilterEvent());
+                              },
+                              child: const Icon(
+                                Icons.close,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
               const SizedBox(height: 2),
               Padding(

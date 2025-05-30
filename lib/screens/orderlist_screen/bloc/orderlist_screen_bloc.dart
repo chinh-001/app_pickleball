@@ -5,6 +5,7 @@ import 'package:app_pickleball/services/repositories/userPermissions_repository.
 import 'package:app_pickleball/services/channel_sync_service.dart';
 import 'dart:developer' as log;
 import 'package:app_pickleball/models/bookingList_model.dart';
+import 'package:intl/intl.dart';
 
 part 'orderlist_screen_event.dart';
 part 'orderlist_screen_state.dart';
@@ -17,6 +18,10 @@ class OrderListScreenBloc
 
   // Kênh dự phòng nếu không có kênh từ quyền hạn
   final List<String> _fallbackChannels = ['Default channel', 'Demo-channel'];
+
+  // Lưu trữ dữ liệu gốc cho tính năng lọc
+  BookingOrderList? _originalBookingList;
+  List<Map<String, String>>? _originalItems;
 
   OrderListScreenBloc({
     BookingListRepository? bookingListRepository,
@@ -32,6 +37,8 @@ class OrderListScreenBloc
     on<FetchBookingsEvent>(_onFetchBookings);
     on<InitializeOrderListScreenEvent>(_onInitializeOrderListScreen);
     on<SyncChannelEvent>(_onSyncChannel);
+    on<FilterByDateRangeEvent>(_onFilterByDateRange);
+    on<ClearDateFilterEvent>(_onClearDateFilter);
 
     // Register as a listener for channel changes
     _channelSyncService.addListener('orderlist_screen_bloc', (newChannel) {
@@ -447,6 +454,84 @@ class OrderListScreenBloc
             add(FetchBookingsEvent(channelToken: token, date: DateTime.now()));
           }
         });
+      }
+    }
+  }
+
+  // Xử lý lọc theo khoảng ngày
+  void _onFilterByDateRange(
+    FilterByDateRangeEvent event,
+    Emitter<OrderListScreenState> emit,
+  ) {
+    if (state is OrderListScreenLoaded) {
+      final currentState = state as OrderListScreenLoaded;
+
+      log.log('Đang lọc dữ liệu theo ${event.selectedDates.length} ngày');
+
+      // Lưu dữ liệu gốc nếu chưa có
+      if (_originalBookingList == null) {
+        _originalBookingList = currentState.bookingOrderList;
+        _originalItems = List.from(currentState.items);
+      }
+
+      if (_originalBookingList == null || _originalItems == null) {
+        log.log('Không có dữ liệu gốc để lọc');
+        return;
+      }
+
+      // Tạo bản sao của dữ liệu để lọc
+      List<Map<String, String>> filteredItems = [];
+
+      // Chuyển danh sách ngày thành chuỗi để so sánh
+      final selectedDateStrings =
+          event.selectedDates
+              .map((date) => DateFormat('yyyy-MM-dd').format(date))
+              .toList();
+
+      log.log('Các ngày được chọn: $selectedDateStrings');
+
+      // Lọc dữ liệu theo ngày
+      for (var item in _originalItems!) {
+        if (item.containsKey('booking_date')) {
+          final bookingDate = item['booking_date'] ?? '';
+          // Kiểm tra xem booking_date có thuộc về một trong những ngày được chọn không
+          if (selectedDateStrings.any((date) => bookingDate.contains(date))) {
+            filteredItems.add(item);
+          }
+        }
+      }
+
+      log.log(
+        'Đã lọc ${filteredItems.length} mục từ ${_originalItems!.length} mục',
+      );
+
+      // Emit state mới với dữ liệu đã lọc
+      emit(
+        currentState.copyWith(
+          items: filteredItems,
+          selectedDates: event.selectedDates,
+        ),
+      );
+    }
+  }
+
+  // Xử lý xóa bộ lọc
+  void _onClearDateFilter(
+    ClearDateFilterEvent event,
+    Emitter<OrderListScreenState> emit,
+  ) {
+    if (state is OrderListScreenLoaded) {
+      final currentState = state as OrderListScreenLoaded;
+
+      log.log('Đang xóa bộ lọc ngày');
+
+      // Khôi phục dữ liệu gốc
+      if (_originalItems != null) {
+        emit(currentState.copyWith(items: _originalItems, selectedDates: null));
+
+        // Đặt lại dữ liệu gốc
+        _originalBookingList = null;
+        _originalItems = null;
       }
     }
   }
