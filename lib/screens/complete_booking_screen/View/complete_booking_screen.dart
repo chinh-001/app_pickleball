@@ -4,6 +4,7 @@ import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/bloc/complete_booking_screen_bloc.dart';
 import 'package:app_pickleball/screens/home_screen/View/home_screen.dart';
 import 'package:app_pickleball/utils/number_format.dart';
+import 'package:expandable/expandable.dart';
 import 'dart:developer' as log;
 
 class CompleteBookingScreen extends StatelessWidget {
@@ -215,6 +216,11 @@ class CompleteBookingScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            AppLocalizations.of(context).translate('customer'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
           _buildCustomerInfoItem(Icons.person, displayName),
           const SizedBox(height: 12),
           _buildCustomerInfoItem(Icons.email, displayEmail),
@@ -259,45 +265,65 @@ class CompleteBookingScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+      child: ExpandablePanel(
+        header: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Text(
             bookingDetailsText,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 16),
-          _buildDetailRow(
-            AppLocalizations.of(context).translate('bookingCode'),
-            state.bookingCode,
-          ),
-          const SizedBox(height: 10),
-          for (int i = 0; i < state.bookingDetails.length; i++) ...[
-            const SizedBox(height: 10),
-            _buildBookingSeparator(context, i + 1),
-            const SizedBox(height: 10),
+        ),
+        collapsed: const SizedBox.shrink(), // Không hiển thị gì khi đóng
+        expanded: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
             _buildDetailRow(
-              AppLocalizations.of(context).translate('court'),
-              state.bookingDetails[i].court,
+              AppLocalizations.of(context).translate('bookingCode'),
+              state.bookingCode,
             ),
             const SizedBox(height: 10),
-            _buildDetailRow(
-              AppLocalizations.of(context).translate('time'),
-              state.bookingDetails[i].bookingTime,
-            ),
-            const SizedBox(height: 10),
-            _buildDetailRow(
-              AppLocalizations.of(context).translate('bookingDate'),
-              state.bookingDetails[i].bookingDate,
-            ),
-            const SizedBox(height: 10),
-            _buildPriceDetailRow(
-              context,
-              AppLocalizations.of(context).translate('price'),
-              state.bookingDetails[i].price,
-            ),
+            for (int i = 0; i < state.bookingDetails.length; i++) ...[
+              const SizedBox(height: 10),
+              _buildBookingSeparator(context, i + 1),
+              const SizedBox(height: 10),
+              _buildDetailRow(
+                AppLocalizations.of(context).translate('court'),
+                state.bookingDetails[i].court,
+              ),
+              const SizedBox(height: 10),
+              _buildDetailRow(
+                AppLocalizations.of(context).translate('time'),
+                state.bookingDetails[i].bookingTime,
+              ),
+              const SizedBox(height: 10),
+              _buildDetailRow(
+                AppLocalizations.of(context).translate('bookingDate'),
+                state.bookingDetails[i].bookingDate,
+              ),
+              const SizedBox(height: 10),
+              _buildPriceDetailRow(
+                context,
+                AppLocalizations.of(context).translate('price'),
+                state.bookingDetails[i].price,
+              ),
+            ],
           ],
-        ],
+        ),
+        theme: const ExpandableThemeData(
+          headerAlignment: ExpandablePanelHeaderAlignment.center,
+          tapBodyToExpand: true,
+          tapBodyToCollapse: true,
+          hasIcon: true,
+          iconSize: 24.0,
+          iconColor: Colors.black, // Đổi màu icon thành đen
+          iconRotationAngle:
+              3.14159, // Pi radians (180 degrees) cho hiệu ứng xoay
+          iconPadding: EdgeInsets.only(right: 8),
+          // Luôn sử dụng cùng một icon (mũi tên xuống)
+          expandIcon: Icons.keyboard_arrow_down,
+          collapseIcon: Icons.keyboard_arrow_down,
+        ),
       ),
     );
   }

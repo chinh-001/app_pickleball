@@ -883,7 +883,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
   }
 
   bool _areRequiredFieldsFilled(AddOrderRetailStep2ScreenState state) {
-    return state.lastName.isNotEmpty && state.firstName.isNotEmpty;
+    return state.customerId.isNotEmpty;
   }
 
   void _navigateToCompleteBooking(
