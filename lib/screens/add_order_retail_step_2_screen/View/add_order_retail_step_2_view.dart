@@ -5,7 +5,6 @@ import 'package:app_pickleball/services/localization/app_localizations.dart';
 import 'package:app_pickleball/screens/add_order_retail_step_2_screen/bloc/add_order_retail_step_2_screen_bloc.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/View/complete_booking_screen.dart';
 import 'package:app_pickleball/screens/complete_booking_screen/bloc/complete_booking_screen_bloc.dart';
-import 'package:app_pickleball/screens/widgets/indicators/custom_step_circle.dart';
 import 'package:app_pickleball/screens/widgets/cards/custom_option_item.dart';
 import 'package:app_pickleball/screens/widgets/cards/custom_options_container.dart';
 import 'package:app_pickleball/screens/widgets/summary/custom_summary_row.dart';
@@ -18,6 +17,7 @@ import 'package:app_pickleball/models/payment_methods_model.dart';
 import 'package:app_pickleball/models/payment_status_model.dart';
 import 'package:intl/intl.dart';
 import 'package:expandable/expandable.dart';
+import 'package:app_pickleball/screens/widgets/indicators/custom_step_indicator.dart';
 import 'dart:developer' as log;
 
 class AddOrderRetailStep2View extends StatefulWidget {
@@ -60,15 +60,11 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
   final _searchController = TextEditingController();
   late final AddOrderRetailStep2ScreenBloc _bloc;
   final ScrollController _scrollController = ScrollController();
-  bool _showStepper = true;
-  double _lastScrollOffset = 0;
 
   @override
   void initState() {
     super.initState();
     _bloc = AddOrderRetailStep2ScreenBloc();
-
-    _scrollController.addListener(_scrollListener);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _bloc.add(InitializeForm(totalPayment: widget.totalPayment));
@@ -96,27 +92,8 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     });
   }
 
-  void _scrollListener() {
-    if (_scrollController.position.pixels > _lastScrollOffset &&
-        _scrollController.position.pixels > 10 &&
-        _showStepper) {
-      // Lướt xuống - ẩn thanh tiến trình
-      setState(() {
-        _showStepper = false;
-      });
-    } else if (_scrollController.position.pixels < _lastScrollOffset &&
-        !_showStepper) {
-      // Lướt lên - hiện thanh tiến trình
-      setState(() {
-        _showStepper = true;
-      });
-    }
-    _lastScrollOffset = _scrollController.position.pixels;
-  }
-
   @override
   void dispose() {
-    _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _lastNameController.dispose();
     _firstNameController.dispose();
@@ -142,7 +119,15 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildAnimatedStepper(context),
+                // Sử dụng CustomStepIndicator thay vì _buildAnimatedStepper
+                CustomStepIndicator(
+                  currentStep: 2,
+                  stepKeys: [
+                    'courtInformation',
+                    'customerInformation',
+                    'completeBooking',
+                  ],
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     controller: _scrollController,
@@ -182,53 +167,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
         ),
       ),
       elevation: 1,
-    );
-  }
-
-  // Animated Stepper
-  Widget _buildAnimatedStepper(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      height: _showStepper ? null : 0,
-      child: _showStepper ? _buildStepper(context) : const SizedBox(),
-    );
-  }
-
-  Widget _buildStepper(BuildContext context) {
-    return Container(
-      color: Colors.green,
-      width: MediaQuery.of(context).size.width,
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            const SizedBox(width: 16),
-            CustomStepCircle(text: '1', isActive: false, isDone: true),
-            const SizedBox(width: 8),
-            Text(
-              AppLocalizations.of(context).translate('courtInformation'),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-            CustomStepCircle(text: '2', isActive: true, isDone: false),
-            const SizedBox(width: 8),
-            Text(
-              AppLocalizations.of(context).translate('customerInformation'),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-            CustomStepCircle(text: '3', isActive: false, isDone: false),
-            const SizedBox(width: 8),
-            Text(
-              AppLocalizations.of(context).translate('completeBooking'),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-          ],
-        ),
-      ),
     );
   }
 
