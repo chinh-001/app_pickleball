@@ -1020,6 +1020,7 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                 bookingTime: '${result.startTime} - ${result.endTime}',
                 bookingDate: result.bookingDate,
                 price: rawPrice,
+                bookingCode: result.code,
               );
             }).toList();
 
@@ -1033,7 +1034,6 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
                     customerName: displayName,
                     customerEmail: email,
                     customerPhone: phone,
-                    bookingCode: results.first.code,
                     bookingDetails: bookingDetails,
                     // Truyền giá trị nguyên, không định dạng
                     price: totalPayment.toString(),

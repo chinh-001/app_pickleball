@@ -11,7 +11,6 @@ class CompleteBookingScreen extends StatelessWidget {
   final String customerName;
   final String customerEmail;
   final String customerPhone;
-  final String bookingCode;
   final List<BookingDetail> bookingDetails;
   final String price;
 
@@ -20,7 +19,6 @@ class CompleteBookingScreen extends StatelessWidget {
     required this.customerName,
     required this.customerEmail,
     required this.customerPhone,
-    required this.bookingCode,
     required this.bookingDetails,
     required this.price,
   }) : super(key: key);
@@ -35,7 +33,6 @@ class CompleteBookingScreen extends StatelessWidget {
                   customerName: customerName,
                   customerEmail: customerEmail,
                   customerPhone: customerPhone,
-                  bookingCode: bookingCode,
                   bookingDetails: bookingDetails,
                   price: price,
                 ),
@@ -278,14 +275,14 @@ class CompleteBookingScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            _buildDetailRow(
-              AppLocalizations.of(context).translate('bookingCode'),
-              state.bookingCode,
-            ),
-            const SizedBox(height: 10),
             for (int i = 0; i < state.bookingDetails.length; i++) ...[
               const SizedBox(height: 10),
               _buildBookingSeparator(context, i + 1),
+              const SizedBox(height: 10),
+              _buildDetailRow(
+                AppLocalizations.of(context).translate('bookingCode'),
+                state.bookingDetails[i].bookingCode,
+              ),
               const SizedBox(height: 10),
               _buildDetailRow(
                 AppLocalizations.of(context).translate('court'),

@@ -11,7 +11,6 @@ class LoadCompleteBookingData extends CompleteBookingScreenEvent {
   final String customerName;
   final String customerEmail;
   final String customerPhone;
-  final String bookingCode;
   final List<BookingDetail> bookingDetails;
   final String price;
 
@@ -19,7 +18,6 @@ class LoadCompleteBookingData extends CompleteBookingScreenEvent {
     required this.customerName,
     required this.customerEmail,
     required this.customerPhone,
-    required this.bookingCode,
     required this.bookingDetails,
     required this.price,
   });
@@ -29,7 +27,6 @@ class LoadCompleteBookingData extends CompleteBookingScreenEvent {
     customerName,
     customerEmail,
     customerPhone,
-    bookingCode,
     bookingDetails,
     price,
   ];

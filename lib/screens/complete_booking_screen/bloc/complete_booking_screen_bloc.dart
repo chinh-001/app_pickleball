@@ -19,7 +19,6 @@ class CompleteBookingScreenBloc
         customerName: event.customerName,
         customerEmail: event.customerEmail,
         customerPhone: event.customerPhone,
-        bookingCode: event.bookingCode,
         bookingDetails: event.bookingDetails,
         price: event.price,
       ),

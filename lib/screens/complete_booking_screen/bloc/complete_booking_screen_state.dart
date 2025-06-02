@@ -13,7 +13,6 @@ class CompleteBookingScreenLoaded extends CompleteBookingScreenState {
   final String customerName;
   final String customerEmail;
   final String customerPhone;
-  final String bookingCode;
   final List<BookingDetail> bookingDetails;
   final String price;
 
@@ -21,7 +20,6 @@ class CompleteBookingScreenLoaded extends CompleteBookingScreenState {
     required this.customerName,
     required this.customerEmail,
     required this.customerPhone,
-    required this.bookingCode,
     required this.bookingDetails,
     required this.price,
   });
@@ -31,7 +29,6 @@ class CompleteBookingScreenLoaded extends CompleteBookingScreenState {
     customerName,
     customerEmail,
     customerPhone,
-    bookingCode,
     bookingDetails,
     price,
   ];
@@ -42,12 +39,14 @@ class BookingDetail {
   final String bookingTime;
   final String bookingDate;
   final String price;
+  final String bookingCode;
 
   const BookingDetail({
     required this.court,
     required this.bookingTime,
     required this.bookingDate,
     required this.price,
+    required this.bookingCode,
   });
 
   @override
@@ -58,12 +57,14 @@ class BookingDetail {
           court == other.court &&
           bookingTime == other.bookingTime &&
           bookingDate == other.bookingDate &&
-          price == other.price;
+          price == other.price &&
+          bookingCode == other.bookingCode;
 
   @override
   int get hashCode =>
       court.hashCode ^
       bookingTime.hashCode ^
       bookingDate.hashCode ^
-      price.hashCode;
+      price.hashCode ^
+      bookingCode.hashCode;
 }
