@@ -17,6 +17,7 @@ import 'package:app_pickleball/screens/add_customer_screen/View/add_customer_scr
 import 'package:app_pickleball/models/payment_methods_model.dart';
 import 'package:app_pickleball/models/payment_status_model.dart';
 import 'package:intl/intl.dart';
+import 'package:expandable/expandable.dart';
 import 'dart:developer' as log;
 
 class AddOrderRetailStep2View extends StatefulWidget {
@@ -1273,91 +1274,124 @@ class _AddOrderRetailStep2ViewState extends State<AddOrderRetailStep2View> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          AppLocalizations.of(context).translate('courtInformation'),
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        // Sử dụng ExpandablePanel với hiệu ứng xoay icon
+        ExpandablePanel(
+          header: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(
+              AppLocalizations.of(context).translate('courtInformation'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          collapsed: const SizedBox.shrink(), // Không hiển thị gì khi đóng
+          expanded: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              // Hiển thị từng booking riêng biệt theo ngày
+              ...widget.selectedDates.map((date) {
+                final dateKey = DateFormat('yyyy-MM-dd').format(date);
+                final selectedCourts =
+                    widget.selectedCourtsByDate[dateKey] ?? [];
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Hiển thị ngày
+                      CustomSummaryRow(
+                        label: AppLocalizations.of(
+                          context,
+                        ).translate('selectedDates'),
+                        value: dateFormatter.format(date),
+                        valueColor: Colors.black,
+                        isTotal: true,
+                      ),
+                      const SizedBox(height: 8),
+                      const Divider(height: 1),
+                      const SizedBox(height: 8),
+
+                      // Hiển thị tên dịch vụ
+                      CustomSummaryRow(
+                        label: AppLocalizations.of(
+                          context,
+                        ).translate('serviceName'),
+                        value: widget.serviceName,
+                        valueColor: Colors.black,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Hiển thị thời gian
+                      CustomSummaryRow(
+                        label: AppLocalizations.of(context).translate('time'),
+                        value: "${widget.fromTime} - ${widget.toTime}",
+                        valueColor: Colors.black,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Hiển thị số giờ
+                      CustomSummaryRow(
+                        label: AppLocalizations.of(context).translate('hours'),
+                        value: "${widget.numberOfHours}",
+                        valueColor: Colors.black,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Hiển thị số lượng sân
+                      CustomSummaryRow(
+                        label: AppLocalizations.of(
+                          context,
+                        ).translate('courtCount'),
+                        value: widget.courtCount.toString(),
+                        valueColor: Colors.black,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Hiển thị sân đã chọn
+                      CustomSummaryRow(
+                        label: AppLocalizations.of(context).translate('court'),
+                        value:
+                            selectedCourts.isEmpty
+                                ? AppLocalizations.of(
+                                  context,
+                                ).translate('noCourt')
+                                : selectedCourts
+                                    .map(
+                                      (courtId) =>
+                                          widget.courtNamesById[courtId] ??
+                                          courtId,
+                                    )
+                                    .join(", "),
+                        valueColor: Colors.black,
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ],
+          ),
+          theme: const ExpandableThemeData(
+            headerAlignment: ExpandablePanelHeaderAlignment.center,
+            tapBodyToExpand: true,
+            tapBodyToCollapse: true,
+            hasIcon: true,
+            iconSize: 24.0,
+            iconColor: Colors.black, // Đổi màu icon thành đen
+            iconRotationAngle:
+                3.14159, // Pi radians (180 degrees) cho hiệu ứng xoay
+            iconPadding: EdgeInsets.only(right: 8),
+            // Luôn sử dụng cùng một icon (mũi tên xuống)
+            expandIcon: Icons.keyboard_arrow_down,
+            collapseIcon: Icons.keyboard_arrow_down,
+          ),
         ),
-        const SizedBox(height: 10),
-
-        // Hiển thị từng booking riêng biệt theo ngày
-        ...widget.selectedDates.map((date) {
-          final dateKey = DateFormat('yyyy-MM-dd').format(date);
-          final selectedCourts = widget.selectedCourtsByDate[dateKey] ?? [];
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.withOpacity(0.2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Hiển thị ngày
-                CustomSummaryRow(
-                  label: AppLocalizations.of(
-                    context,
-                  ).translate('selectedDates'),
-                  value: dateFormatter.format(date),
-                  valueColor: Colors.black,
-                  isTotal: true,
-                ),
-                const SizedBox(height: 8),
-                const Divider(height: 1),
-                const SizedBox(height: 8),
-
-                // Hiển thị tên dịch vụ
-                CustomSummaryRow(
-                  label: AppLocalizations.of(context).translate('serviceName'),
-                  value: widget.serviceName,
-                  valueColor: Colors.black,
-                ),
-                const SizedBox(height: 8),
-
-                // Hiển thị thời gian
-                CustomSummaryRow(
-                  label: AppLocalizations.of(context).translate('time'),
-                  value: "${widget.fromTime} - ${widget.toTime}",
-                  valueColor: Colors.black,
-                ),
-                const SizedBox(height: 8),
-
-                // Hiển thị số giờ
-                CustomSummaryRow(
-                  label: AppLocalizations.of(context).translate('hours'),
-                  value: "${widget.numberOfHours}",
-                  valueColor: Colors.black,
-                ),
-                const SizedBox(height: 8),
-
-                // Hiển thị số lượng sân
-                CustomSummaryRow(
-                  label: AppLocalizations.of(context).translate('courtCount'),
-                  value: widget.courtCount.toString(),
-                  valueColor: Colors.black,
-                ),
-                const SizedBox(height: 8),
-
-                // Hiển thị sân đã chọn
-                CustomSummaryRow(
-                  label: AppLocalizations.of(context).translate('court'),
-                  value:
-                      selectedCourts.isEmpty
-                          ? AppLocalizations.of(context).translate('noCourt')
-                          : selectedCourts
-                              .map(
-                                (courtId) =>
-                                    widget.courtNamesById[courtId] ?? courtId,
-                              )
-                              .join(", "),
-                  valueColor: Colors.black,
-                ),
-              ],
-            ),
-          );
-        }).toList(),
       ],
     );
   }
